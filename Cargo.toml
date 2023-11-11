@@ -1,0 +1,18 @@
+[package]
+name = "lunar-rs"
+description = "lunar is a calendar library for Solar and Chinese Lunar."
+license = "MIT OR Apache-2.0"
+version = "0.1.0"
+edition = "2021"
+authors = ["houseme <housemecn@gmail.com>"]
+repository = "https://github.com/houseme/lunar-rs"
+homepage = "https://houseme.github.io/lunar-rs"
+keywords = ["calendar", "solar-calendar", "buddhist-calendar", "taoist-calendar", "lunar-calendar"]
+categories = ["value-formatting", "parser-implementations", "date-and-time", "parsing", "encoding"]
+readme = "README.md"
+# Crate build related
+exclude = ["tests/*", ".gitignore"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
