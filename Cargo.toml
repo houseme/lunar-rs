@@ -18,3 +18,4 @@ exclude = ["tests/*", ".gitignore"]
 
 [dependencies]
 chrono = "0.4.31"
+wifiscanner = "0.5.1"
