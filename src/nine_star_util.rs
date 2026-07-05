@@ -1,1 +1,1 @@
-//! stub nine_star_util (placeholder)
+//! 九星辅助表占位。九星命名 / 吉凶表已内联在 [`crate::nine_star`] 中。
