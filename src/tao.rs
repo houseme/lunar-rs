@@ -69,7 +69,7 @@ impl<'a> Tao<'a> {
         if let Some(f) = tao_util::BA_JIE.get(jq) {
             out.push(TaoFestival::new(f, ""));
         }
-        if let Some(f) = tao_util::BA_HUI.get(&self.lunar.day_in_gan_zhi()) {
+        if let Some(f) = tao_util::BA_HUI.get(self.lunar.day_in_gan_zhi().as_str()) {
             out.push(TaoFestival::new(f, ""));
         }
         out
@@ -83,7 +83,7 @@ impl<'a> Tao<'a> {
     pub fn is_day_san_yuan(&self) -> bool { self.is_day_in(tao_util::SAN_YUAN) }
     pub fn is_day_wu_la(&self) -> bool { self.is_day_in(tao_util::WU_LA) }
     pub fn is_day_ba_jie(&self) -> bool { tao_util::BA_JIE.contains_key(self.lunar.jie_qi()) }
-    pub fn is_day_ba_hui(&self) -> bool { tao_util::BA_HUI.contains_key(&self.lunar.day_in_gan_zhi()) }
+    pub fn is_day_ba_hui(&self) -> bool { tao_util::BA_HUI.contains_key(self.lunar.day_in_gan_zhi().as_str()) }
     pub fn is_day_ming_wu(&self) -> bool { self.lunar.day_gan() == "戊" }
     pub fn is_day_an_wu(&self) -> bool {
         let m = self.month().abs() as usize;
