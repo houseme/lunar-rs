@@ -9,8 +9,7 @@ include!("holiday_data.rs");
 const SIZE: usize = 18;
 
 // 运行期可覆盖（Fix）。
-static NAMES_IN_USE: LazyLock<RwLock<Vec<&'static str>>> =
-    LazyLock::new(|| RwLock::new(NAMES.to_vec()));
+static NAMES_IN_USE: LazyLock<RwLock<Vec<&'static str>>> = LazyLock::new(|| RwLock::new(NAMES.to_vec()));
 static DATA_IN_USE: LazyLock<RwLock<String>> = LazyLock::new(|| RwLock::new(RAW_DATA.to_string()));
 
 fn build_holiday_forward(s: &str) -> Holiday {

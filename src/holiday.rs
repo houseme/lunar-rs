@@ -16,13 +16,21 @@ impl Holiday {
         Self { day: fmt_dash(day), name: name.to_string(), work, target: fmt_dash(target) }
     }
     #[inline]
-    pub fn day(&self) -> &str { &self.day }
+    pub fn day(&self) -> &str {
+        &self.day
+    }
     #[inline]
-    pub fn name(&self) -> &str { &self.name }
+    pub fn name(&self) -> &str {
+        &self.name
+    }
     #[inline]
-    pub const fn is_work(&self) -> bool { self.work }
+    pub const fn is_work(&self) -> bool {
+        self.work
+    }
     #[inline]
-    pub fn target(&self) -> &str { &self.target }
+    pub fn target(&self) -> &str {
+        &self.target
+    }
 }
 
 impl fmt::Display for Holiday {
