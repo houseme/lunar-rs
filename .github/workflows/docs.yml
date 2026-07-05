@@ -20,7 +20,7 @@ jobs:
           sudo apt install -y cmake libclang-dev
 
       - name: Install stable toolchain
-        uses: dtolnay/rust-toolchain.toml@stable
+        uses: dtolnay/rust-toolchain@stable
 
       - name: Run cargo doc
         run: cargo doc --no-deps --all-features

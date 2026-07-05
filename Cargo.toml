@@ -1,6 +1,6 @@
 [package]
 name = "lunar-rs"
-description = "lunar is a calendar library for Solar and Chinese Lunar."
+description = "lunar is a calendar library for Solar and Chinese Lunar. 高性能中国农历/阳历/佛历/道历/八字/九星日历库（基于寿星天文历）。"
 license = "MIT OR Apache-2.0"
 version = "0.1.0"
 edition = "2024"
@@ -8,14 +8,27 @@ authors = ["houseme <housemecn@gmail.com>"]
 repository = "https://github.com/houseme/lunar-rs"
 homepage = "https://houseme.github.io/lunar-rs"
 documentation = "https://docs.rs/lunar-rs"
-keywords = ["calendar", "solar-calendar", "buddhist-calendar", "taoist-calendar", "lunar-calendar"]
+keywords = ["calendar", "solar-calendar", "lunar-calendar", "buddhist-calendar", "taoist-calendar"]
 categories = ["value-formatting", "parser-implementations", "date-and-time", "parsing", "encoding"]
 readme = "README.md"
 # Crate build related
-exclude = ["tests/*", ".gitignore"]
+exclude = ["tests/*", ".gitignore", "docs/*", "benches/*", ".github/*"]
+
+[lib]
+name = "lunar_rs"
+path = "src/lib.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-chrono = "0.4.31"
-wifiscanner = "0.5.1"
+# The core calendar engine has zero third-party dependencies by design:
+# all astronomy (ShouXing / VSOP87), GanZhi and JieQi computation is self-contained.
+
+[features]
+default = []
+# Optional internationalization (English message tables, runtime language switching).
+i18n = []
+
+[profile.release]
+lto = true
+codegen-units = 1
