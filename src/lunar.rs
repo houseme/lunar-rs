@@ -990,7 +990,7 @@ impl Lunar {
         let mut year_offset = index_exact - index;
         if year_offset > 1 { year_offset -= 60; } else if year_offset < -1 { year_offset += 60; }
         let yuan = ((self.year + year_offset as i32 + 2696) / 60) % 3;
-        let mut offset = (62 + yuan * 3 - index_exact) % 9;
+        let mut offset = (62 + yuan as i64 * 3 - index_exact) % 9;
         if offset == 0 { offset = 9; }
         NineStar::from_index(offset - 1)
     }
@@ -1027,11 +1027,11 @@ impl Lunar {
         let dong_zhi_index = lunar_util::get_jia_zi_index(&dong_zhi.lunar().day_in_gan_zhi());
         let dong_zhi_index2 = lunar_util::get_jia_zi_index(&dong_zhi2.lunar().day_in_gan_zhi());
         let xia_zhi_index = lunar_util::get_jia_zi_index(&xia_zhi.lunar().day_in_gan_zhi());
-        let solar_shun_bai = if dong_zhi_index > 29 { dong_zhi.next_day(60 - dong_zhi_index) } else { dong_zhi.next_day(-dong_zhi_index) };
+        let solar_shun_bai = if dong_zhi_index > 29 { dong_zhi.next_day((60 - dong_zhi_index) as i32) } else { dong_zhi.next_day((-dong_zhi_index) as i32) };
         let solar_shun_bai_ymd = solar_shun_bai.to_ymd();
-        let solar_shun_bai2 = if dong_zhi_index2 > 29 { dong_zhi2.next_day(60 - dong_zhi_index2) } else { dong_zhi2.next_day(-dong_zhi_index2) };
+        let solar_shun_bai2 = if dong_zhi_index2 > 29 { dong_zhi2.next_day((60 - dong_zhi_index2) as i32) } else { dong_zhi2.next_day((-dong_zhi_index2) as i32) };
         let solar_shun_bai_ymd2 = solar_shun_bai2.to_ymd();
-        let solar_ni_zi = if xia_zhi_index > 29 { xia_zhi.next_day(60 - xia_zhi_index) } else { xia_zhi.next_day(-xia_zhi_index) };
+        let solar_ni_zi = if xia_zhi_index > 29 { xia_zhi.next_day((60 - xia_zhi_index) as i32) } else { xia_zhi.next_day((-xia_zhi_index) as i32) };
         let solar_ni_zi_ymd = solar_ni_zi.to_ymd();
         let offset = if solar_ymd >= solar_shun_bai_ymd && solar_ymd < solar_ni_zi_ymd {
             self.solar.subtract(&solar_shun_bai) % 9
@@ -1044,7 +1044,7 @@ impl Lunar {
         } else {
             0
         };
-        NineStar::from_index(offset)
+        NineStar::from_index(offset as i64)
     }
     pub fn time_nine_star(&self) -> NineStar {
         let solar_ymd = self.solar.to_ymd();
@@ -1075,19 +1075,6 @@ impl Lunar {
         LunarTime::from_lunar(self)
     }
 
-    /// 当天的 13 个时辰（子时拆早子 / 晚子）。
-    pub fn times(&self) -> Vec<LunarTime<'_>> {
-        let mut v = Vec::with_capacity(13);
-        v.push(LunarTime::from_lunar(
-            &Lunar::from_ymd_hms(self.year, self.month, self.day, 0, 0, 0).unwrap_or_else(|_| Lunar::from_solar(self.solar)),
-        ));
-        for i in 0..12 {
-            let lt = Lunar::from_ymd_hms(self.year, self.month, self.day, (i + 1) * 2 - 1, 0, 0)
-                .unwrap_or_else(|_| Lunar::from_solar(self.solar));
-            v.push(LunarTime::from_lunar(&lt));
-        }
-        v
-    }
 }
 
 impl fmt::Display for Lunar {
