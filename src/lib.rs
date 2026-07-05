@@ -56,7 +56,7 @@
 
 mod error;
 mod shou_xing;
-mod solar_util;
+pub mod solar_util;
 
 pub mod lunar_util;
 
