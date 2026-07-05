@@ -16,7 +16,10 @@ pub struct LiuNian<'a> {
 
 impl<'a> LiuNian<'a> {
     pub(crate) fn new(
-        lunar: &'a Lunar, da_yun_start_year: i32, da_yun_start_age: i32, da_yun_index: i32,
+        lunar: &'a Lunar,
+        da_yun_start_year: i32,
+        da_yun_start_age: i32,
+        da_yun_index: i32,
         index: i32,
     ) -> Self {
         Self {
@@ -29,9 +32,15 @@ impl<'a> LiuNian<'a> {
         }
     }
 
-    pub const fn index(&self) -> i32 { self.index }
-    pub const fn year(&self) -> i32 { self.year }
-    pub const fn age(&self) -> i32 { self.age }
+    pub const fn index(&self) -> i32 {
+        self.index
+    }
+    pub const fn year(&self) -> i32 {
+        self.year
+    }
+    pub const fn age(&self) -> i32 {
+        self.age
+    }
 
     pub fn gan_zhi(&self) -> String {
         let li_chun = self.lunar.jie_qi_table().get("立春").copied().unwrap_or(self.lunar.solar());
@@ -44,8 +53,12 @@ impl<'a> LiuNian<'a> {
         let offset = offset.rem_euclid(size);
         lunar_util::tables::JIA_ZI[offset as usize].to_string()
     }
-    pub fn xun(&self) -> &'static str { lunar_util::get_xun(&self.gan_zhi()) }
-    pub fn xun_kong(&self) -> &'static str { lunar_util::get_xun_kong(&self.gan_zhi()) }
+    pub fn xun(&self) -> &'static str {
+        lunar_util::get_xun(&self.gan_zhi())
+    }
+    pub fn xun_kong(&self) -> &'static str {
+        lunar_util::get_xun_kong(&self.gan_zhi())
+    }
 
     pub fn liu_yue(&self) -> Vec<LiuYue> {
         let gz = self.gan_zhi();

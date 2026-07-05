@@ -12,10 +12,10 @@ pub use liu_nian::LiuNian;
 pub use liu_yue::LiuYue;
 pub use xiao_yun::XiaoYun;
 
+use crate::Gender;
 use crate::lunar::Lunar;
 use crate::lunar_util;
 use crate::solar::Solar;
-use crate::Gender;
 
 /// 大运（运程）。
 pub struct Yun<'a> {
@@ -33,15 +33,7 @@ impl<'a> Yun<'a> {
         let yang = lunar.year_gan_index_exact() % 2 == 0;
         let man = gender == 1;
         let forward = (yang && man) || (!yang && !man);
-        let mut yun = Self {
-            gender,
-            start_year: 0,
-            start_month: 0,
-            start_day: 0,
-            start_hour: 0,
-            forward,
-            lunar,
-        };
+        let mut yun = Self { gender, start_year: 0, start_month: 0, start_day: 0, start_hour: 0, forward, lunar };
         yun.compute_start(sect);
         yun
     }
@@ -50,11 +42,8 @@ impl<'a> Yun<'a> {
         let prev = self.lunar.prev_jie();
         let next = self.lunar.next_jie();
         let current = self.lunar.solar();
-        let (start, end) = if self.forward {
-            (current, next.unwrap().solar())
-        } else {
-            (prev.unwrap().solar(), current)
-        };
+        let (start, end) =
+            if self.forward { (current, next.unwrap().solar()) } else { (prev.unwrap().solar(), current) };
         let (mut year, mut month, mut day, mut hour) = (0_i32, 0_i32, 0_i32, 0_i32);
         if sect == 2 {
             let mut minutes = end.subtract_minute(&start);
@@ -94,28 +83,39 @@ impl<'a> Yun<'a> {
         self.start_hour = hour;
     }
 
-    pub const fn gender(&self) -> Gender { self.gender }
-    pub const fn start_year(&self) -> i32 { self.start_year }
-    pub const fn start_month(&self) -> i32 { self.start_month }
-    pub const fn start_day(&self) -> i32 { self.start_day }
-    pub const fn start_hour(&self) -> i32 { self.start_hour }
-    pub const fn is_forward(&self) -> bool { self.forward }
-    pub const fn lunar(&self) -> &Lunar { self.lunar }
+    pub const fn gender(&self) -> Gender {
+        self.gender
+    }
+    pub const fn start_year(&self) -> i32 {
+        self.start_year
+    }
+    pub const fn start_month(&self) -> i32 {
+        self.start_month
+    }
+    pub const fn start_day(&self) -> i32 {
+        self.start_day
+    }
+    pub const fn start_hour(&self) -> i32 {
+        self.start_hour
+    }
+    pub const fn is_forward(&self) -> bool {
+        self.forward
+    }
+    pub const fn lunar(&self) -> &Lunar {
+        self.lunar
+    }
 
     pub fn start_solar(&self) -> Solar {
         let s = self.lunar.solar();
-        s.next_year(self.start_year)
-            .next_month(self.start_month)
-            .next_day(self.start_day)
-            .next_hour(self.start_hour)
+        s.next_year(self.start_year).next_month(self.start_month).next_day(self.start_day).next_hour(self.start_hour)
     }
 
     /// 获取 n 轮大运（默认 10）。
-    pub fn da_yun(&self) -> Vec<DaYun<'a>> { self.da_yun_by(10) }
+    pub fn da_yun(&self) -> Vec<DaYun<'a>> {
+        self.da_yun_by(10)
+    }
     pub fn da_yun_by(&self, n: usize) -> Vec<DaYun<'a>> {
         let start_year = self.start_solar().year();
-        (0..n)
-            .map(|i| DaYun::new(self.lunar, start_year, i as i32, self.forward))
-            .collect()
+        (0..n).map(|i| DaYun::new(self.lunar, start_year, i as i32, self.forward)).collect()
     }
 }

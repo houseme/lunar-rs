@@ -13,7 +13,9 @@ impl LiuYue {
         Self { index, year_gan_zhi: year_gan_zhi.to_string() }
     }
 
-    pub const fn index(&self) -> i32 { self.index }
+    pub const fn index(&self) -> i32 {
+        self.index
+    }
 
     pub fn month_in_chinese(&self) -> &'static str {
         lunar_util::tables::MONTH[(self.index + 1) as usize]
@@ -34,6 +36,10 @@ impl LiuYue {
         let zhi = lunar_util::tables::ZHI[((i + lunar_util::BASE_MONTH_ZHI_INDEX) % 12 + 1) as usize];
         format!("{gan}{zhi}")
     }
-    pub fn xun(&self) -> &'static str { lunar_util::get_xun(&self.gan_zhi()) }
-    pub fn xun_kong(&self) -> &'static str { lunar_util::get_xun_kong(&self.gan_zhi()) }
+    pub fn xun(&self) -> &'static str {
+        lunar_util::get_xun(&self.gan_zhi())
+    }
+    pub fn xun_kong(&self) -> &'static str {
+        lunar_util::get_xun_kong(&self.gan_zhi())
+    }
 }
