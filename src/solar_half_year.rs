@@ -8,12 +8,21 @@ const MONTH_IN_HALF_YEAR: i32 = 6;
 
 /// 阳历半年。
 #[derive(Clone, Copy, Debug)]
-pub struct SolarHalfYear { year: i32, month: i32 }
+pub struct SolarHalfYear {
+    year: i32,
+    month: i32,
+}
 
 impl SolarHalfYear {
-    pub fn from_ym(year: i32, month: i32) -> Self { Self { year, month } }
-    pub const fn year(&self) -> i32 { self.year }
-    pub const fn month(&self) -> i32 { self.month }
+    pub fn from_ym(year: i32, month: i32) -> Self {
+        Self { year, month }
+    }
+    pub const fn year(&self) -> i32 {
+        self.year
+    }
+    pub const fn month(&self) -> i32 {
+        self.month
+    }
 
     /// 上 / 下半年（1 / 2）。
     pub fn index(&self) -> i32 {
@@ -30,5 +39,7 @@ impl SolarHalfYear {
 }
 
 impl fmt::Display for SolarHalfYear {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { write!(f, "{}.{}", self.year, self.index()) }
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}.{}", self.year, self.index())
+    }
 }

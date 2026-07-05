@@ -2,10 +2,10 @@
 
 use std::fmt;
 
+use crate::LunarError;
 use crate::holiday_util;
 use crate::lunar::Lunar;
 use crate::solar_util;
-use crate::LunarError;
 
 /// J2000.0 历元儒略日。
 pub const J2000: f64 = 2_451_545.0;
@@ -24,7 +24,12 @@ pub struct Solar {
 impl Solar {
     /// 由年月日时分秒构造（非法返回 `Err`）。
     pub fn from_ymd_hms(
-        year: i32, month: i32, day: i32, hour: i32, minute: i32, second: i32,
+        year: i32,
+        month: i32,
+        day: i32,
+        hour: i32,
+        minute: i32,
+        second: i32,
     ) -> Result<Self, LunarError> {
         if !(1..=12).contains(&month) {
             return Err(LunarError::InvalidSolar { year, month, day, hour, minute, second });
@@ -101,10 +106,15 @@ impl Solar {
             day += 1;
         }
 
-        Self::from_ymd_hms(
-            year as i32, month as i32, day as i32, hour as i32, minute as i32, second as i32,
-        )
-        .unwrap_or_else(|_| Self { year: year as i32, month: month as i32, day: day as i32, hour: hour as i32, minute: minute as i32, second: second as i32 })
+        Self::from_ymd_hms(year as i32, month as i32, day as i32, hour as i32, minute as i32, second as i32)
+            .unwrap_or_else(|_| Self {
+                year: year as i32,
+                month: month as i32,
+                day: day as i32,
+                hour: hour as i32,
+                minute: minute as i32,
+                second: second as i32,
+            })
     }
 
     #[inline]
@@ -199,13 +209,7 @@ impl Solar {
 
     /// `YYYY-MM-DD HH:MM:SS`。
     pub fn to_ymd_hms(&self) -> String {
-        format!(
-            "{} {:02}:{:02}:{:02}",
-            self.to_ymd(),
-            self.hour,
-            self.minute,
-            self.second
-        )
+        format!("{} {:02}:{:02}:{:02}", self.to_ymd(), self.hour, self.minute, self.second)
     }
 
     /// 完整字符串：日期 + 闰年 + 星期 + 节日 + 星座。
@@ -262,9 +266,7 @@ impl Solar {
 
     /// 与另一日期的天数差（self - other）。
     pub fn subtract(&self, other: &Solar) -> i32 {
-        solar_util::days_between(
-            other.year, other.month, other.day, self.year, self.month, self.day,
-        )
+        solar_util::days_between(other.year, other.month, other.day, self.year, self.month, self.day)
     }
 
     /// 与另一时刻的分钟差（self - other）。
@@ -287,8 +289,18 @@ impl Solar {
 
     pub fn is_before(&self, other: &Solar) -> bool {
         solar_util::is_before(
-            self.year, self.month, self.day, self.hour, self.minute, self.second, other.year,
-            other.month, other.day, other.hour, other.minute, other.second,
+            self.year,
+            self.month,
+            self.day,
+            self.hour,
+            self.minute,
+            self.second,
+            other.year,
+            other.month,
+            other.day,
+            other.hour,
+            other.minute,
+            other.second,
         )
     }
 
@@ -304,8 +316,7 @@ impl Solar {
         } else if m == 2 && d > 28 && !solar_util::is_leap_year(y) {
             d = 28;
         }
-        Solar::from_ymd_hms(y, m, d, self.hour, self.minute, self.second)
-            .unwrap_or(*self)
+        Solar::from_ymd_hms(y, m, d, self.hour, self.minute, self.second).unwrap_or(*self)
     }
 
     /// 推进 / 回退若干月。
@@ -377,9 +388,7 @@ impl Solar {
             }
             while rest > 0 {
                 o = o.next_day(add);
-                let work = if let Some(holiday) = holiday_util::get_holiday_by_ymd(
-                    o.year, o.month, o.day,
-                ) {
+                let work = if let Some(holiday) = holiday_util::get_holiday_by_ymd(o.year, o.month, o.day) {
                     holiday.is_work()
                 } else {
                     let w = o.week();

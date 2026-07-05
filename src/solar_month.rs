@@ -8,12 +8,21 @@ use crate::solar_week::SolarWeek;
 
 /// 阳历月。
 #[derive(Clone, Copy, Debug)]
-pub struct SolarMonth { year: i32, month: i32 }
+pub struct SolarMonth {
+    year: i32,
+    month: i32,
+}
 
 impl SolarMonth {
-    pub fn from_ym(year: i32, month: i32) -> Self { Self { year, month } }
-    pub const fn year(&self) -> i32 { self.year }
-    pub const fn month(&self) -> i32 { self.month }
+    pub fn from_ym(year: i32, month: i32) -> Self {
+        Self { year, month }
+    }
+    pub const fn year(&self) -> i32 {
+        self.year
+    }
+    pub const fn month(&self) -> i32 {
+        self.month
+    }
 
     /// 当月每日。
     pub fn days(&self) -> Vec<Solar> {
@@ -30,7 +39,9 @@ impl SolarMonth {
             out.push(week);
             week = week.next(1, false);
             let first = week.first_day();
-            if first.year() > self.year || first.month() > self.month { break; }
+            if first.year() > self.year || first.month() > self.month {
+                break;
+            }
         }
         out
     }
@@ -40,11 +51,19 @@ impl SolarMonth {
         let (n, m_abs) = if months < 0 { (-1, -months) } else { (1, months) };
         let mut y = self.year + (m_abs / 12) * n;
         let mut m = self.month + (m_abs % 12) * n;
-        if m > 12 { m -= 12; y += 1; } else if m < 1 { m += 12; y -= 1; }
+        if m > 12 {
+            m -= 12;
+            y += 1;
+        } else if m < 1 {
+            m += 12;
+            y -= 1;
+        }
         Self::from_ym(y, m)
     }
 }
 
 impl fmt::Display for SolarMonth {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { write!(f, "{}-{}", self.year, self.month) }
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}-{}", self.year, self.month)
+    }
 }

@@ -18,21 +18,31 @@ impl SolarWeek {
     pub fn from_ymd(year: i32, month: i32, day: i32, start: i32) -> Self {
         Self { year, month, day, start }
     }
-    pub const fn year(&self) -> i32 { self.year }
-    pub const fn month(&self) -> i32 { self.month }
-    pub const fn day(&self) -> i32 { self.day }
+    pub const fn year(&self) -> i32 {
+        self.year
+    }
+    pub const fn month(&self) -> i32 {
+        self.month
+    }
+    pub const fn day(&self) -> i32 {
+        self.day
+    }
 
     /// 当月第几周。
     pub fn index(&self) -> i32 {
         let mut offset = Solar::from_ymd(self.year, self.month, 1).unwrap().week() - self.start;
-        if offset < 0 { offset += 7; }
+        if offset < 0 {
+            offset += 7;
+        }
         ((self.day + offset) as f64 / 7.0).ceil() as i32
     }
 
     /// 当年第几周。
     pub fn index_in_year(&self) -> i32 {
         let mut offset = Solar::from_ymd(self.year, 1, 1).unwrap().week() - self.start;
-        if offset < 0 { offset += 7; }
+        if offset < 0 {
+            offset += 7;
+        }
         ((solar_util::days_in_year(self.year, self.month, self.day) + offset) as f64 / 7.0).ceil() as i32
     }
 
@@ -40,7 +50,9 @@ impl SolarWeek {
     pub fn first_day(&self) -> Solar {
         let c = Solar::from_ymd(self.year, self.month, self.day).unwrap();
         let mut prev = c.week() - self.start;
-        if prev < 0 { prev += 7; }
+        if prev < 0 {
+            prev += 7;
+        }
         c.next_day(-prev)
     }
 

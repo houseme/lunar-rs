@@ -8,9 +8,8 @@ pub const WEEK: [&str; 7] = ["日", "一", "二", "三", "四", "五", "六"];
 const DAYS_OF_MONTH: [i32; 12] = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
 /// 西方星座。
-pub const XINGZUO: [&str; 12] = [
-    "白羊", "金牛", "双子", "巨蟹", "狮子", "处女", "天秤", "天蝎", "射手", "摩羯", "水瓶", "双鱼",
-];
+pub const XINGZUO: [&str; 12] =
+    ["白羊", "金牛", "双子", "巨蟹", "狮子", "处女", "天秤", "天蝎", "射手", "摩羯", "水瓶", "双鱼"];
 
 use std::collections::HashMap;
 use std::sync::LazyLock;
@@ -213,11 +212,7 @@ pub fn days_of_year(year: i32) -> i32 {
     if year == 1582 {
         return 355;
     }
-    if is_leap_year(year) {
-        366
-    } else {
-        365
-    }
+    if is_leap_year(year) { 366 } else { 365 }
 }
 
 /// 该月天数（1582-10 为 21）。
@@ -226,11 +221,7 @@ pub fn days_of_month(year: i32, month: i32) -> i32 {
         return 21;
     }
     let d = DAYS_OF_MONTH[(month - 1) as usize];
-    if month == 2 && is_leap_year(year) {
-        d + 1
-    } else {
-        d
-    }
+    if month == 2 && is_leap_year(year) { d + 1 } else { d }
 }
 
 /// 该日在该年的第几天（自 1 起）。
@@ -239,15 +230,7 @@ pub fn days_in_year(year: i32, month: i32, day: i32) -> i32 {
     for i in 1..month {
         days += days_of_month(year, i);
     }
-    let d = if year == 1582 && month == 10 {
-        if day >= 15 {
-            day - 10
-        } else {
-            day
-        }
-    } else {
-        day
-    };
+    let d = if year == 1582 && month == 10 { if day >= 15 { day - 10 } else { day } } else { day };
     days + d
 }
 
@@ -270,7 +253,7 @@ pub fn julian_day(year: i32, month: i32, day: i32, hour: i32, minute: i32, secon
     } else {
         0
     };
-    (365.25 * (y as f64 + 4716.0)) as f64 + (30.6001 * (m as f64 + 1.0)) as f64 + d + n as f64
+    ((365.25 * (y as f64 + 4716.0)) as i64) as f64 + ((30.6001 * (m as f64 + 1.0)) as i64) as f64 + d + n as f64
         - 1524.5
 }
 
@@ -290,8 +273,18 @@ pub fn weeks_of_month(year: i32, month: i32, start: i32) -> i32 {
 /// a 是否早于 b（逐字段比较）。
 #[allow(clippy::too_many_arguments)]
 pub fn is_before(
-    ay: i32, am: i32, ad: i32, ah: i32, ai: i32, as_: i32, by: i32, bm: i32, bd: i32, bh: i32,
-    bi: i32, bs: i32,
+    ay: i32,
+    am: i32,
+    ad: i32,
+    ah: i32,
+    ai: i32,
+    as_: i32,
+    by: i32,
+    bm: i32,
+    bd: i32,
+    bh: i32,
+    bi: i32,
+    bs: i32,
 ) -> bool {
     (ay, am, ad, ah, ai, as_) < (by, bm, bd, bh, bi, bs)
 }
