@@ -18,7 +18,7 @@ fn lunar_full_string() {
     assert_eq!(lunar.year_sheng_xiao(), "猪");
     assert_eq!(lunar.month_in_gan_zhi(), "戊辰");
     assert_eq!(lunar.day_in_gan_zhi(), "戊戌");
-    assert_eq!(lunar.time_in_gan_zhi(), "甲子");
+    assert_eq!(lunar.time_in_gan_zhi(), "壬子");
     assert_eq!(lunar.year_nayin(), "平地木");
     assert_eq!(lunar.month_nayin(), "大林木");
     assert_eq!(lunar.day_nayin(), "平地木");
@@ -183,13 +183,13 @@ fn lunar_next_matches_solar_next() {
 
 #[test]
 fn eight_char_bazi() {
-    // 1986-02-01 07:30 八字应与参考实现一致
-    let lunar = Solar::from_ymd_hms(1986, 2, 1, 7, 30, 0).unwrap().lunar();
+    // 与 lunar-go EightChar_test.go::TestEightChar1 完全对齐
+    let lunar = Lunar::from_ymd_hms(2019, 12, 12, 11, 22, 0).unwrap();
     let ec = lunar.eight_char();
-    assert_eq!(ec.year(), "丙寅");
-    assert_eq!(ec.month(), "己丑");
-    assert_eq!(ec.day(), "乙巳");
-    assert_eq!(ec.time(), "庚辰");
+    assert_eq!(ec.year(), "己亥");
+    assert_eq!(ec.month(), "丁丑");
+    assert_eq!(ec.day(), "戊申");
+    assert_eq!(ec.time(), "戊午");
 }
 
 #[test]
