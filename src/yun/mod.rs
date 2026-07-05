@@ -82,9 +82,9 @@ impl<'a> Yun<'a> {
                 hour_diff += 12;
                 day_diff -= 1;
             }
-            let month_diff = hour_diff * 10 / 30;
+            let month_diff = (hour_diff * 10 / 30) as i32;
             month = day_diff * 4 + month_diff;
-            day = hour_diff * 10 - month_diff * 30;
+            day = (hour_diff as i32) * 10 - month_diff * 30;
             year = month / 12;
             month -= year * 12;
         }
