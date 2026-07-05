@@ -977,7 +977,7 @@ impl Lunar {
         for (i, v) in JIE_QI.iter().enumerate() {
             if *v == jq.name() { offset = i as i64; break; }
         }
-        let mut index = self.solar.subtract(&jq.solar()) / 5;
+        let mut index = (self.solar.subtract(&jq.solar()) / 5) as i64;
         if index > 2 { index = 2; }
         let wu_hou_len = lunar_util::tables::WU_HOU.len() as i64;
         lunar_util::tables::WU_HOU[((offset * 3 + index) % wu_hou_len) as usize]
