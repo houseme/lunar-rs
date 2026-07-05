@@ -1,7 +1,7 @@
 //! 农历月。对应 lunar-go `calendar/LunarMonth.go`。
 
-use crate::lunar_year::LunarYear;
 use crate::lunar_util;
+use crate::lunar_year::LunarYear;
 use crate::nine_star::NineStar;
 use crate::solar::Solar;
 
@@ -17,9 +17,7 @@ pub struct LunarMonth {
 }
 
 impl LunarMonth {
-    pub(crate) const fn new(
-        year: i32, month: i32, day_count: i32, first_julian_day: f64, index: i32,
-    ) -> Self {
+    pub(crate) const fn new(year: i32, month: i32, day_count: i32, first_julian_day: f64, index: i32) -> Self {
         let m = if month < 0 { -month } else { month };
         Self {
             year,
@@ -105,11 +103,7 @@ impl LunarMonth {
     }
     pub fn position_fu_by_sect(&self, sect: u8) -> &'static str {
         let offset = (self.gan_index() + 1) as usize;
-        if sect == 1 {
-            lunar_util::tables::POSITION_FU[offset]
-        } else {
-            lunar_util::tables::POSITION_FU_2[offset]
-        }
+        if sect == 1 { lunar_util::tables::POSITION_FU[offset] } else { lunar_util::tables::POSITION_FU_2[offset] }
     }
     pub fn position_fu_desc(&self) -> &'static str {
         self.position_fu_desc_by_sect(2)
@@ -133,9 +127,7 @@ impl LunarMonth {
             1 => "艮",
             3 => "坤",
             _ => {
-                let gan_index = Solar::from_julian_day(self.first_julian_day)
-                    .lunar()
-                    .month_gan_index();
+                let gan_index = Solar::from_julian_day(self.first_julian_day).lunar().month_gan_index();
                 lunar_util::tables::POSITION_GAN[gan_index as usize]
             }
         }

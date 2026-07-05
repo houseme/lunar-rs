@@ -51,11 +51,7 @@ pub fn get_jia_zi_index(gan_zhi: &str) -> i64 {
 
 /// 把整数格式化为 2 位大写十六进制（与 Go 的 `hex` 一致）。
 fn hex_str(n: i64) -> String {
-    let h = if n < 0 {
-        format!("{:x}", n)
-    } else {
-        format!("{:x}", n as u64)
-    };
+    let h = if n < 0 { format!("{:x}", n) } else { format!("{:x}", n as u64) };
     let h = if h.len() < 2 { format!("0{h}") } else { h };
     h.to_uppercase()
 }

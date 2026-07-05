@@ -51,7 +51,7 @@
     clippy::cast_sign_loss,
     clippy::cast_precision_loss,
     clippy::too_many_arguments,
-    clippy::needless_pass_by_value,
+    clippy::needless_pass_by_value
 )]
 
 mod error;
@@ -85,8 +85,8 @@ mod solar_year;
 mod tao;
 mod yun;
 
-pub use error::LunarError;
 pub use eight_char::EightChar;
+pub use error::LunarError;
 pub use foto::Foto;
 pub use fu::Fu;
 pub use holiday::Holiday;

@@ -10,14 +10,7 @@ use std::fmt;
 #[non_exhaustive]
 pub enum LunarError {
     /// 非法阳历字段（年 / 月 / 日 / 时 / 分 / 秒越界）。
-    InvalidSolar {
-        year: i32,
-        month: i32,
-        day: i32,
-        hour: i32,
-        minute: i32,
-        second: i32,
-    },
+    InvalidSolar { year: i32, month: i32, day: i32, hour: i32, minute: i32, second: i32 },
     /// 1582 历法改革中被删除的 10 天（1582-10-05 ~ 1582-10-14）。
     GregorianGap { year: i32, month: i32, day: i32 },
     /// 非法农历字段（年 / 月 / 日）。
@@ -33,33 +26,18 @@ pub enum LunarError {
 impl fmt::Display for LunarError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::InvalidSolar {
-                year,
-                month,
-                day,
-                hour,
-                minute,
-                second,
-            } => write!(
-                f,
-                "invalid solar date: {year}-{month}-{day} {hour}:{minute}:{second}"
-            ),
-            Self::GregorianGap { year, month, day } => write!(
-                f,
-                "date {year}-{month}-{day} does not exist (Gregorian reform gap)"
-            ),
+            Self::InvalidSolar { year, month, day, hour, minute, second } => {
+                write!(f, "invalid solar date: {year}-{month}-{day} {hour}:{minute}:{second}")
+            }
+            Self::GregorianGap { year, month, day } => {
+                write!(f, "date {year}-{month}-{day} does not exist (Gregorian reform gap)")
+            }
             Self::InvalidLunar { year, month, day } => {
                 write!(f, "invalid lunar date: {year}-{month}-{day}")
             }
-            Self::LunarDayOverflow {
-                year,
-                month,
-                day,
-                max,
-            } => write!(
-                f,
-                "lunar day {day} out of range: only {max} days in lunar {year}-{month}"
-            ),
+            Self::LunarDayOverflow { year, month, day, max } => {
+                write!(f, "lunar day {day} out of range: only {max} days in lunar {year}-{month}")
+            }
             Self::LeapMonthAbsent { year, month } => {
                 write!(f, "leap month {month} does not exist in lunar year {year}")
             }
