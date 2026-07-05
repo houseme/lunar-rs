@@ -29,21 +29,21 @@ pub static FESTIVAL: LazyLock<HashMap<&'static str, Vec<Vec<&'static str>>>> = L
     m.insert("1-9", vec![vec!["玉皇上帝圣诞"]]);
     m.insert("1-13", vec![vec!["关圣帝君飞升"]]);
     m.insert("1-15", vec![vec!["上元天官圣诞"], vec!["老祖天师圣诞"]]);
-    m.insert("1-19", vec![vec!["长春邱真人(邱处机)圣诞"]]);
-    m.insert("1-28", vec![vec!["许真君(许逊天师)圣诞"]]);
-    m.insert("2-1", vec![vec!["勾陈天皇大帝圣诞"], vec!["长春刘真人(刘渊然)圣诞"]]);
+    m.insert("1-19", vec![vec!["长春邱真人 (邱处机) 圣诞"]]);
+    m.insert("1-28", vec![vec!["许真君 (许逊天师) 圣诞"]]);
+    m.insert("2-1", vec![vec!["勾陈天皇大帝圣诞"], vec!["长春刘真人 (刘渊然) 圣诞"]]);
     m.insert("2-2", vec![vec!["土地正神诞"], vec!["姜太公圣诞"]]);
     m.insert("2-3", vec![vec!["文昌梓潼帝君圣诞"]]);
     m.insert("2-6", vec![vec!["东华帝君圣诞"]]);
     m.insert("2-13", vec![vec!["度人无量葛真君圣诞"]]);
-    m.insert("2-15", vec![vec!["太清道德天尊(太上老君)圣诞"]]);
+    m.insert("2-15", vec![vec!["太清道德天尊 (太上老君) 圣诞"]]);
     m.insert("2-19", vec![vec!["慈航真人圣诞"]]);
-    m.insert("3-1", vec![vec!["谭祖(谭处端)长真真人圣诞"]]);
+    m.insert("3-1", vec![vec!["谭祖 (谭处端) 长真真人圣诞"]]);
     m.insert("3-3", vec![vec!["玄天上帝圣诞"]]);
     m.insert("3-6", vec![vec!["眼光娘娘圣诞"]]);
     m.insert("3-15", vec![vec!["天师张大真人圣诞"], vec!["财神赵公元帅圣诞"]]);
     m.insert("3-16", vec![vec!["三茅真君得道之辰"], vec!["中岳大帝圣诞"]]);
-    m.insert("3-18", vec![vec!["王祖(王处一)玉阳真人圣诞"], vec!["后土娘娘圣诞"]]);
+    m.insert("3-18", vec![vec!["王祖 (王处一) 玉阳真人圣诞"], vec!["后土娘娘圣诞"]]);
     m.insert("3-19", vec![vec!["太阳星君圣诞"]]);
     m.insert("3-20", vec![vec!["子孙娘娘圣诞"]]);
     m.insert("3-23", vec![vec!["天后妈祖圣诞"]]);
@@ -71,7 +71,7 @@ pub static FESTIVAL: LazyLock<HashMap<&'static str, Vec<Vec<&'static str>>>> = L
     m.insert("6-6", vec![vec!["南斗星君下降"]]);
     m.insert("6-10", vec![vec!["刘海蟾祖师圣诞"]]);
     m.insert("6-15", vec![vec!["灵官王天君圣诞"]]);
-    m.insert("6-19", vec![vec!["慈航(观音)成道日"]]);
+    m.insert("6-19", vec![vec!["慈航 (观音) 成道日"]]);
     m.insert("6-23", vec![vec!["火神圣诞"]]);
     m.insert("6-24", vec![vec!["南极大帝中方雷祖圣诞"], vec!["关圣帝君圣诞"]]);
     m.insert("6-26", vec![vec!["二郎真君圣诞"]]);
@@ -79,7 +79,7 @@ pub static FESTIVAL: LazyLock<HashMap<&'static str, Vec<Vec<&'static str>>>> = L
     m.insert("7-12", vec![vec!["西方雷祖圣诞"]]);
     m.insert("7-15", vec![vec!["中元地官大帝圣诞"]]);
     m.insert("7-18", vec![vec!["王母娘娘圣诞"]]);
-    m.insert("7-20", vec![vec!["刘祖(刘处玄)长生真人圣诞"]]);
+    m.insert("7-20", vec![vec!["刘祖 (刘处玄) 长生真人圣诞"]]);
     m.insert("7-22", vec![vec!["财帛星君文财神增福相公李诡祖圣诞"]]);
     m.insert("7-26", vec![vec!["张三丰祖师圣诞"]]);
     m.insert("8-1", vec![vec!["许真君飞升日"]]);
@@ -105,7 +105,7 @@ pub static FESTIVAL: LazyLock<HashMap<&'static str, Vec<Vec<&'static str>>>> = L
     m.insert("10-15", vec![vec!["下元水官大帝圣诞"], vec!["建生大会", "此日下元解厄，水官同天地二官考校罪福"]]);
     m.insert("10-18", vec![vec!["地母娘娘圣诞"]]);
     m.insert("10-19", vec![vec!["长春邱真君飞升"]]);
-    m.insert("10-20", vec![vec!["虚靖天师(即三十代天师弘悟张真人)诞"]]);
+    m.insert("10-20", vec![vec!["虚靖天师 (即三十代天师弘悟张真人) 诞"]]);
     m.insert("11-6", vec![vec!["西岳大帝圣诞"]]);
     m.insert("11-9", vec![vec!["湘子韩祖圣诞"]]);
     m.insert("11-11", vec![vec!["太乙救苦天尊圣诞"]]);
@@ -117,6 +117,6 @@ pub static FESTIVAL: LazyLock<HashMap<&'static str, Vec<Vec<&'static str>>>> = L
     m.insert("12-22", vec![vec!["重阳祖师圣诞"]]);
     m.insert("12-23", vec![vec!["祭灶王", "最适宜谢旧年太岁，开启拜新年太岁"]]);
     m.insert("12-25", vec![vec!["玉帝巡天"], vec!["天神下降"]]);
-    m.insert("12-29", vec![vec!["清静孙真君(孙不二)成道"]]);
+    m.insert("12-29", vec![vec!["清静孙真君 (孙不二) 成道"]]);
     m
 });

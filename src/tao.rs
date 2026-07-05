@@ -20,36 +20,56 @@ impl TaoFestival {
     pub(crate) fn new(name: &str, remark: &str) -> Self {
         Self { name: name.to_string(), remark: remark.to_string() }
     }
-    pub fn name(&self) -> &str { &self.name }
-    pub fn remark(&self) -> &str { &self.remark }
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+    pub fn remark(&self) -> &str {
+        &self.remark
+    }
 }
 
 impl fmt::Display for TaoFestival {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if self.remark.is_empty() {
-            write!(f, "{}", self.name)
-        } else {
-            write!(f, "{} {}", self.name, self.remark)
-        }
+        if self.remark.is_empty() { write!(f, "{}", self.name) } else { write!(f, "{} {}", self.name, self.remark) }
     }
 }
 
 /// 道历。借用底层 [`Lunar`]。
-pub struct Tao<'a> { lunar: &'a Lunar }
+pub struct Tao<'a> {
+    lunar: &'a Lunar,
+}
 
 impl<'a> Tao<'a> {
-    pub(crate) fn from_lunar(lunar: &'a Lunar) -> Self { Self { lunar } }
+    pub(crate) fn from_lunar(lunar: &'a Lunar) -> Self {
+        Self { lunar }
+    }
 
-    pub const fn lunar(&self) -> &Lunar { self.lunar }
-    pub const fn year(&self) -> i32 { self.lunar.year() - BIRTH_YEAR }
-    pub const fn month(&self) -> i32 { self.lunar.month() }
-    pub const fn day(&self) -> i32 { self.lunar.day() }
+    pub const fn lunar(&self) -> &Lunar {
+        self.lunar
+    }
+    pub const fn year(&self) -> i32 {
+        self.lunar.year() - BIRTH_YEAR
+    }
+    pub const fn month(&self) -> i32 {
+        self.lunar.month()
+    }
+    pub const fn day(&self) -> i32 {
+        self.lunar.day()
+    }
 
     pub fn year_in_chinese(&self) -> String {
-        self.year().to_string().chars().map(|c| lunar_util::tables::NUMBER[c.to_digit(10).unwrap_or(0) as usize]).collect()
+        self.year()
+            .to_string()
+            .chars()
+            .map(|c| lunar_util::tables::NUMBER[c.to_digit(10).unwrap_or(0) as usize])
+            .collect()
     }
-    pub fn month_in_chinese(&self) -> String { self.lunar.month_in_chinese() }
-    pub fn day_in_chinese(&self) -> &'static str { self.lunar.day_in_chinese() }
+    pub fn month_in_chinese(&self) -> String {
+        self.lunar.month_in_chinese()
+    }
+    pub fn day_in_chinese(&self) -> &'static str {
+        self.lunar.day_in_chinese()
+    }
 
     pub fn festivals(&self) -> Vec<TaoFestival> {
         let key = format!("{}-{}", self.month(), self.day());
@@ -79,17 +99,31 @@ impl<'a> Tao<'a> {
         let k = format!("{}-{}", self.month(), self.day());
         days.iter().any(|x| *x == k)
     }
-    pub fn is_day_san_hui(&self) -> bool { self.is_day_in(tao_util::SAN_HUI) }
-    pub fn is_day_san_yuan(&self) -> bool { self.is_day_in(tao_util::SAN_YUAN) }
-    pub fn is_day_wu_la(&self) -> bool { self.is_day_in(tao_util::WU_LA) }
-    pub fn is_day_ba_jie(&self) -> bool { tao_util::BA_JIE.contains_key(self.lunar.jie_qi()) }
-    pub fn is_day_ba_hui(&self) -> bool { tao_util::BA_HUI.contains_key(self.lunar.day_in_gan_zhi().as_str()) }
-    pub fn is_day_ming_wu(&self) -> bool { self.lunar.day_gan() == "戊" }
+    pub fn is_day_san_hui(&self) -> bool {
+        self.is_day_in(tao_util::SAN_HUI)
+    }
+    pub fn is_day_san_yuan(&self) -> bool {
+        self.is_day_in(tao_util::SAN_YUAN)
+    }
+    pub fn is_day_wu_la(&self) -> bool {
+        self.is_day_in(tao_util::WU_LA)
+    }
+    pub fn is_day_ba_jie(&self) -> bool {
+        tao_util::BA_JIE.contains_key(self.lunar.jie_qi())
+    }
+    pub fn is_day_ba_hui(&self) -> bool {
+        tao_util::BA_HUI.contains_key(self.lunar.day_in_gan_zhi().as_str())
+    }
+    pub fn is_day_ming_wu(&self) -> bool {
+        self.lunar.day_gan() == "戊"
+    }
     pub fn is_day_an_wu(&self) -> bool {
         let m = self.month().abs() as usize;
         tao_util::AN_WU.get(m - 1).copied().unwrap_or("") == self.lunar.day_zhi()
     }
-    pub fn is_day_wu(&self) -> bool { self.is_day_ming_wu() || self.is_day_an_wu() }
+    pub fn is_day_wu(&self) -> bool {
+        self.is_day_ming_wu() || self.is_day_an_wu()
+    }
 
     pub fn to_string_cn(&self) -> String {
         format!("{}年{}月{}", self.year_in_chinese(), self.month_in_chinese(), self.day_in_chinese())
