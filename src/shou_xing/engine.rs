@@ -76,11 +76,15 @@ fn decode(s: &str) -> String {
 }
 
 static QB: LazyLock<String> = LazyLock::new(|| {
-    decode("FrcFs22AFsckF2tsDtFqEtF1posFdFgiFseFtmelpsEfhkF2anmelpFlF1ikrotcnEqEq2FfqmcDsrFor22FgFrcgDscFs22FgEeFtE2sfFs22sCoEsaF2tsD1FpeE2eFsssEciFsFnmelpFcFhkF2tcnEqEpFgkrotcnEqrEtFermcDsrE222FgBmcmr22DaEfnaF222sD1FpeForeF2tssEfiFpEoeFssD1iFstEqFppDgFstcnEqEpFg11FscnEqrAoAF2ClAEsDmDtCtBaDlAFbAEpAAAAAD2FgBiBqoBbnBaBoAAAAAAAEgDqAdBqAFrBaBoACdAAf1AACgAAAeBbCamDgEifAE2AABa1C1BgFdiAAACoCeE1ADiEifDaAEqAAFe1AcFbcAAAAAF1iFaAAACpACmFmAAAAAAAACrDaAAADG0")
+    decode(
+        "FrcFs22AFsckF2tsDtFqEtF1posFdFgiFseFtmelpsEfhkF2anmelpFlF1ikrotcnEqEq2FfqmcDsrFor22FgFrcgDscFs22FgEeFtE2sfFs22sCoEsaF2tsD1FpeE2eFsssEciFsFnmelpFcFhkF2tcnEqEpFgkrotcnEqrEtFermcDsrE222FgBmcmr22DaEfnaF222sD1FpeForeF2tssEfiFpEoeFssD1iFstEqFppDgFstcnEqEpFg11FscnEqrAoAF2ClAEsDmDtCtBaDlAFbAEpAAAAAD2FgBiBqoBbnBaBoAAAAAAAEgDqAdBqAFrBaBoACdAAf1AACgAAAeBbCamDgEifAE2AABa1C1BgFdiAAACoCeE1ADiEifDaAEqAAFe1AcFbcAAAAAF1iFaAAACpACmFmAAAAAAAACrDaAAADG0",
+    )
 });
 
 static SB: LazyLock<String> = LazyLock::new(|| {
-    decode("EqoFscDcrFpmEsF2DfFideFelFpFfFfFiaipqti1ksttikptikqckstekqttgkqttgkqteksttikptikq2fjstgjqttjkqttgkqtekstfkptikq2tijstgjiFkirFsAeACoFsiDaDiADc1AFbBfgdfikijFifegF1FhaikgFag1E2btaieeibggiffdeigFfqDfaiBkF1kEaikhkigeidhhdiegcFfakF1ggkidbiaedksaFffckekidhhdhdikcikiakicjF1deedFhFccgicdekgiFbiaikcfi1kbFibefgEgFdcFkFeFkdcfkF1kfkcickEiFkDacFiEfbiaejcFfffkhkdgkaiei1ehigikhdFikfckF1dhhdikcfgjikhfjicjicgiehdikcikggcifgiejF1jkieFhegikggcikFegiegkfjebhigikggcikdgkaFkijcfkcikfkcifikiggkaeeigefkcdfcfkhkdgkegieidhijcFfakhfgeidieidiegikhfkfckfcjbdehdikggikgkfkicjicjF1dbidikFiggcifgiejkiegkigcdiegfggcikdbgfgefjF1kfegikggcikdgFkeeijcfkcikfkekcikdgkabhkFikaffcfkhkdgkegbiaekfkiakicjhfgqdq2fkiakgkfkhfkfcjiekgFebicggbedF1jikejbbbiakgbgkacgiejkijjgigfiakggfggcibFifjefjF1kfekdgjcibFeFkijcfkfhkfkeaieigekgbhkfikidfcjeaibgekgdkiffiffkiakF1jhbakgdki1dj1ikfkicjicjieeFkgdkicggkighdF1jfgkgfgbdkicggfggkidFkiekgijkeigfiskiggfaidheigF1jekijcikickiggkidhhdbgcfkFikikhkigeidieFikggikhkffaffijhidhhakgdkhkijF1kiakF1kfheakgdkifiggkigicjiejkieedikgdfcggkigieeiejfgkgkigbgikicggkiaideeijkefjeijikhkiggkiaidheigcikaikffikijgkiahi1hhdikgjfifaakekighie1hiaikggikhkffakicjhiahaikggikhkijF1kfejfeFhidikggiffiggkigicjiekgieeigikggiffiggkidheigkgfjkeigiegikifiggkidhedeijcfkFikikhkiggkidhh1ehigcikaffkhkiggkidhh1hhigikekfiFkFikcidhh1hitcikggikhkfkicjicghiediaikggikhkijbjfejfeFhaikggifikiggkigiejkikgkgieeigikggiffiggkigieeigekijcijikggifikiggkideedeijkefkfckikhkiggkidhh1ehijcikaffkhkiggkidhh1hhigikhkikFikfckcidhh1hiaikgjikhfjicjicgiehdikcikggifikigiejfejkieFhegikggifikiggfghigkfjeijkhigikggifikiggkigieeijcijcikfksikifikiggkidehdeijcfdckikhkiggkhghh1ehijikifffffkhsFngErD1pAfBoDd1BlEtFqA2AqoEpDqElAEsEeB2BmADlDkqBtC1FnEpDqnEmFsFsAFnllBbFmDsDiCtDmAB2BmtCgpEplCpAEiBiEoFqFtEqsDcCnFtADnFlEgdkEgmEtEsCtDmADqFtAFrAtEcCqAE1BoFqC1F1DrFtBmFtAC2ACnFaoCgADcADcCcFfoFtDlAFgmFqBq2bpEoAEmkqnEeCtAE1bAEqgDfFfCrgEcBrACfAAABqAAB1AAClEnFeCtCgAADqDoBmtAAACbFiAAADsEtBqAB2FsDqpFqEmFsCeDtFlCeDtoEpClEqAAFrAFoCgFmFsFqEnAEcCqFeCtFtEnAEeFtAAEkFnErAABbFkADnAAeCtFeAfBoAEpFtAABtFqAApDcCGJ")
+    decode(
+        "EqoFscDcrFpmEsF2DfFideFelFpFfFfFiaipqti1ksttikptikqckstekqttgkqttgkqteksttikptikq2fjstgjqttjkqttgkqtekstfkptikq2tijstgjiFkirFsAeACoFsiDaDiADc1AFbBfgdfikijFifegF1FhaikgFag1E2btaieeibggiffdeigFfqDfaiBkF1kEaikhkigeidhhdiegcFfakF1ggkidbiaedksaFffckekidhhdhdikcikiakicjF1deedFhFccgicdekgiFbiaikcfi1kbFibefgEgFdcFkFeFkdcfkF1kfkcickEiFkDacFiEfbiaejcFfffkhkdgkaiei1ehigikhdFikfckF1dhhdikcfgjikhfjicjicgiehdikcikggcifgiejF1jkieFhegikggcikFegiegkfjebhigikggcikdgkaFkijcfkcikfkcifikiggkaeeigefkcdfcfkhkdgkegieidhijcFfakhfgeidieidiegikhfkfckfcjbdehdikggikgkfkicjicjF1dbidikFiggcifgiejkiegkigcdiegfggcikdbgfgefjF1kfegikggcikdgFkeeijcfkcikfkekcikdgkabhkFikaffcfkhkdgkegbiaekfkiakicjhfgqdq2fkiakgkfkhfkfcjiekgFebicggbedF1jikejbbbiakgbgkacgiejkijjgigfiakggfggcibFifjefjF1kfekdgjcibFeFkijcfkfhkfkeaieigekgbhkfikidfcjeaibgekgdkiffiffkiakF1jhbakgdki1dj1ikfkicjicjieeFkgdkicggkighdF1jfgkgfgbdkicggfggkidFkiekgijkeigfiskiggfaidheigF1jekijcikickiggkidhhdbgcfkFikikhkigeidieFikggikhkffaffijhidhhakgdkhkijF1kiakF1kfheakgdkifiggkigicjiejkieedikgdfcggkigieeiejfgkgkigbgikicggkiaideeijkefjeijikhkiggkiaidheigcikaikffikijgkiahi1hhdikgjfifaakekighie1hiaikggikhkffakicjhiahaikggikhkijF1kfejfeFhidikggiffiggkigicjiekgieeigikggiffiggkidheigkgfjkeigiegikifiggkidhedeijcfkFikikhkiggkidhh1ehigcikaffkhkiggkidhh1hhigikekfiFkFikcidhh1hitcikggikhkfkicjicghiediaikggikhkijbjfejfeFhaikggifikiggkigiejkikgkgieeigikggiffiggkigieeigekijcijikggifikiggkideedeijkefkfckikhkiggkidhh1ehijcikaffkhkiggkidhh1hhigikhkikFikfckcidhh1hiaikgjikhfjicjicgiehdikcikggifikigiejfejkieFhegikggifikiggfghigkfjeijkhigikggifikiggkigieeijcijcikfksikifikiggkidehdeijcfdckikhkiggkhghh1ehijikifffffkhsFngErD1pAfBoDd1BlEtFqA2AqoEpDqElAEsEeB2BmADlDkqBtC1FnEpDqnEmFsFsAFnllBbFmDsDiCtDmAB2BmtCgpEplCpAEiBiEoFqFtEqsDcCnFtADnFlEgdkEgmEtEsCtDmADqFtAFrAtEcCqAE1BoFqC1F1DrFtBmFtAC2ACnFaoCgADcADcCcFfoFtDlAFgmFqBq2bpEoAEmkqnEeCtAE1bAEqgDfFfCrgEcBrACfAAABqAAB1AAClEnFeCtCgAADqDoBmtAAACbFiAAADsEtBqAB2FsDqpFqEmFsCeDtFlCeDtoEpClEqAAFrAFoCgFmFsFqEnAEcCqFeCtFtEnAEeFtAAEkFnErAABbFkADnAAeCtFeAfBoAEpFtAABtFqAApDcCGJ",
+    )
 });
 
 /// 黄经章动。对应 Go `nutationLon2`：变量 `a` 仅首项为 `-1.742*t`，其后归 0。
@@ -149,10 +153,8 @@ fn m_lon(t: f64, n: i64) -> f64 {
     let t4 = t3 * t;
     let t5 = t4 * t;
     let tx = t - 10.0;
-    v += (3.810_344_09 + 8399.684_730_072 * t - 3.319e-05 * t2 + 3.11e-08 * t3 - 2.033e-10 * t4)
-        * SECOND_PER_RAD;
-    v += 5028.792_262 * t + 1.112_440_6 * t2 + 0.000_076_99 * t3 - 0.000_023_479 * t4
-        - 0.000_000_017_8 * t5;
+    v += (3.810_344_09 + 8399.684_730_072 * t - 3.319e-05 * t2 + 3.11e-08 * t3 - 2.033e-10 * t4) * SECOND_PER_RAD;
+    v += 5028.792_262 * t + 1.112_440_6 * t2 + 0.000_076_99 * t3 - 0.000_023_479 * t4 - 0.000_000_017_8 * t5;
     if tx > 0.0 {
         v += -0.866 + 1.43 * tx + 0.054 * tx * tx;
     }
@@ -200,7 +202,9 @@ fn gxc_sun_lon(t: f64) -> f64 {
 
 fn ev(t: f64) -> f64 {
     let f = 628.307_585 * t;
-    628.332 + 21.0 * (1.527 + f).sin() + 0.44 * (1.48 + f * 2.0).sin()
+    628.332
+        + 21.0 * (1.527 + f).sin()
+        + 0.44 * (1.48 + f * 2.0).sin()
         + 0.129 * (5.82 + f).sin() * t
         + 0.000_55 * (4.21 + f).sin() * t * t
 }
@@ -288,11 +292,11 @@ fn msa_lon_t(w: f64) -> f64 {
 fn sa_lon_t2(w: f64) -> f64 {
     let v = 628.331_965_331_8;
     let mut t = (w - 1.75347 - PI) / v;
-    t -= (0.000_005_297 * t * t + 0.033_416_6 * (4.669_257 + 628.307_585 * t).cos()
+    t -= (0.000_005_297 * t * t
+        + 0.033_416_6 * (4.669_257 + 628.307_585 * t).cos()
         + 0.000_206_1 * (2.678_23 + 628.307_585 * t).cos() * t)
         / v;
-    t += (w - e_lon(t, 8) - PI + (20.5 + 17.2 * (2.1824 - 33.757_05 * t).sin()) / SECOND_PER_RAD)
-        / v;
+    t += (w - e_lon(t, 8) - PI + (20.5 + 17.2 * (2.1824 - 33.757_05 * t).sin()) / SECOND_PER_RAD) / v;
     t
 }
 
@@ -300,18 +304,22 @@ fn msa_lon_t2(w: f64) -> f64 {
     let v = 7771.377_145_002_04;
     let mut t = (w + 1.08472) / v;
     let mut t2 = t * t;
-    t -= (-0.000_033_09 * t2 + 0.109_76 * (0.784_758 + 8328.691_424_6 * t + 0.000_152_292 * t2).sin()
+    t -= (-0.000_033_09 * t2
+        + 0.109_76 * (0.784_758 + 8328.691_424_6 * t + 0.000_152_292 * t2).sin()
         + 0.022_24 * (0.187_40 + 7214.062_865_4 * t - 0.000_218_48 * t2).sin()
         - 0.033_42 * (4.669_257 + 628.307_585 * t).cos())
         / v;
     t2 = t * t;
     let l = m_lon(t, 20)
-        - (4.895_063_2 + 628.331_965_331_8 * t + 0.000_005_297 * t2
+        - (4.895_063_2
+            + 628.331_965_331_8 * t
+            + 0.000_005_297 * t2
             + 0.033_416_6 * (4.669_257 + 628.307_585 * t).cos()
             + 0.000_206_1 * (2.678_23 + 628.307_585 * t).cos() * t
             + 0.000_349 * (4.6261 + 1256.61517 * t).cos()
             - 20.5 / SECOND_PER_RAD);
-    let v = 7771.38 - 914.0 * (0.7848 + 8328.691_425 * t + 0.000_152_3 * t2).sin()
+    let v = 7771.38
+        - 914.0 * (0.7848 + 8328.691_425 * t + 0.000_152_3 * t2).sin()
         - 179.0 * (2.543 + 15542.7543 * t).sin()
         - 160.0 * (0.1874 + 7214.0629 * t).sin();
     t += (w - l) / v;
@@ -341,26 +349,25 @@ fn shuo_high(w: f64) -> f64 {
 fn qi_low(w: f64) -> f64 {
     let v = 628.331_965_331_8;
     let mut t = (w - 4.895_062_166) / v;
-    t -= (53.0 * t * t + 334_116.0 * (4.67 + 628.307_585 * t).cos()
-        + 2061.0 * (2.678 + 628.3076 * t).cos() * t)
+    t -= (53.0 * t * t + 334_116.0 * (4.67 + 628.307_585 * t).cos() + 2061.0 * (2.678 + 628.3076 * t).cos() * t)
         / v
         / 10_000_000.0;
-    let n = 48_950_621.66 + 6_283_319_653.318 * t + 53.0 * t * t
+    let n = 48_950_621.66
+        + 6_283_319_653.318 * t
+        + 53.0 * t * t
         + 334_166.0 * (4.669_257 + 628.307_585 * t).cos()
         + 3489.0 * (4.6261 + 1256.61517 * t).cos()
         + 2060.6 * (2.678_23 + 628.307_585 * t).cos() * t
         - 994.0
         - 834.0 * (2.1824 - 33.757_05 * t).sin();
-    t -= (n / 10_000_000.0 - w) / 628.332
-        + (32.0 * (t + 1.8) * (t + 1.8) - 20.0) / SECOND_PER_DAY / 36525.0;
+    t -= (n / 10_000_000.0 - w) / 628.332 + (32.0 * (t + 1.8) * (t + 1.8) - 20.0) / SECOND_PER_DAY / 36525.0;
     t * 36525.0 + ONE_THIRD
 }
 
 fn shuo_low(w: f64) -> f64 {
     let v = 7771.377_145_002_04;
     let mut t = (w + 1.08472) / v;
-    t -= (-0.000_033_1 * t * t + 0.109_76 * (0.785 + 8328.691 * t).cos()
-        + 0.022_24 * (0.187 + 7214.0629 * t).cos()
+    t -= (-0.000_033_1 * t * t + 0.109_76 * (0.785 + 8328.691 * t).cos() + 0.022_24 * (0.187 + 7214.0629 * t).cos()
         - 0.033_42 * (4.669 + 628.3076 * t).cos())
         / v
         + (32.0 * (t + 1.8) * (t + 1.8) - 20.0) / SECOND_PER_DAY / 36525.0;
