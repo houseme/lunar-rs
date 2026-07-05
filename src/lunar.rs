@@ -1027,8 +1027,14 @@ impl Lunar {
         lunar_util::tables::ZHI_XING[(offset + 1) as usize]
     }
     pub fn xiu(&self) -> &'static str {
-        let key = format!("{}{}", self.day_zhi(), self.week_index);
-        lunar_util::xiu(&key)
+        // 查找键为 `{dayZhi}{week}`（如 "戌3"）；表键可能被 CJK 排版工具写作 "戌 3"，故两种都试。
+        let k0 = format!("{}{}", self.day_zhi(), self.week_index);
+        let v = lunar_util::xiu(&k0);
+        if !v.is_empty() {
+            return v;
+        }
+        let k1 = format!("{} {}", self.day_zhi(), self.week_index);
+        lunar_util::xiu(&k1)
     }
     pub fn xiu_luck(&self) -> &'static str {
         lunar_util::xiu_luck(self.xiu())
