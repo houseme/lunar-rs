@@ -57,6 +57,8 @@
 #[doc(hidden)]
 pub mod differential_support;
 mod error;
+#[cfg(feature = "i18n")]
+pub mod i18n;
 mod shou_xing;
 pub mod solar_util;
 
@@ -92,6 +94,8 @@ pub use error::LunarError;
 pub use foto::Foto;
 pub use fu::Fu;
 pub use holiday::Holiday;
+#[cfg(feature = "i18n")]
+pub use i18n::Language;
 pub use jieqi::JieQi;
 pub use lunar::Lunar;
 pub use lunar_month::LunarMonth;

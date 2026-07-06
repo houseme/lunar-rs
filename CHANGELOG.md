@@ -92,6 +92,8 @@ and this project uses semantic versioning once releases are published.
   stable solar snapshot protocol used by the ignored diff suite.
 - Added `scripts/run_differential_self_check.sh` to exercise the ignored diff
   suite against the in-repo sample driver.
+- Added an initial `i18n` feature implementation with explicit language-aware
+  helpers for weekday, constellation, JieQi, ShengXiao, and GanZhi output.
 - Added English and Chinese README documentation.
 
 ### Changed

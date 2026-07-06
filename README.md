@@ -31,6 +31,8 @@ avoid third-party runtime dependencies.
   `Lunar::tao()`.
 - Runtime holiday data override hooks via `holiday_util::set_holidays(...)`,
   `set_holiday_data(...)`, and `reset_holidays()`.
+- Experimental explicit-language helpers behind the `i18n` feature for weekday,
+  constellation, JieQi, ShengXiao, and GanZhi translation.
 - Optional `serde` support for owned core calendar data types behind the
   `serde` feature.
 - The default build keeps zero third-party runtime dependencies; optional
@@ -144,6 +146,7 @@ cargo check
 cargo test
 cargo bench --bench convert
 cargo run --bin lunar_ref_driver -- solar 2024 4 22 23 30 0
+cargo test --features i18n
 ```
 
 Current local validation:

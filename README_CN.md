@@ -23,6 +23,8 @@
 - 可通过 `Lunar::foto()` 与 `Lunar::tao()` 获取佛历、道历模型。
 - 提供 `holiday_util::set_holidays(...)`、`set_holiday_data(...)`、
   `reset_holidays()` 等法定节假日运行时覆盖接口。
+- 提供基于 `i18n` feature 的显式语言辅助方法，可翻译星期、星座、节气、
+  生肖与干支。
 - 提供可选 `serde` feature，为核心拥有所有权的数据类型提供序列化支持。
 - 默认构建下 `[dependencies]` 仍保持零第三方运行时依赖；可选 feature
   可按需开启额外集成能力。
@@ -135,6 +137,7 @@ cargo check
 cargo test
 cargo bench --bench convert
 cargo run --bin lunar_ref_driver -- solar 2024 4 22 23 30 0
+cargo test --features i18n
 ```
 
 当前本地验证结果：

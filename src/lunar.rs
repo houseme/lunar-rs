@@ -474,6 +474,10 @@ impl Lunar {
     pub fn year_in_gan_zhi(&self) -> String {
         format!("{}{}", self.year_gan(), self.year_zhi())
     }
+    #[cfg(feature = "i18n")]
+    pub fn year_in_gan_zhi_in_lang(&self, language: crate::i18n::Language) -> String {
+        crate::i18n::ganzhi(self.year_gan(), self.year_zhi(), language)
+    }
     pub fn year_in_gan_zhi_by_li_chun(&self) -> String {
         format!("{}{}", self.year_gan_by_li_chun(), self.year_zhi_by_li_chun())
     }
@@ -495,6 +499,10 @@ impl Lunar {
     }
     pub fn month_in_gan_zhi(&self) -> String {
         format!("{}{}", self.month_gan(), self.month_zhi())
+    }
+    #[cfg(feature = "i18n")]
+    pub fn month_in_gan_zhi_in_lang(&self, language: crate::i18n::Language) -> String {
+        crate::i18n::ganzhi(self.month_gan(), self.month_zhi(), language)
     }
     pub fn month_in_gan_zhi_exact(&self) -> String {
         format!("{}{}", self.month_gan_exact(), self.month_zhi_exact())
@@ -521,6 +529,10 @@ impl Lunar {
     pub fn day_in_gan_zhi(&self) -> String {
         format!("{}{}", self.day_gan(), self.day_zhi())
     }
+    #[cfg(feature = "i18n")]
+    pub fn day_in_gan_zhi_in_lang(&self, language: crate::i18n::Language) -> String {
+        crate::i18n::ganzhi(self.day_gan(), self.day_zhi(), language)
+    }
     pub fn day_in_gan_zhi_exact(&self) -> String {
         format!("{}{}", self.day_gan_exact(), self.day_zhi_exact())
     }
@@ -536,6 +548,10 @@ impl Lunar {
     }
     pub fn time_in_gan_zhi(&self) -> String {
         format!("{}{}", self.time_gan(), self.time_zhi())
+    }
+    #[cfg(feature = "i18n")]
+    pub fn time_in_gan_zhi_in_lang(&self, language: crate::i18n::Language) -> String {
+        crate::i18n::ganzhi(self.time_gan(), self.time_zhi(), language)
     }
 
     // ---- 纳音 ----
@@ -556,6 +572,10 @@ impl Lunar {
     pub fn year_sheng_xiao(&self) -> &'static str {
         lunar_util::tables::SHENG_XIAO[(self.year_zhi_index + 1) as usize]
     }
+    #[cfg(feature = "i18n")]
+    pub fn year_sheng_xiao_in_lang(&self, language: crate::i18n::Language) -> &'static str {
+        crate::i18n::sheng_xiao(self.year_sheng_xiao(), language)
+    }
     pub fn year_sheng_xiao_by_li_chun(&self) -> &'static str {
         lunar_util::tables::SHENG_XIAO[(self.year_zhi_index_by_li_chun + 1) as usize]
     }
@@ -565,11 +585,23 @@ impl Lunar {
     pub fn month_sheng_xiao(&self) -> &'static str {
         lunar_util::tables::SHENG_XIAO[(self.month_zhi_index + 1) as usize]
     }
+    #[cfg(feature = "i18n")]
+    pub fn month_sheng_xiao_in_lang(&self, language: crate::i18n::Language) -> &'static str {
+        crate::i18n::sheng_xiao(self.month_sheng_xiao(), language)
+    }
     pub fn day_sheng_xiao(&self) -> &'static str {
         lunar_util::tables::SHENG_XIAO[(self.day_zhi_index + 1) as usize]
     }
+    #[cfg(feature = "i18n")]
+    pub fn day_sheng_xiao_in_lang(&self, language: crate::i18n::Language) -> &'static str {
+        crate::i18n::sheng_xiao(self.day_sheng_xiao(), language)
+    }
     pub fn time_sheng_xiao(&self) -> &'static str {
         lunar_util::tables::SHENG_XIAO[(self.time_zhi_index + 1) as usize]
+    }
+    #[cfg(feature = "i18n")]
+    pub fn time_sheng_xiao_in_lang(&self, language: crate::i18n::Language) -> &'static str {
+        crate::i18n::sheng_xiao(self.time_sheng_xiao(), language)
     }
 
     // ---- 中文表示 ----
@@ -1092,6 +1124,15 @@ impl Lunar {
     }
     pub const fn week_in_chinese(&self) -> &'static str {
         solar_util::WEEK[self.week_index as usize]
+    }
+    #[cfg(feature = "i18n")]
+    pub fn week_in_lang(&self, language: crate::i18n::Language) -> &'static str {
+        crate::i18n::week(self.week_in_chinese(), language)
+    }
+
+    #[cfg(feature = "i18n")]
+    pub fn jie_qi_in_lang(&self, language: crate::i18n::Language) -> &'static str {
+        crate::i18n::jieqi(self.jie_qi(), language)
     }
 
     // ---- 旬 / 空亡 ----

@@ -22,4 +22,10 @@ impl JieQi {
     pub const fn solar(&self) -> Solar {
         self.solar
     }
+
+    /// 节气名称（显式语言版本，需启用 `i18n` feature）。
+    #[cfg(feature = "i18n")]
+    pub fn name_in_lang(&self, language: crate::i18n::Language) -> &'static str {
+        crate::i18n::jieqi(self.name(), language)
+    }
 }

@@ -157,6 +157,12 @@ impl Solar {
         solar_util::WEEK[self.week() as usize]
     }
 
+    /// 星期几（显式语言版本，需启用 `i18n` feature）。
+    #[cfg(feature = "i18n")]
+    pub fn week_in_lang(&self, language: crate::i18n::Language) -> &'static str {
+        crate::i18n::week(self.week_in_chinese(), language)
+    }
+
     /// 星座。
     pub fn xing_zuo(&self) -> &'static str {
         let m = self.month;
@@ -188,6 +194,12 @@ impl Solar {
             11
         };
         solar_util::XINGZUO[index]
+    }
+
+    /// 星座（显式语言版本，需启用 `i18n` feature）。
+    #[cfg(feature = "i18n")]
+    pub fn xing_zuo_in_lang(&self, language: crate::i18n::Language) -> &'static str {
+        crate::i18n::constellation(self.xing_zuo(), language)
     }
 
     /// 儒略日。
