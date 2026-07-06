@@ -16,6 +16,8 @@ fn solar_events_include_festivals_and_jieqi() {
     assert_eq!(festival.priority(), 30);
     assert_eq!(festival.source_id(), Some("solar-festival:2022-03-28:全国中小学生安全教育日"));
     assert!(festival.is_observed());
+    assert!(festival.is_primary());
+    assert!(festival.has_tag("festival"));
 
     let solar = Solar::from_ymd(2021, 12, 21).unwrap();
     let events = solar.events();
@@ -26,6 +28,8 @@ fn solar_events_include_festivals_and_jieqi() {
     assert!(jieqi.detail().is_some_and(|detail| detail.starts_with("at=2021-12-21")));
     assert_eq!(jieqi.priority(), 10);
     assert!(jieqi.is_observed());
+    assert!(jieqi.is_primary());
+    assert!(jieqi.has_tag("seasonal"));
 }
 
 #[test]
@@ -57,6 +61,8 @@ fn holiday_events_include_detail() {
     assert_eq!(holiday.priority(), 20);
     assert_eq!(holiday.source_id(), Some("holiday:2024-01-01:元旦节"));
     assert!(holiday.is_observed());
+    assert!(holiday.is_primary());
+    assert!(holiday.has_tag("day_off"));
 }
 
 #[test]
@@ -75,6 +81,8 @@ fn foto_events_are_exposed_through_unified_model() {
         assert_eq!(event.priority(), 70);
         assert!(event.source_id().is_some());
         assert!(event.is_observed());
+        assert!(event.is_primary());
+        assert!(event.has_tag("foto"));
     }
 }
 
@@ -94,6 +102,8 @@ fn tao_events_are_exposed_through_unified_model() {
         assert_eq!(event.priority(), 90);
         assert!(event.source_id().is_some());
         assert!(event.is_observed());
+        assert!(event.is_primary());
+        assert!(event.has_tag("tao"));
     }
 }
 
@@ -153,6 +163,9 @@ fn event_query_filters_by_kind_and_source() {
         .find_events(&EventQuery::new().with_source(EventSource::HolidayData));
     assert!(!holiday_events.is_empty());
     assert!(holiday_events.iter().all(|event| matches!(event.source(), EventSource::HolidayData)));
+
+    let primary_events = solar.find_events(&EventQuery::new().with_is_primary(true));
+    assert!(primary_events.iter().all(|event| event.is_primary()));
 }
 
 #[test]
@@ -165,6 +178,9 @@ fn event_query_filters_by_calendar_and_detail() {
     let foto = lunar.foto();
     let detail_events = foto.find_events(&EventQuery::new().with_detail_contains("犯者"));
     assert!(detail_events.iter().all(|event| event.detail().is_some_and(|detail| detail.contains("犯者"))));
+
+    let tagged_events = foto.find_events(&EventQuery::new().with_tag("festival"));
+    assert!(tagged_events.iter().all(|event| event.has_tag("festival")));
 }
 
 #[test]

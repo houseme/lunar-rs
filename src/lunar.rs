@@ -879,6 +879,8 @@ impl Lunar {
                 50,
                 Some(format!("lunar-festival:{}:{}", self.solar.to_ymd(), name)),
                 true,
+                true,
+                vec!["lunar".to_string(), "festival".to_string(), "built_in_festival".to_string()],
             ));
         }
         for name in self.other_festivals() {
@@ -892,6 +894,8 @@ impl Lunar {
                 60,
                 Some(format!("lunar-other:{}:{}", self.solar.to_ymd(), name)),
                 true,
+                false,
+                vec!["lunar".to_string(), "other_festival".to_string(), "built_in_other_festival".to_string()],
             ));
         }
         if let Some(jieqi) = self.current_jie_qi() {

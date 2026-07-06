@@ -48,6 +48,19 @@ impl Holiday {
             20,
             Some(format!("holiday:{}:{}", self.day(), self.name())),
             !self.work,
+            true,
+            vec![
+                "holiday".to_string(),
+                "observance".to_string(),
+                if self.work { "workday_remap".to_string() } else { "day_off".to_string() },
+                match calendar_kind {
+                    CalendarKind::Solar => "solar",
+                    CalendarKind::Lunar => "lunar",
+                    CalendarKind::Foto => "foto",
+                    CalendarKind::Tao => "tao",
+                }
+                .to_string(),
+            ],
         )
     }
 }

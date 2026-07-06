@@ -329,6 +329,8 @@ impl Solar {
                 30,
                 Some(format!("solar-festival:{}:{}", self.to_ymd(), name)),
                 true,
+                true,
+                vec!["solar".to_string(), "festival".to_string(), "built_in_festival".to_string()],
             ));
         }
         for name in self.other_festivals() {
@@ -342,6 +344,8 @@ impl Solar {
                 40,
                 Some(format!("solar-other:{}:{}", self.to_ymd(), name)),
                 true,
+                false,
+                vec!["solar".to_string(), "other_festival".to_string(), "built_in_other_festival".to_string()],
             ));
         }
         for holiday in holiday_util::get_holidays(&format!("{:04}{:02}{:02}", self.year, self.month, self.day)) {

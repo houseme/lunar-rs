@@ -41,6 +41,18 @@ impl JieQi {
             10,
             Some(format!("jieqi:{}:{}", self.name(), self.solar.to_ymd_hms())),
             true,
+            true,
+            vec![
+                "jieqi".to_string(),
+                "seasonal".to_string(),
+                match calendar_kind {
+                    CalendarKind::Solar => "solar",
+                    CalendarKind::Lunar => "lunar",
+                    CalendarKind::Foto => "foto",
+                    CalendarKind::Tao => "tao",
+                }
+                .to_string(),
+            ],
         )
     }
 }

@@ -60,6 +60,12 @@ impl FotoFestival {
             70,
             Some(format!("foto:{}:{}", solar.to_ymd(), self.name())),
             true,
+            true,
+            vec![
+                "foto".to_string(),
+                "festival".to_string(),
+                if self.every_month() { "recurring".to_string() } else { "single_day".to_string() },
+            ],
         )
     }
 }

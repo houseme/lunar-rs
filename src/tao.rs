@@ -41,6 +41,8 @@ impl TaoFestival {
                 90,
                 Some(format!("tao:{}:{}", solar.to_ymd(), self.name())),
                 true,
+                true,
+                vec!["tao".to_string(), "festival".to_string(), "single_day".to_string()],
             )
         } else {
             Event::with_meta(
@@ -53,6 +55,8 @@ impl TaoFestival {
                 90,
                 Some(format!("tao:{}:{}", solar.to_ymd(), self.name())),
                 true,
+                true,
+                vec!["tao".to_string(), "festival".to_string(), "remarked".to_string()],
             )
         }
     }

@@ -6,7 +6,7 @@
 use crate::Solar;
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum CalendarKind {
     Solar,
     Lunar,
@@ -15,7 +15,7 @@ pub enum CalendarKind {
 }
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum EventSource {
     BuiltInFestival,
     BuiltInOtherFestival,
@@ -24,7 +24,7 @@ pub enum EventSource {
 }
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum EventKind {
     SolarFestival,
     SolarOtherFestival,
@@ -67,6 +67,8 @@ pub struct Event {
     priority: u8,
     source_id: Option<String>,
     is_observed: bool,
+    is_primary: bool,
+    tags: Vec<String>,
 }
 
 impl Event {
@@ -75,6 +77,8 @@ impl Event {
             priority: default_priority_for_kind(&kind),
             source_id: None,
             is_observed: false,
+            is_primary: default_primary_for_kind(&kind),
+            tags: default_tags(&kind, &calendar_kind, &source),
             kind,
             calendar_kind,
             source,
@@ -96,6 +100,8 @@ impl Event {
             priority: default_priority_for_kind(&kind),
             source_id: None,
             is_observed: false,
+            is_primary: default_primary_for_kind(&kind),
+            tags: default_tags(&kind, &calendar_kind, &source),
             kind,
             calendar_kind,
             source,
@@ -115,8 +121,10 @@ impl Event {
         priority: u8,
         source_id: Option<String>,
         is_observed: bool,
+        is_primary: bool,
+        tags: Vec<String>,
     ) -> Self {
-        Self { kind, calendar_kind, source, name: name.into(), solar, detail, priority, source_id, is_observed }
+        Self { kind, calendar_kind, source, name: name.into(), solar, detail, priority, source_id, is_observed, is_primary, tags }
     }
 
     pub const fn kind(&self) -> &EventKind {
@@ -153,6 +161,18 @@ impl Event {
 
     pub const fn is_observed(&self) -> bool {
         self.is_observed
+    }
+
+    pub const fn is_primary(&self) -> bool {
+        self.is_primary
+    }
+
+    pub fn tags(&self) -> &[String] {
+        &self.tags
+    }
+
+    pub fn has_tag(&self, tag: &str) -> bool {
+        self.tags.iter().any(|value| value == tag)
     }
 
     pub fn display_text(&self) -> String {
@@ -217,6 +237,62 @@ pub fn default_priority_for_kind(kind: &EventKind) -> u8 {
     event_kind_rank(kind)
 }
 
+pub const fn default_primary_for_kind(kind: &EventKind) -> bool {
+    matches!(
+        kind,
+        EventKind::JieQi | EventKind::Holiday | EventKind::SolarFestival | EventKind::LunarFestival | EventKind::FotoFestival | EventKind::TaoFestival
+    )
+}
+
+fn default_tags(kind: &EventKind, calendar_kind: &CalendarKind, source: &EventSource) -> Vec<String> {
+    let mut tags = vec![calendar_kind_label(calendar_kind).to_string(), event_kind_label(kind).to_string(), source_label(source).to_string()];
+
+    match kind {
+        EventKind::Holiday => tags.push("observance".to_string()),
+        EventKind::JieQi => tags.push("seasonal".to_string()),
+        EventKind::SolarFestival | EventKind::LunarFestival | EventKind::FotoFestival | EventKind::TaoFestival => {
+            tags.push("festival".to_string());
+        }
+        EventKind::SolarOtherFestival | EventKind::LunarOtherFestival | EventKind::FotoOtherFestival => {
+            tags.push("other_festival".to_string());
+        }
+    }
+
+    tags
+}
+
+const fn calendar_kind_label(calendar_kind: &CalendarKind) -> &'static str {
+    match calendar_kind {
+        CalendarKind::Solar => "solar",
+        CalendarKind::Lunar => "lunar",
+        CalendarKind::Foto => "foto",
+        CalendarKind::Tao => "tao",
+    }
+}
+
+const fn source_label(source: &EventSource) -> &'static str {
+    match source {
+        EventSource::BuiltInFestival => "built_in_festival",
+        EventSource::BuiltInOtherFestival => "built_in_other_festival",
+        EventSource::HolidayData => "holiday_data",
+        EventSource::JieQi => "jieqi",
+    }
+}
+
+const fn event_kind_label(kind: &EventKind) -> &'static str {
+    match kind {
+        EventKind::SolarFestival => "solar_festival",
+        EventKind::SolarOtherFestival => "solar_other_festival",
+        EventKind::LunarFestival => "lunar_festival",
+        EventKind::LunarOtherFestival => "lunar_other_festival",
+        EventKind::FotoFestival => "foto_festival",
+        EventKind::FotoOtherFestival => "foto_other_festival",
+        EventKind::TaoFestival => "tao_festival",
+        EventKind::Holiday => "holiday",
+        EventKind::JieQi => "jieqi",
+    }
+}
+
 pub fn sort_events(events: &mut [Event]) {
     events.sort_by(|a, b| {
         (
@@ -258,13 +334,15 @@ pub struct EventQuery<'a> {
     pub calendar_kind: Option<CalendarKind>,
     pub source: Option<EventSource>,
     pub kind: Option<EventKind>,
+    pub is_primary: Option<bool>,
     pub name_contains: Option<&'a str>,
     pub detail_contains: Option<&'a str>,
+    pub has_tag: Option<&'a str>,
 }
 
 impl<'a> EventQuery<'a> {
     pub const fn new() -> Self {
-        Self { calendar_kind: None, source: None, kind: None, name_contains: None, detail_contains: None }
+        Self { calendar_kind: None, source: None, kind: None, is_primary: None, name_contains: None, detail_contains: None, has_tag: None }
     }
 
     pub const fn with_calendar_kind(mut self, calendar_kind: CalendarKind) -> Self {
@@ -282,6 +360,11 @@ impl<'a> EventQuery<'a> {
         self
     }
 
+    pub const fn with_is_primary(mut self, is_primary: bool) -> Self {
+        self.is_primary = Some(is_primary);
+        self
+    }
+
     pub fn with_name_contains(mut self, needle: &'a str) -> Self {
         self.name_contains = Some(needle);
         self
@@ -289,6 +372,11 @@ impl<'a> EventQuery<'a> {
 
     pub fn with_detail_contains(mut self, needle: &'a str) -> Self {
         self.detail_contains = Some(needle);
+        self
+    }
+
+    pub fn with_tag(mut self, tag: &'a str) -> Self {
+        self.has_tag = Some(tag);
         self
     }
 
@@ -308,6 +396,11 @@ impl<'a> EventQuery<'a> {
         {
             return false;
         }
+        if let Some(is_primary) = self.is_primary
+            && event.is_primary() != is_primary
+        {
+            return false;
+        }
         if let Some(name_contains) = self.name_contains
             && !event.name().contains(name_contains)
         {
@@ -320,6 +413,11 @@ impl<'a> EventQuery<'a> {
             if !detail.contains(detail_contains) {
                 return false;
             }
+        }
+        if let Some(tag) = self.has_tag
+            && !event.has_tag(tag)
+        {
+            return false;
         }
         true
     }
