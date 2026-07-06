@@ -866,15 +866,29 @@ impl Lunar {
         let mut events = Vec::new();
 
         for name in self.festivals() {
-            events.push(Event::new(EventKind::LunarFestival, CalendarKind::Lunar, EventSource::BuiltInFestival, name, self.solar));
+            events.push(Event::with_meta(
+                EventKind::LunarFestival,
+                CalendarKind::Lunar,
+                EventSource::BuiltInFestival,
+                name,
+                self.solar,
+                None,
+                50,
+                Some(format!("lunar-festival:{}:{}", self.solar.to_ymd(), name)),
+                true,
+            ));
         }
         for name in self.other_festivals() {
-            events.push(Event::new(
+            events.push(Event::with_meta(
                 EventKind::LunarOtherFestival,
                 CalendarKind::Lunar,
                 EventSource::BuiltInOtherFestival,
                 name,
                 self.solar,
+                None,
+                60,
+                Some(format!("lunar-other:{}:{}", self.solar.to_ymd(), name)),
+                true,
             ));
         }
         if let Some(jieqi) = self.current_jie_qi() {

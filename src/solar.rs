@@ -316,15 +316,29 @@ impl Solar {
         let mut events = Vec::new();
 
         for name in self.festivals() {
-            events.push(Event::new(EventKind::SolarFestival, CalendarKind::Solar, EventSource::BuiltInFestival, name, *self));
+            events.push(Event::with_meta(
+                EventKind::SolarFestival,
+                CalendarKind::Solar,
+                EventSource::BuiltInFestival,
+                name,
+                *self,
+                None,
+                30,
+                Some(format!("solar-festival:{}:{}", self.to_ymd(), name)),
+                true,
+            ));
         }
         for name in self.other_festivals() {
-            events.push(Event::new(
+            events.push(Event::with_meta(
                 EventKind::SolarOtherFestival,
                 CalendarKind::Solar,
                 EventSource::BuiltInOtherFestival,
                 name,
                 *self,
+                None,
+                40,
+                Some(format!("solar-other:{}:{}", self.to_ymd(), name)),
+                true,
             ));
         }
         for holiday in holiday_util::get_holidays(&format!("{:04}{:02}{:02}", self.year, self.month, self.day)) {

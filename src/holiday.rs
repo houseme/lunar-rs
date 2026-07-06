@@ -38,7 +38,17 @@ impl Holiday {
 
     pub fn to_event(&self, solar: Solar, calendar_kind: CalendarKind) -> Event {
         let detail = format!("work={} target={}", self.work, self.target);
-        Event::with_detail(EventKind::Holiday, calendar_kind, EventSource::HolidayData, self.name(), solar, detail)
+        Event::with_meta(
+            EventKind::Holiday,
+            calendar_kind,
+            EventSource::HolidayData,
+            self.name(),
+            solar,
+            Some(detail),
+            20,
+            Some(format!("holiday:{}:{}", self.day(), self.name())),
+            !self.work,
+        )
     }
 }
 

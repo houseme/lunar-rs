@@ -31,13 +31,16 @@ impl JieQi {
     }
 
     pub fn to_event(&self, calendar_kind: CalendarKind) -> Event {
-        Event::with_detail(
+        Event::with_meta(
             EventKind::JieQi,
             calendar_kind,
             EventSource::JieQi,
             self.name(),
             self.solar,
-            format!("at={}", self.solar.to_ymd_hms()),
+            Some(format!("at={}", self.solar.to_ymd_hms())),
+            10,
+            Some(format!("jieqi:{}:{}", self.name(), self.solar.to_ymd_hms())),
+            true,
         )
     }
 }

@@ -50,7 +50,17 @@ impl FotoFestival {
             detail.push_str(self.remark());
         }
         detail.push_str(&format!(" every_month={}", self.every_month()));
-        Event::with_detail(EventKind::FotoFestival, CalendarKind::Foto, EventSource::BuiltInFestival, self.name(), solar, detail)
+        Event::with_meta(
+            EventKind::FotoFestival,
+            CalendarKind::Foto,
+            EventSource::BuiltInFestival,
+            self.name(),
+            solar,
+            Some(detail),
+            70,
+            Some(format!("foto:{}:{}", solar.to_ymd(), self.name())),
+            true,
+        )
     }
 }
 

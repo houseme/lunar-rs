@@ -124,6 +124,14 @@ and this project uses semantic versioning once releases are published.
   - `EventQuery`,
   - `filter_events(...)`,
   - `find_events(...)` on `Solar`, `Lunar`, `Foto` and `Tao`.
+- Added event rule metadata and centralized event construction:
+  - `priority`,
+  - `source_id`,
+  - `is_observed`,
+  - `Holiday::to_event(...)`,
+  - `JieQi::to_event(...)`,
+  - `FotoFestival::to_event(...)`,
+  - `TaoFestival::to_event(...)`.
 - Added English and Chinese README documentation.
 
 ### Changed

@@ -31,15 +31,28 @@ impl TaoFestival {
 
     pub fn to_event(&self, solar: crate::Solar) -> Event {
         if self.remark().is_empty() {
-            Event::new(EventKind::TaoFestival, CalendarKind::Tao, EventSource::BuiltInFestival, self.name(), solar)
-        } else {
-            Event::with_detail(
+            Event::with_meta(
                 EventKind::TaoFestival,
                 CalendarKind::Tao,
                 EventSource::BuiltInFestival,
                 self.name(),
                 solar,
-                format!("remark={}", self.remark()),
+                None,
+                90,
+                Some(format!("tao:{}:{}", solar.to_ymd(), self.name())),
+                true,
+            )
+        } else {
+            Event::with_meta(
+                EventKind::TaoFestival,
+                CalendarKind::Tao,
+                EventSource::BuiltInFestival,
+                self.name(),
+                solar,
+                Some(format!("remark={}", self.remark())),
+                90,
+                Some(format!("tao:{}:{}", solar.to_ymd(), self.name())),
+                true,
             )
         }
     }

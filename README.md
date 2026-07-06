@@ -35,6 +35,8 @@ avoid third-party runtime dependencies.
   date and optional detail text for more stable downstream consumption.
 - Event queries are available through `EventQuery` plus `find_events(...)` on
   `Solar`, `Lunar`, `Foto` and `Tao`.
+- Event rule metadata now also includes `priority`, `source_id` and
+  `is_observed`, with construction normalized by the source objects.
 - Runtime holiday data override hooks via `holiday_util::set_holidays(...)`,
   `set_holiday_data(...)`, and `reset_holidays()`.
 - Experimental explicit-language helpers behind the `i18n` feature for weekday,

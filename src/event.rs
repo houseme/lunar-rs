@@ -64,11 +64,24 @@ pub struct Event {
     name: String,
     solar: Solar,
     detail: Option<String>,
+    priority: u8,
+    source_id: Option<String>,
+    is_observed: bool,
 }
 
 impl Event {
     pub fn new(kind: EventKind, calendar_kind: CalendarKind, source: EventSource, name: impl Into<String>, solar: Solar) -> Self {
-        Self { kind, calendar_kind, source, name: name.into(), solar, detail: None }
+        Self {
+            priority: default_priority_for_kind(&kind),
+            source_id: None,
+            is_observed: false,
+            kind,
+            calendar_kind,
+            source,
+            name: name.into(),
+            solar,
+            detail: None,
+        }
     }
 
     pub fn with_detail(
@@ -79,7 +92,31 @@ impl Event {
         solar: Solar,
         detail: impl Into<String>,
     ) -> Self {
-        Self { kind, calendar_kind, source, name: name.into(), solar, detail: Some(detail.into()) }
+        Self {
+            priority: default_priority_for_kind(&kind),
+            source_id: None,
+            is_observed: false,
+            kind,
+            calendar_kind,
+            source,
+            name: name.into(),
+            solar,
+            detail: Some(detail.into()),
+        }
+    }
+
+    pub fn with_meta(
+        kind: EventKind,
+        calendar_kind: CalendarKind,
+        source: EventSource,
+        name: impl Into<String>,
+        solar: Solar,
+        detail: Option<String>,
+        priority: u8,
+        source_id: Option<String>,
+        is_observed: bool,
+    ) -> Self {
+        Self { kind, calendar_kind, source, name: name.into(), solar, detail, priority, source_id, is_observed }
     }
 
     pub const fn kind(&self) -> &EventKind {
@@ -104,6 +141,18 @@ impl Event {
 
     pub fn detail(&self) -> Option<&str> {
         self.detail.as_deref()
+    }
+
+    pub const fn priority(&self) -> u8 {
+        self.priority
+    }
+
+    pub fn source_id(&self) -> Option<&str> {
+        self.source_id.as_deref()
+    }
+
+    pub const fn is_observed(&self) -> bool {
+        self.is_observed
     }
 
     pub fn display_text(&self) -> String {
@@ -152,16 +201,20 @@ impl Event {
 
 fn event_kind_rank(kind: &EventKind) -> u8 {
     match kind {
-        EventKind::JieQi => 0,
-        EventKind::Holiday => 1,
-        EventKind::SolarFestival => 2,
-        EventKind::SolarOtherFestival => 3,
-        EventKind::LunarFestival => 4,
-        EventKind::LunarOtherFestival => 5,
-        EventKind::FotoFestival => 6,
-        EventKind::FotoOtherFestival => 7,
-        EventKind::TaoFestival => 8,
+        EventKind::JieQi => 10,
+        EventKind::Holiday => 20,
+        EventKind::SolarFestival => 30,
+        EventKind::SolarOtherFestival => 40,
+        EventKind::LunarFestival => 50,
+        EventKind::LunarOtherFestival => 60,
+        EventKind::FotoFestival => 70,
+        EventKind::FotoOtherFestival => 80,
+        EventKind::TaoFestival => 90,
     }
+}
+
+pub fn default_priority_for_kind(kind: &EventKind) -> u8 {
+    event_kind_rank(kind)
 }
 
 pub fn sort_events(events: &mut [Event]) {
@@ -173,10 +226,11 @@ pub fn sort_events(events: &mut [Event]) {
             a.solar.hour(),
             a.solar.minute(),
             a.solar.second(),
-            event_kind_rank(&a.kind),
+            a.priority,
             a.calendar_label(),
             a.name.as_str(),
             a.detail.as_deref().unwrap_or(""),
+            a.source_id.as_deref().unwrap_or(""),
         )
             .cmp(&(
                 b.solar.year(),
@@ -185,10 +239,11 @@ pub fn sort_events(events: &mut [Event]) {
                 b.solar.hour(),
                 b.solar.minute(),
                 b.solar.second(),
-                event_kind_rank(&b.kind),
+                b.priority,
                 b.calendar_label(),
                 b.name.as_str(),
                 b.detail.as_deref().unwrap_or(""),
+                b.source_id.as_deref().unwrap_or(""),
             ))
     });
 }

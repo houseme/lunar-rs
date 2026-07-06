@@ -6,6 +6,13 @@ fn solar_events_include_festivals_and_jieqi() {
     let events = solar.events();
 
     assert!(events.iter().any(|event| matches!(event.kind(), EventKind::SolarFestival) && event.name() == "全国中小学生安全教育日"));
+    let festival = events
+        .iter()
+        .find(|event| matches!(event.kind(), EventKind::SolarFestival) && event.name() == "全国中小学生安全教育日")
+        .expect("expected solar festival event");
+    assert_eq!(festival.priority(), 30);
+    assert_eq!(festival.source_id(), Some("solar-festival:2022-03-28:全国中小学生安全教育日"));
+    assert!(festival.is_observed());
 
     let solar = Solar::from_ymd(2021, 12, 21).unwrap();
     let events = solar.events();
@@ -14,6 +21,8 @@ fn solar_events_include_festivals_and_jieqi() {
         .find(|event| matches!(event.kind(), EventKind::JieQi) && event.name() == "冬至")
         .expect("expected jieqi event");
     assert!(jieqi.detail().is_some_and(|detail| detail.starts_with("at=2021-12-21")));
+    assert_eq!(jieqi.priority(), 10);
+    assert!(jieqi.is_observed());
 }
 
 #[test]
@@ -42,6 +51,9 @@ fn holiday_events_include_detail() {
     assert_eq!(holiday.calendar_label(), "solar");
     assert_eq!(holiday.source_label(), "holiday_data");
     assert_eq!(holiday.detail(), Some("work=false target=2024-01-01"));
+    assert_eq!(holiday.priority(), 20);
+    assert_eq!(holiday.source_id(), Some("holiday:2024-01-01:元旦节"));
+    assert!(holiday.is_observed());
 }
 
 #[test]
@@ -57,6 +69,9 @@ fn foto_events_are_exposed_through_unified_model() {
     }
     if let Some(event) = events.iter().find(|event| matches!(event.kind(), EventKind::FotoFestival)) {
         assert!(event.detail().is_some_and(|detail| detail.contains("result=")));
+        assert_eq!(event.priority(), 70);
+        assert!(event.source_id().is_some());
+        assert!(event.is_observed());
     }
 }
 
@@ -73,6 +88,9 @@ fn tao_events_are_exposed_through_unified_model() {
     }));
     if let Some(event) = events.iter().find(|event| matches!(event.kind(), EventKind::TaoFestival) && event.has_detail()) {
         assert!(event.detail().is_some_and(|detail| detail.starts_with("remark=")));
+        assert_eq!(event.priority(), 90);
+        assert!(event.source_id().is_some());
+        assert!(event.is_observed());
     }
 }
 
