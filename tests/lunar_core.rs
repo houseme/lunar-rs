@@ -136,18 +136,9 @@ fn festivals() {
     assert_eq!(Lunar::from_ymd(2021, 12, 29).unwrap().festivals().first().copied(), Some("除夕"));
     assert_eq!(Lunar::from_ymd(2020, 12, 30).unwrap().festivals().first().copied(), Some("除夕"));
     assert_eq!(Lunar::from_ymd(2020, 12, 29).unwrap().festivals().len(), 0);
-    assert_eq!(
-        Solar::from_ymd(1722, 9, 25).unwrap().lunar().other_festivals().first().copied(),
-        Some("秋社")
-    );
-    assert_eq!(
-        Solar::from_ymd(2022, 3, 16).unwrap().lunar().other_festivals().first().copied(),
-        Some("春社")
-    );
-    assert_eq!(
-        Solar::from_ymd(2022, 3, 28).unwrap().festivals().first().copied(),
-        Some("全国中小学生安全教育日")
-    );
+    assert_eq!(Solar::from_ymd(1722, 9, 25).unwrap().lunar().other_festivals().first().copied(), Some("秋社"));
+    assert_eq!(Solar::from_ymd(2022, 3, 16).unwrap().lunar().other_festivals().first().copied(), Some("春社"));
+    assert_eq!(Solar::from_ymd(2022, 3, 28).unwrap().festivals().first().copied(), Some("全国中小学生安全教育日"));
 }
 
 #[test]
