@@ -29,8 +29,8 @@ avoid third-party runtime dependencies.
 - BaZi/EightChar, DaYun, LiuNian, LiuYue, and XiaoYun fortune-cycle primitives.
 - Buddhist and Taoist calendar models available from `Lunar::foto()` and
   `Lunar::tao()`.
-- Minimal unified event aggregation via `Solar::events()` and `Lunar::events()`
-  for festivals, holidays and JieQi.
+- Minimal unified event aggregation via `Solar::events()`, `Lunar::events()`,
+  `Foto::events()` and `Tao::events()` for festivals, holidays and JieQi.
 - Runtime holiday data override hooks via `holiday_util::set_holidays(...)`,
   `set_holiday_data(...)`, and `reset_holidays()`.
 - Experimental explicit-language helpers behind the `i18n` feature for weekday,

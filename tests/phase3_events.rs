@@ -35,3 +35,24 @@ fn holiday_events_include_detail() {
     assert_eq!(holiday.solar(), solar);
     assert!(holiday.detail().is_some());
 }
+
+#[test]
+fn foto_events_are_exposed_through_unified_model() {
+    let lunar = Solar::from_ymd(2024, 5, 15).unwrap().lunar();
+    let foto = lunar.foto();
+    let events = foto.events();
+
+    if let Some(event) = events.first() {
+        assert!(matches!(event.kind(), EventKind::FotoFestival | EventKind::FotoOtherFestival));
+        assert_eq!(event.category_label().starts_with("foto_"), true);
+    }
+}
+
+#[test]
+fn tao_events_are_exposed_through_unified_model() {
+    let lunar = Solar::from_ymd(2021, 12, 21).unwrap().lunar();
+    let tao = lunar.tao();
+    let events = tao.events();
+
+    assert!(events.iter().any(|event| matches!(event.kind(), EventKind::TaoFestival)));
+}

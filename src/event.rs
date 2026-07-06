@@ -12,6 +12,9 @@ pub enum EventKind {
     SolarOtherFestival,
     LunarFestival,
     LunarOtherFestival,
+    FotoFestival,
+    FotoOtherFestival,
+    TaoFestival,
     Holiday,
     JieQi,
 }
@@ -48,5 +51,19 @@ impl Event {
 
     pub fn detail(&self) -> Option<&str> {
         self.detail.as_deref()
+    }
+
+    pub const fn category_label(&self) -> &'static str {
+        match self.kind {
+            EventKind::SolarFestival => "solar_festival",
+            EventKind::SolarOtherFestival => "solar_other_festival",
+            EventKind::LunarFestival => "lunar_festival",
+            EventKind::LunarOtherFestival => "lunar_other_festival",
+            EventKind::FotoFestival => "foto_festival",
+            EventKind::FotoOtherFestival => "foto_other_festival",
+            EventKind::TaoFestival => "tao_festival",
+            EventKind::Holiday => "holiday",
+            EventKind::JieQi => "jieqi",
+        }
     }
 }

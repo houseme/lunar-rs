@@ -113,7 +113,9 @@ and this project uses semantic versioning once releases are published.
   - `EventKind`,
   - `Event`,
   - `Solar::events()`,
-  - `Lunar::events()`.
+  - `Lunar::events()`,
+  - `Foto::events()`,
+  - `Tao::events()`.
 - Added English and Chinese README documentation.
 
 ### Changed

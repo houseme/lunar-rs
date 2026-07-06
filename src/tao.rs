@@ -2,6 +2,7 @@
 
 use std::fmt;
 
+use crate::event::{Event, EventKind};
 use crate::lunar::Lunar;
 use crate::lunar_util;
 use crate::tao_util;
@@ -94,6 +95,21 @@ impl<'a> Tao<'a> {
             out.push(TaoFestival::new(f, ""));
         }
         out
+    }
+
+    /// Unified events for the current Taoist calendar date.
+    pub fn events(&self) -> Vec<Event> {
+        let solar = self.lunar.solar();
+        self.festivals()
+            .into_iter()
+            .map(|festival| {
+                if festival.remark().is_empty() {
+                    Event::new(EventKind::TaoFestival, festival.name(), solar)
+                } else {
+                    Event::with_detail(EventKind::TaoFestival, festival.name(), solar, festival.remark())
+                }
+            })
+            .collect()
     }
 
     fn is_day_in(&self, days: &[&str]) -> bool {

@@ -3,6 +3,7 @@
 use std::fmt;
 use std::fmt::Write as _;
 
+use crate::event::{Event, EventKind};
 use crate::foto_util;
 use crate::lunar::Lunar;
 use crate::lunar_month::LunarMonth;
@@ -109,6 +110,27 @@ impl<'a> Foto<'a> {
     pub fn other_festivals(&self) -> Vec<&'static str> {
         let key = format!("{}-{}", self.month(), self.day());
         foto_util::OTHER_FESTIVAL.get(key.as_str()).cloned().unwrap_or_default()
+    }
+
+    /// Unified events for the current Buddhist calendar date.
+    pub fn events(&self) -> Vec<Event> {
+        let mut events = Vec::new();
+        let solar = self.lunar.solar();
+
+        for festival in self.festivals() {
+            let detail = if festival.remark().is_empty() {
+                festival.result().to_string()
+            } else {
+                format!("{} {}", festival.result(), festival.remark())
+            };
+            events.push(Event::with_detail(EventKind::FotoFestival, festival.name(), solar, detail));
+        }
+
+        for name in self.other_festivals() {
+            events.push(Event::new(EventKind::FotoOtherFestival, name, solar));
+        }
+
+        events
     }
 
     pub const fn is_month_zhai(&self) -> bool {
