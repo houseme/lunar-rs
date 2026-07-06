@@ -1,7 +1,7 @@
 use lunar_rs::{
-    CalendarKind, Event, EventKind, EventQuery, EventSource, Lunar, Solar, SolarMonth, SolarWeek, group_event_days_by_week,
-    group_events_by_day, scan_event_days_in_range, scan_event_weeks_in_range, scan_events_in_range,
-    scan_events_in_range_filtered,
+    CalendarKind, Event, EventKind, EventQuery, EventSource, Lunar, Solar, SolarMonth, SolarWeek,
+    group_event_days_by_week, group_events_by_day, holiday_util, scan_event_days_in_range, scan_event_weeks_in_range,
+    scan_events_in_range, scan_events_in_range_filtered,
 };
 
 #[test]
@@ -9,7 +9,11 @@ fn solar_events_include_festivals_and_jieqi() {
     let solar = Solar::from_ymd(2022, 3, 28).unwrap();
     let events = solar.events();
 
-    assert!(events.iter().any(|event| matches!(event.kind(), EventKind::SolarFestival) && event.name() == "全国中小学生安全教育日"));
+    assert!(
+        events
+            .iter()
+            .any(|event| matches!(event.kind(), EventKind::SolarFestival) && event.name() == "全国中小学生安全教育日")
+    );
     let festival = events
         .iter()
         .find(|event| matches!(event.kind(), EventKind::SolarFestival) && event.name() == "全国中小学生安全教育日")
@@ -98,7 +102,9 @@ fn tao_events_are_exposed_through_unified_model() {
             && matches!(event.calendar_kind(), CalendarKind::Tao)
             && matches!(event.source(), EventSource::BuiltInFestival)
     }));
-    if let Some(event) = events.iter().find(|event| matches!(event.kind(), EventKind::TaoFestival) && event.has_detail()) {
+    if let Some(event) =
+        events.iter().find(|event| matches!(event.kind(), EventKind::TaoFestival) && event.has_detail())
+    {
         assert!(event.detail().is_some_and(|detail| detail.starts_with("remark=")));
         assert_eq!(event.priority(), 90);
         assert!(event.source_id().is_some());
@@ -159,9 +165,8 @@ fn event_query_filters_by_kind_and_source() {
     assert_eq!(jieqi_events.len(), 1);
     assert_eq!(jieqi_events[0].name(), "冬至");
 
-    let holiday_events = Solar::from_ymd(2024, 1, 1)
-        .unwrap()
-        .find_events(&EventQuery::new().with_source(EventSource::HolidayData));
+    let holiday_events =
+        Solar::from_ymd(2024, 1, 1).unwrap().find_events(&EventQuery::new().with_source(EventSource::HolidayData));
     assert!(!holiday_events.is_empty());
     assert!(holiday_events.iter().all(|event| matches!(event.source(), EventSource::HolidayData)));
 
@@ -212,9 +217,7 @@ fn range_scan_filtered_supports_event_query() {
     assert_eq!(jieqi_events.len(), 1);
     assert_eq!(jieqi_events[0].name(), "冬至");
 
-    let holiday_events = Solar::from_ymd(2024, 1, 1)
-        .unwrap()
-        .events_until(Solar::from_ymd(2024, 1, 3).unwrap());
+    let holiday_events = Solar::from_ymd(2024, 1, 1).unwrap().events_until(Solar::from_ymd(2024, 1, 3).unwrap());
     assert!(holiday_events.iter().any(|event| matches!(event.kind(), EventKind::Holiday)));
 }
 
@@ -226,9 +229,11 @@ fn grouped_event_days_keep_day_boundaries() {
     let groups = scan_event_days_in_range(start, end);
     assert!(!groups.is_empty());
     assert!(groups.iter().any(|group| group.solar().to_ymd() == "2021-12-21"));
-    assert!(groups.iter().all(|group| {
-        group.events().iter().all(|event| event.solar().to_ymd() == group.solar().to_ymd())
-    }));
+    assert!(
+        groups
+            .iter()
+            .all(|group| { group.events().iter().all(|event| event.solar().to_ymd() == group.solar().to_ymd()) })
+    );
 }
 
 #[test]
@@ -277,5 +282,36 @@ fn solar_week_view_supports_query() {
     let weeks = week.find_event_weeks(&EventQuery::new().with_kind(EventKind::JieQi));
 
     assert_eq!(weeks.len(), 1);
-    assert!(weeks[0].days().iter().all(|group| group.events().iter().all(|event| matches!(event.kind(), EventKind::JieQi))));
+    assert!(
+        weeks[0].days().iter().all(|group| group.events().iter().all(|event| matches!(event.kind(), EventKind::JieQi)))
+    );
+}
+
+#[test]
+fn holiday_override_invalidates_event_cache() {
+    struct HolidayDataReset(String);
+
+    impl Drop for HolidayDataReset {
+        fn drop(&mut self) {
+            holiday_util::set_holiday_data(self.0.clone()).unwrap();
+        }
+    }
+
+    let original_data = holiday_util::holiday_data();
+    let _reset = HolidayDataReset(original_data.clone());
+    let solar = Solar::from_ymd(2099, 1, 2).unwrap();
+
+    let before = solar.all_events().into_iter().filter(|event| matches!(event.kind(), EventKind::Holiday)).count();
+    assert_eq!(before, 0);
+
+    let injected_data = format!("{original_data}209901020020990102");
+    holiday_util::set_holiday_data(injected_data).unwrap();
+
+    let holiday = solar
+        .all_events()
+        .into_iter()
+        .find(|event| matches!(event.kind(), EventKind::Holiday))
+        .expect("expected injected holiday event");
+    assert_eq!(holiday.source(), &EventSource::HolidayData);
+    assert_eq!(holiday.source_id(), Some("holiday:2099-01-02:元旦节"));
 }

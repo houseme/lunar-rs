@@ -57,6 +57,7 @@ pub fn holiday_data() -> String {
 pub fn reset_holidays() {
     *NAMES_IN_USE.write().unwrap() = NAMES.iter().map(|name| (*name).to_string()).collect();
     *DATA_IN_USE.write().unwrap() = RAW_DATA.to_string();
+    crate::event::clear_event_index_cache();
 }
 
 /// 替换完整节假日名称表与原始数据。
@@ -65,6 +66,7 @@ pub fn set_holidays(names: Vec<String>, raw_data: impl Into<String>) -> Result<(
     validate_holiday_data(&raw_data, names.len())?;
     *NAMES_IN_USE.write().unwrap() = names;
     *DATA_IN_USE.write().unwrap() = raw_data;
+    crate::event::clear_event_index_cache();
     Ok(())
 }
 
@@ -74,6 +76,7 @@ pub fn set_holiday_data(raw_data: impl Into<String>) -> Result<(), LunarError> {
     let names_len = NAMES_IN_USE.read().unwrap().len();
     validate_holiday_data(&raw_data, names_len)?;
     *DATA_IN_USE.write().unwrap() = raw_data;
+    crate::event::clear_event_index_cache();
     Ok(())
 }
 

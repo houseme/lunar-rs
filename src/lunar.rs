@@ -7,8 +7,8 @@ use crate::LunarError;
 use crate::culture::{Direction, Duty, EarthBranch, HeavenStem, Phase, Phenology, SixtyCycle, Zodiac};
 use crate::eight_char::EightChar;
 use crate::event::{
-    CalendarKind, Event, EventKind, EventQuery, EventSource, dedup_events, filter_events, scan_events_in_range,
-    scan_events_in_range_filtered,
+    CalendarKind, Event, EventKind, EventQuery, EventSource, all_events_for_day, find_events_for_day,
+    scan_events_in_range, scan_events_in_range_filtered,
 };
 use crate::fu::Fu;
 use crate::jieqi::JieQi;
@@ -901,9 +901,12 @@ impl Lunar {
         if let Some(jieqi) = self.current_jie_qi() {
             events.push(jieqi.to_event(CalendarKind::Lunar));
         }
-        for holiday in
-            crate::holiday_util::get_holidays(&format!("{:04}{:02}{:02}", self.solar.year(), self.solar.month(), self.solar.day()))
-        {
+        for holiday in crate::holiday_util::get_holidays(&format!(
+            "{:04}{:02}{:02}",
+            self.solar.year(),
+            self.solar.month(),
+            self.solar.day()
+        )) {
             events.push(holiday.to_event(self.solar, CalendarKind::Lunar));
         }
 
@@ -912,21 +915,11 @@ impl Lunar {
 
     /// Aggregated events across solar, lunar, buddhist and taoist contexts.
     pub fn all_events(&self) -> Vec<Event> {
-        let mut events: Vec<Event> = self
-            .solar
-            .events()
-            .into_iter()
-            .filter(|event| matches!(event.kind(), EventKind::SolarFestival | EventKind::SolarOtherFestival))
-            .collect();
-        events.extend(self.events());
-        events.extend(self.foto().events());
-        events.extend(self.tao().events());
-        dedup_events(&mut events);
-        events
+        all_events_for_day(self.solar)
     }
 
     pub fn find_events(&self, query: &EventQuery<'_>) -> Vec<Event> {
-        filter_events(&self.all_events(), query)
+        find_events_for_day(self.solar, query)
     }
 
     pub fn events_until(&self, end: Solar) -> Vec<Event> {

@@ -3,6 +3,9 @@
 //! This is the minimal Phase 3 event model that aggregates festivals, holidays
 //! and JieQi into a single typed read-only API.
 
+use std::collections::HashMap;
+use std::sync::{Arc, LazyLock, RwLock};
+
 use crate::Solar;
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -72,7 +75,13 @@ pub struct Event {
 }
 
 impl Event {
-    pub fn new(kind: EventKind, calendar_kind: CalendarKind, source: EventSource, name: impl Into<String>, solar: Solar) -> Self {
+    pub fn new(
+        kind: EventKind,
+        calendar_kind: CalendarKind,
+        source: EventSource,
+        name: impl Into<String>,
+        solar: Solar,
+    ) -> Self {
         Self {
             priority: default_priority_for_kind(&kind),
             source_id: None,
@@ -124,7 +133,19 @@ impl Event {
         is_primary: bool,
         tags: Vec<String>,
     ) -> Self {
-        Self { kind, calendar_kind, source, name: name.into(), solar, detail, priority, source_id, is_observed, is_primary, tags }
+        Self {
+            kind,
+            calendar_kind,
+            source,
+            name: name.into(),
+            solar,
+            detail,
+            priority,
+            source_id,
+            is_observed,
+            is_primary,
+            tags,
+        }
     }
 
     pub const fn kind(&self) -> &EventKind {
@@ -240,12 +261,21 @@ pub fn default_priority_for_kind(kind: &EventKind) -> u8 {
 pub const fn default_primary_for_kind(kind: &EventKind) -> bool {
     matches!(
         kind,
-        EventKind::JieQi | EventKind::Holiday | EventKind::SolarFestival | EventKind::LunarFestival | EventKind::FotoFestival | EventKind::TaoFestival
+        EventKind::JieQi
+            | EventKind::Holiday
+            | EventKind::SolarFestival
+            | EventKind::LunarFestival
+            | EventKind::FotoFestival
+            | EventKind::TaoFestival
     )
 }
 
 fn default_tags(kind: &EventKind, calendar_kind: &CalendarKind, source: &EventSource) -> Vec<String> {
-    let mut tags = vec![calendar_kind_label(calendar_kind).to_string(), event_kind_label(kind).to_string(), source_label(source).to_string()];
+    let mut tags = vec![
+        calendar_kind_label(calendar_kind).to_string(),
+        event_kind_label(kind).to_string(),
+        source_label(source).to_string(),
+    ];
 
     match kind {
         EventKind::Holiday => tags.push("observance".to_string()),
@@ -329,6 +359,114 @@ pub fn dedup_events(events: &mut Vec<Event>) {
     events.dedup();
 }
 
+#[derive(Clone, Debug, Default)]
+struct EventIndex {
+    events: Vec<Event>,
+    by_calendar_kind: HashMap<CalendarKind, Vec<usize>>,
+    by_source: HashMap<EventSource, Vec<usize>>,
+    by_kind: HashMap<EventKind, Vec<usize>>,
+    by_is_primary: HashMap<bool, Vec<usize>>,
+    by_tag: HashMap<String, Vec<usize>>,
+}
+
+impl EventIndex {
+    fn new(mut events: Vec<Event>) -> Self {
+        dedup_events(&mut events);
+
+        let mut index = Self {
+            events,
+            by_calendar_kind: HashMap::new(),
+            by_source: HashMap::new(),
+            by_kind: HashMap::new(),
+            by_is_primary: HashMap::new(),
+            by_tag: HashMap::new(),
+        };
+
+        for (position, event) in index.events.iter().enumerate() {
+            index.by_calendar_kind.entry(*event.calendar_kind()).or_default().push(position);
+            index.by_source.entry(*event.source()).or_default().push(position);
+            index.by_kind.entry(*event.kind()).or_default().push(position);
+            index.by_is_primary.entry(event.is_primary()).or_default().push(position);
+            for tag in event.tags() {
+                index.by_tag.entry(tag.clone()).or_default().push(position);
+            }
+        }
+
+        index
+    }
+
+    fn events(&self) -> &[Event] {
+        &self.events
+    }
+
+    fn filter(&self, query: &EventQuery<'_>) -> Vec<Event> {
+        let candidate_positions = [
+            query.calendar_kind.and_then(|value| self.by_calendar_kind.get(&value)),
+            query.source.and_then(|value| self.by_source.get(&value)),
+            query.kind.and_then(|value| self.by_kind.get(&value)),
+            query.is_primary.and_then(|value| self.by_is_primary.get(&value)),
+            query.has_tag.and_then(|value| self.by_tag.get(value)),
+        ]
+        .into_iter()
+        .flatten()
+        .min_by_key(|positions| positions.len());
+
+        match candidate_positions {
+            Some(positions) => positions
+                .iter()
+                .filter_map(|&position| {
+                    let event = &self.events[position];
+                    query.matches(event).then(|| event.clone())
+                })
+                .collect(),
+            None => self.events.iter().filter(|event| query.matches(event)).cloned().collect(),
+        }
+    }
+}
+
+static EVENT_INDEX_CACHE: LazyLock<RwLock<HashMap<Solar, Arc<EventIndex>>>> =
+    LazyLock::new(|| RwLock::new(HashMap::new()));
+
+pub(crate) fn clear_event_index_cache() {
+    EVENT_INDEX_CACHE.write().unwrap().clear();
+}
+
+fn build_all_events_for_day(solar: Solar) -> Vec<Event> {
+    let mut events = solar.events();
+    let lunar = solar.lunar();
+    events.extend(
+        lunar
+            .events()
+            .into_iter()
+            .filter(|event| matches!(event.kind(), EventKind::LunarFestival | EventKind::LunarOtherFestival)),
+    );
+    events.extend(lunar.foto().events());
+    events.extend(lunar.tao().events());
+    dedup_events(&mut events);
+    events
+}
+
+fn day_event_index(solar: Solar) -> Arc<EventIndex> {
+    {
+        let cache = EVENT_INDEX_CACHE.read().unwrap();
+        if let Some(index) = cache.get(&solar) {
+            return Arc::clone(index);
+        }
+    }
+
+    let index = Arc::new(EventIndex::new(build_all_events_for_day(solar)));
+    let mut cache = EVENT_INDEX_CACHE.write().unwrap();
+    Arc::clone(cache.entry(solar).or_insert_with(|| Arc::clone(&index)))
+}
+
+pub(crate) fn all_events_for_day(solar: Solar) -> Vec<Event> {
+    day_event_index(solar).events().to_vec()
+}
+
+pub(crate) fn find_events_for_day(solar: Solar, query: &EventQuery<'_>) -> Vec<Event> {
+    day_event_index(solar).filter(query)
+}
+
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct EventQuery<'a> {
     pub calendar_kind: Option<CalendarKind>,
@@ -342,7 +480,15 @@ pub struct EventQuery<'a> {
 
 impl<'a> EventQuery<'a> {
     pub const fn new() -> Self {
-        Self { calendar_kind: None, source: None, kind: None, is_primary: None, name_contains: None, detail_contains: None, has_tag: None }
+        Self {
+            calendar_kind: None,
+            source: None,
+            kind: None,
+            is_primary: None,
+            name_contains: None,
+            detail_contains: None,
+            has_tag: None,
+        }
     }
 
     pub const fn with_calendar_kind(mut self, calendar_kind: CalendarKind) -> Self {
@@ -435,20 +581,31 @@ pub fn scan_events_in_range(start: Solar, end: Solar) -> Vec<Event> {
 
     let mut cursor = start;
     loop {
-        events.extend(cursor.all_events());
+        events.extend(day_event_index(cursor).events().iter().cloned());
+        if cursor == end {
+            break;
+        }
+        cursor = cursor.next_day(1);
+    }
+    events
+}
+
+pub fn scan_events_in_range_filtered(start: Solar, end: Solar, query: &EventQuery<'_>) -> Vec<Event> {
+    let mut events = Vec::new();
+    if start.is_after(&end) {
+        return events;
+    }
+
+    let mut cursor = start;
+    loop {
+        events.extend(day_event_index(cursor).filter(query));
         if cursor == end {
             break;
         }
         cursor = cursor.next_day(1);
     }
 
-    dedup_events(&mut events);
     events
-}
-
-pub fn scan_events_in_range_filtered(start: Solar, end: Solar, query: &EventQuery<'_>) -> Vec<Event> {
-    let events = scan_events_in_range(start, end);
-    filter_events(&events, query)
 }
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -479,7 +636,8 @@ pub fn group_events_by_day(mut events: Vec<Event>) -> Vec<EventDayGroup> {
 
     for event in events {
         if let Some(group) = groups.last_mut()
-            && group.solar.to_ymd() == event.solar().to_ymd()
+            && (group.solar.year(), group.solar.month(), group.solar.day())
+                == (event.solar().year(), event.solar().month(), event.solar().day())
         {
             group.events.push(event);
             continue;
@@ -491,11 +649,45 @@ pub fn group_events_by_day(mut events: Vec<Event>) -> Vec<EventDayGroup> {
 }
 
 pub fn scan_event_days_in_range(start: Solar, end: Solar) -> Vec<EventDayGroup> {
-    group_events_by_day(scan_events_in_range(start, end))
+    let mut groups = Vec::new();
+    if start.is_after(&end) {
+        return groups;
+    }
+
+    let mut cursor = start;
+    loop {
+        let events = day_event_index(cursor).events().to_vec();
+        if !events.is_empty() {
+            groups.push(EventDayGroup::new(cursor, events));
+        }
+        if cursor == end {
+            break;
+        }
+        cursor = cursor.next_day(1);
+    }
+
+    groups
 }
 
 pub fn scan_event_days_in_range_filtered(start: Solar, end: Solar, query: &EventQuery<'_>) -> Vec<EventDayGroup> {
-    group_events_by_day(scan_events_in_range_filtered(start, end, query))
+    let mut groups = Vec::new();
+    if start.is_after(&end) {
+        return groups;
+    }
+
+    let mut cursor = start;
+    loop {
+        let events = day_event_index(cursor).filter(query);
+        if !events.is_empty() {
+            groups.push(EventDayGroup::new(cursor, events));
+        }
+        if cursor == end {
+            break;
+        }
+        cursor = cursor.next_day(1);
+    }
+
+    groups
 }
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]

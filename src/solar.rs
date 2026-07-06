@@ -2,11 +2,11 @@
 
 use std::fmt;
 
-use crate::event::{
-    CalendarKind, Event, EventKind, EventQuery, EventSource, dedup_events, filter_events, scan_events_in_range,
-    scan_events_in_range_filtered,
-};
 use crate::LunarError;
+use crate::event::{
+    CalendarKind, Event, EventKind, EventQuery, EventSource, all_events_for_day, find_events_for_day,
+    scan_events_in_range, scan_events_in_range_filtered,
+};
 use crate::holiday_util;
 use crate::lunar::Lunar;
 use crate::solar_util;
@@ -360,19 +360,11 @@ impl Solar {
 
     /// Aggregated events across solar, lunar, buddhist and taoist contexts.
     pub fn all_events(&self) -> Vec<Event> {
-        let mut events = self.events();
-        let lunar = self.lunar();
-        events.extend(lunar.events().into_iter().filter(|event| {
-            matches!(event.kind(), EventKind::LunarFestival | EventKind::LunarOtherFestival)
-        }));
-        events.extend(lunar.foto().events());
-        events.extend(lunar.tao().events());
-        dedup_events(&mut events);
-        events
+        all_events_for_day(*self)
     }
 
     pub fn find_events(&self, query: &EventQuery<'_>) -> Vec<Event> {
-        filter_events(&self.all_events(), query)
+        find_events_for_day(*self, query)
     }
 
     pub fn events_until(&self, end: Solar) -> Vec<Event> {

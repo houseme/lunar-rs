@@ -2,7 +2,9 @@
 
 use std::fmt;
 
-use crate::event::{EventDayGroup, EventQuery, EventWeekGroup, scan_event_weeks_in_range, scan_event_weeks_in_range_filtered};
+use crate::event::{
+    EventDayGroup, EventQuery, EventWeekGroup, scan_event_weeks_in_range, scan_event_weeks_in_range_filtered,
+};
 use crate::solar::Solar;
 use crate::solar_util;
 
