@@ -68,6 +68,64 @@ impl Zodiac {
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct Duty {
+    name: &'static str,
+}
+
+impl Duty {
+    pub const fn new(name: &'static str) -> Self {
+        Self { name }
+    }
+
+    pub const fn name(&self) -> &'static str {
+        self.name
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct Phase {
+    name: &'static str,
+}
+
+impl Phase {
+    pub const fn new(name: &'static str) -> Self {
+        Self { name }
+    }
+
+    pub const fn name(&self) -> &'static str {
+        self.name
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub struct Phenology {
+    term: String,
+    three_hou: &'static str,
+    wu_hou: &'static str,
+}
+
+impl Phenology {
+    pub fn new(term: String, three_hou: &'static str, wu_hou: &'static str) -> Self {
+        Self { term, three_hou, wu_hou }
+    }
+
+    pub fn term(&self) -> &str {
+        &self.term
+    }
+
+    pub const fn three_hou(&self) -> &'static str {
+        self.three_hou
+    }
+
+    pub const fn wu_hou(&self) -> &'static str {
+        self.wu_hou
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct HeavenStem {
     index: usize,
 }

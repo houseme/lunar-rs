@@ -71,6 +71,7 @@ mod tao_util;
 
 mod culture;
 mod eight_char;
+mod event;
 mod foto;
 mod fu;
 mod holiday;
@@ -90,9 +91,10 @@ mod solar_year;
 mod tao;
 mod yun;
 
-pub use culture::{Direction, EarthBranch, Element, HeavenStem, SixtyCycle, Zodiac};
+pub use culture::{Direction, Duty, EarthBranch, Element, HeavenStem, Phase, Phenology, SixtyCycle, Zodiac};
 pub use eight_char::EightChar;
 pub use error::LunarError;
+pub use event::{Event, EventKind};
 pub use foto::Foto;
 pub use fu::Fu;
 pub use holiday::Holiday;

@@ -1,4 +1,4 @@
-use lunar_rs::{Direction, EarthBranch, Element, HeavenStem, NineStar, SixtyCycle, Solar};
+use lunar_rs::{Direction, Duty, EarthBranch, Element, HeavenStem, NineStar, Phase, SixtyCycle, Solar};
 
 #[test]
 fn typed_primitives_map_names_and_relationships() {
@@ -24,6 +24,12 @@ fn typed_primitives_map_names_and_relationships() {
 
     let element = Element::new("火");
     assert_eq!(element.direction().name(), "南");
+
+    let duty = Duty::new("建");
+    assert_eq!(duty.name(), "建");
+
+    let phase = Phase::new("望");
+    assert_eq!(phase.name(), "望");
 }
 
 #[test]
@@ -55,6 +61,14 @@ fn lunar_typed_api_exposes_cycle_zodiac_and_direction_objects() {
     assert_eq!(lunar.day_position_yin_gui_direction().name(), "乾");
     assert_eq!(lunar.day_position_fu_direction().name(), "乾");
     assert_eq!(lunar.day_position_cai_direction().name(), "坤");
+
+    assert_eq!(lunar.duty().name(), "建");
+    assert_eq!(lunar.phase().name(), "小望");
+
+    let phenology = Solar::from_ymd(2021, 12, 21).unwrap().lunar().phenology();
+    assert_eq!(phenology.term(), "冬至");
+    assert_eq!(phenology.three_hou(), "初候");
+    assert_eq!(phenology.wu_hou(), "蚯蚓结");
 }
 
 #[test]

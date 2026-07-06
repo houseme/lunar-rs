@@ -105,7 +105,15 @@ and this project uses semantic versioning once releases are published.
   - `Zodiac`,
   - `Direction`,
   - `Element`,
+  - `Duty`,
+  - `Phase`,
+  - `Phenology`,
   - plus typed getters on `Lunar` and `NineStar`.
+- Added the first minimal Phase 3 event model:
+  - `EventKind`,
+  - `Event`,
+  - `Solar::events()`,
+  - `Lunar::events()`.
 - Added English and Chinese README documentation.
 
 ### Changed

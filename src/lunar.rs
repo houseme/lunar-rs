@@ -4,8 +4,9 @@ use std::collections::HashMap;
 use std::fmt;
 
 use crate::LunarError;
-use crate::culture::{Direction, EarthBranch, HeavenStem, SixtyCycle, Zodiac};
+use crate::culture::{Direction, Duty, EarthBranch, HeavenStem, Phase, Phenology, SixtyCycle, Zodiac};
 use crate::eight_char::EightChar;
+use crate::event::{Event, EventKind};
 use crate::fu::Fu;
 use crate::jieqi::JieQi;
 use crate::lunar_time::LunarTime;
@@ -860,6 +861,33 @@ impl Lunar {
         l
     }
 
+    /// Unified events for the current lunar date.
+    pub fn events(&self) -> Vec<Event> {
+        let mut events = Vec::new();
+
+        for name in self.festivals() {
+            events.push(Event::new(EventKind::LunarFestival, name, self.solar));
+        }
+        for name in self.other_festivals() {
+            events.push(Event::new(EventKind::LunarOtherFestival, name, self.solar));
+        }
+        if let Some(jieqi) = self.current_jie_qi() {
+            events.push(Event::new(EventKind::JieQi, jieqi.name(), self.solar));
+        }
+        for holiday in
+            crate::holiday_util::get_holidays(&format!("{:04}{:02}{:02}", self.solar.year(), self.solar.month(), self.solar.day()))
+        {
+            let detail = if holiday.is_work() {
+                format!("workday remap to {}", holiday.target())
+            } else {
+                format!("holiday target {}", holiday.target())
+            };
+            events.push(Event::with_detail(EventKind::Holiday, holiday.name(), self.solar, detail));
+        }
+
+        events
+    }
+
     // ---- 彭祖 ----
     pub fn peng_zu_gan(&self) -> &'static str {
         lunar_util::tables::PENGZU_GAN[(self.day_gan_index + 1) as usize]
@@ -1117,6 +1145,9 @@ impl Lunar {
         }
         lunar_util::tables::ZHI_XING[(offset + 1) as usize]
     }
+    pub fn duty(&self) -> Duty {
+        Duty::new(self.zhi_xing())
+    }
     pub fn xiu(&self) -> &'static str {
         // 查找键为 `{dayZhi}{week}`（如 "戌3"）；表键可能被 CJK 排版工具写作 "戌 3"，故两种都试。
         let k0 = format!("{}{}", self.day_zhi(), self.week_index);
@@ -1177,6 +1208,9 @@ impl Lunar {
     // ---- 月相 / 六曜 / 星期 ----
     pub fn yue_xiang(&self) -> &'static str {
         lunar_util::tables::YUE_XIANG[self.day as usize]
+    }
+    pub fn phase(&self) -> Phase {
+        Phase::new(self.yue_xiang())
     }
     pub fn liu_yao(&self) -> &'static str {
         let month = self.month.abs();
@@ -1348,6 +1382,15 @@ impl Lunar {
         }
         let wu_hou_len = lunar_util::tables::WU_HOU.len() as i64;
         lunar_util::tables::WU_HOU[((offset * 3 + index) % wu_hou_len) as usize]
+    }
+    pub fn phenology(&self) -> Phenology {
+        let jq = self.prev_jie_qi_by_whole_day(true).unwrap();
+        let max = lunar_util::tables::HOU.len() as i32 - 1;
+        let mut offset = self.solar.subtract(&jq.solar()) / 5;
+        if offset > max {
+            offset = max;
+        }
+        Phenology::new(jq.name().to_string(), lunar_util::tables::HOU[offset as usize], self.wu_hou())
     }
 
     // ---- 九星 ----

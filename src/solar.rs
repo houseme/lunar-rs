@@ -2,6 +2,7 @@
 
 use std::fmt;
 
+use crate::event::{Event, EventKind};
 use crate::LunarError;
 use crate::holiday_util;
 use crate::lunar::Lunar;
@@ -308,6 +309,31 @@ impl Solar {
     pub fn other_festivals(&self) -> Vec<&'static str> {
         let key = format!("{}-{}", self.month, self.day);
         solar_util::OTHER_FESTIVAL.get(key.as_str()).cloned().unwrap_or_default()
+    }
+
+    /// Unified events for the current solar date.
+    pub fn events(&self) -> Vec<Event> {
+        let mut events = Vec::new();
+
+        for name in self.festivals() {
+            events.push(Event::new(EventKind::SolarFestival, name, *self));
+        }
+        for name in self.other_festivals() {
+            events.push(Event::new(EventKind::SolarOtherFestival, name, *self));
+        }
+        for holiday in holiday_util::get_holidays(&format!("{:04}{:02}{:02}", self.year, self.month, self.day)) {
+            let detail = if holiday.is_work() {
+                format!("workday remap to {}", holiday.target())
+            } else {
+                format!("holiday target {}", holiday.target())
+            };
+            events.push(Event::with_detail(EventKind::Holiday, holiday.name(), *self, detail));
+        }
+        if let Some(jieqi) = self.lunar().current_jie_qi() {
+            events.push(Event::new(EventKind::JieQi, jieqi.name(), *self));
+        }
+
+        events
     }
 
     /// 与另一日期的天数差（self - other）。
