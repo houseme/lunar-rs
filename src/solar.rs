@@ -2,7 +2,7 @@
 
 use std::fmt;
 
-use crate::event::{CalendarKind, Event, EventKind, EventSource, dedup_events};
+use crate::event::{CalendarKind, Event, EventKind, EventQuery, EventSource, dedup_events, filter_events};
 use crate::LunarError;
 use crate::holiday_util;
 use crate::lunar::Lunar;
@@ -360,6 +360,10 @@ impl Solar {
         events.extend(lunar.tao().events());
         dedup_events(&mut events);
         events
+    }
+
+    pub fn find_events(&self, query: &EventQuery<'_>) -> Vec<Event> {
+        filter_events(&self.all_events(), query)
     }
 
     /// 与另一日期的天数差（self - other）。

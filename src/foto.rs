@@ -3,7 +3,7 @@
 use std::fmt;
 use std::fmt::Write as _;
 
-use crate::event::{CalendarKind, Event, EventKind, EventSource};
+use crate::event::{CalendarKind, Event, EventKind, EventQuery, EventSource, filter_events};
 use crate::foto_util;
 use crate::lunar::Lunar;
 use crate::lunar_month::LunarMonth;
@@ -144,6 +144,10 @@ impl<'a> Foto<'a> {
         }
 
         events
+    }
+
+    pub fn find_events(&self, query: &EventQuery<'_>) -> Vec<Event> {
+        filter_events(&self.events(), query)
     }
 
     pub const fn is_month_zhai(&self) -> bool {

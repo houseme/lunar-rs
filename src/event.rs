@@ -193,3 +193,79 @@ pub fn dedup_events(events: &mut Vec<Event>) {
     sort_events(events);
     events.dedup();
 }
+
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct EventQuery<'a> {
+    pub calendar_kind: Option<CalendarKind>,
+    pub source: Option<EventSource>,
+    pub kind: Option<EventKind>,
+    pub name_contains: Option<&'a str>,
+    pub detail_contains: Option<&'a str>,
+}
+
+impl<'a> EventQuery<'a> {
+    pub const fn new() -> Self {
+        Self { calendar_kind: None, source: None, kind: None, name_contains: None, detail_contains: None }
+    }
+
+    pub const fn with_calendar_kind(mut self, calendar_kind: CalendarKind) -> Self {
+        self.calendar_kind = Some(calendar_kind);
+        self
+    }
+
+    pub const fn with_source(mut self, source: EventSource) -> Self {
+        self.source = Some(source);
+        self
+    }
+
+    pub const fn with_kind(mut self, kind: EventKind) -> Self {
+        self.kind = Some(kind);
+        self
+    }
+
+    pub fn with_name_contains(mut self, needle: &'a str) -> Self {
+        self.name_contains = Some(needle);
+        self
+    }
+
+    pub fn with_detail_contains(mut self, needle: &'a str) -> Self {
+        self.detail_contains = Some(needle);
+        self
+    }
+
+    pub fn matches(&self, event: &Event) -> bool {
+        if let Some(calendar_kind) = &self.calendar_kind
+            && event.calendar_kind() != calendar_kind
+        {
+            return false;
+        }
+        if let Some(source) = &self.source
+            && event.source() != source
+        {
+            return false;
+        }
+        if let Some(kind) = &self.kind
+            && event.kind() != kind
+        {
+            return false;
+        }
+        if let Some(name_contains) = self.name_contains
+            && !event.name().contains(name_contains)
+        {
+            return false;
+        }
+        if let Some(detail_contains) = self.detail_contains {
+            let Some(detail) = event.detail() else {
+                return false;
+            };
+            if !detail.contains(detail_contains) {
+                return false;
+            }
+        }
+        true
+    }
+}
+
+pub fn filter_events(events: &[Event], query: &EventQuery<'_>) -> Vec<Event> {
+    events.iter().filter(|event| query.matches(event)).cloned().collect()
+}

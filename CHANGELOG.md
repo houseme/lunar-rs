@@ -120,6 +120,10 @@ and this project uses semantic versioning once releases are published.
   - `CalendarKind`,
   - `EventSource`,
   - source/calendar/detail label helpers on `Event`.
+- Added event query utilities:
+  - `EventQuery`,
+  - `filter_events(...)`,
+  - `find_events(...)` on `Solar`, `Lunar`, `Foto` and `Tao`.
 - Added English and Chinese README documentation.
 
 ### Changed

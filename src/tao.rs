@@ -2,7 +2,7 @@
 
 use std::fmt;
 
-use crate::event::{CalendarKind, Event, EventKind, EventSource};
+use crate::event::{CalendarKind, Event, EventKind, EventQuery, EventSource, filter_events};
 use crate::lunar::Lunar;
 use crate::lunar_util;
 use crate::tao_util;
@@ -117,6 +117,10 @@ impl<'a> Tao<'a> {
                 }
             })
             .collect()
+    }
+
+    pub fn find_events(&self, query: &EventQuery<'_>) -> Vec<Event> {
+        filter_events(&self.events(), query)
     }
 
     fn is_day_in(&self, days: &[&str]) -> bool {

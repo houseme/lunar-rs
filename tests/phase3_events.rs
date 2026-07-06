@@ -1,4 +1,4 @@
-use lunar_rs::{CalendarKind, Event, EventKind, EventSource, Lunar, Solar};
+use lunar_rs::{CalendarKind, Event, EventKind, EventQuery, EventSource, Lunar, Solar};
 
 #[test]
 fn solar_events_include_festivals_and_jieqi() {
@@ -107,4 +107,31 @@ fn event_display_text_and_dedup_sort_are_stable() {
     assert_eq!(events.len(), 2);
     assert_eq!(events[0].name(), "A");
     assert_eq!(events[1].display_text(), "B (detail)");
+}
+
+#[test]
+fn event_query_filters_by_kind_and_source() {
+    let solar = Solar::from_ymd(2021, 12, 21).unwrap();
+
+    let jieqi_events = solar.find_events(&EventQuery::new().with_kind(EventKind::JieQi));
+    assert_eq!(jieqi_events.len(), 1);
+    assert_eq!(jieqi_events[0].name(), "冬至");
+
+    let holiday_events = Solar::from_ymd(2024, 1, 1)
+        .unwrap()
+        .find_events(&EventQuery::new().with_source(EventSource::HolidayData));
+    assert!(!holiday_events.is_empty());
+    assert!(holiday_events.iter().all(|event| matches!(event.source(), EventSource::HolidayData)));
+}
+
+#[test]
+fn event_query_filters_by_calendar_and_detail() {
+    let solar = Solar::from_ymd(2021, 12, 21).unwrap();
+    let tao_events = solar.find_events(&EventQuery::new().with_calendar_kind(CalendarKind::Tao));
+    assert!(tao_events.iter().all(|event| matches!(event.calendar_kind(), CalendarKind::Tao)));
+
+    let lunar = Solar::from_ymd(2024, 5, 15).unwrap().lunar();
+    let foto = lunar.foto();
+    let detail_events = foto.find_events(&EventQuery::new().with_detail_contains("犯者"));
+    assert!(detail_events.iter().all(|event| event.detail().is_some_and(|detail| detail.contains("犯者"))));
 }

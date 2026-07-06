@@ -6,7 +6,7 @@ use std::fmt;
 use crate::LunarError;
 use crate::culture::{Direction, Duty, EarthBranch, HeavenStem, Phase, Phenology, SixtyCycle, Zodiac};
 use crate::eight_char::EightChar;
-use crate::event::{CalendarKind, Event, EventKind, EventSource, dedup_events};
+use crate::event::{CalendarKind, Event, EventKind, EventQuery, EventSource, dedup_events, filter_events};
 use crate::fu::Fu;
 use crate::jieqi::JieQi;
 use crate::lunar_time::LunarTime;
@@ -914,6 +914,10 @@ impl Lunar {
         events.extend(self.tao().events());
         dedup_events(&mut events);
         events
+    }
+
+    pub fn find_events(&self, query: &EventQuery<'_>) -> Vec<Event> {
+        filter_events(&self.all_events(), query)
     }
 
     // ---- 彭祖 ----
