@@ -150,7 +150,6 @@ cargo test --features i18n
 
 ```bash
 cargo run --bin lunar_ref_driver -- solar 2024 4 22 23 30 0
-LUNAR_RS_DIFF_REF_BIN=/path/to/reference-driver cargo test diff_reference_sample_matrix -- --ignored
 sh scripts/run_differential_self_check.sh
 ```
 
@@ -165,6 +164,7 @@ sh scripts/run_differential_self_check.sh
 - `tests/solar.rs`、`tests/lunar.rs`、`tests/jieqi.rs`、`tests/eight_char.rs`：
   按领域拆分的黄金用例。
 - `tests/differential.rs`：默认忽略、可接外部参考实现的差分测试骨架。
+- `tests/fixtures/differential_cases.txt`：可维护的差分测试样例矩阵。
 - `src/bin/lunar_ref_driver.rs`：输出稳定 `key=value` 快照的差分测试示例驱动。
 - `scripts/run_differential_self_check.sh`：基于示例驱动的一键本地协议自检脚本。
 

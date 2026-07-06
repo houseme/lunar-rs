@@ -92,6 +92,9 @@ and this project uses semantic versioning once releases are published.
   stable solar snapshot protocol used by the ignored diff suite.
 - Added `scripts/run_differential_self_check.sh` to exercise the ignored diff
   suite against the in-repo sample driver.
+- Added `tests/fixtures/differential_cases.txt` and
+  `scripts/run_differential_matrix.sh` so differential validation can run
+  against a maintained external case matrix.
 - Added an initial `i18n` feature implementation with explicit language-aware
   helpers for weekday, constellation, JieQi, ShengXiao, GanZhi, NineStar, and
   full-string output on core calendar objects.
