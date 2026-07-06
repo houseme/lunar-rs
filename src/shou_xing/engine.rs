@@ -177,9 +177,7 @@ fn m_lon(t: f64, n: i64) -> f64 {
     let t4 = t4 / 1e8;
 
     let nn = if n < 0 { obl as i64 } else { n * 6 };
-    let x = ob.len();
-    for i in 0..x {
-        let f = ob[i];
+    for (i, f) in ob.iter().enumerate() {
         let l = f.len();
         let mut mm = ((nn as f64) * (l as f64) / (obl as f64) + 0.5) as i64;
         if i > 0 {
@@ -344,7 +342,7 @@ fn qi_high(w: f64) -> f64 {
     let mut t = sa_lon_t2(w) * 36525.0;
     t = t - dt_t(t) + ONE_THIRD;
     let v = (t + 0.5).rem_euclid(1.0) * SECOND_PER_DAY;
-    if v < 1200.0 || v > SECOND_PER_DAY - 1200.0 {
+    if !(1200.0..=SECOND_PER_DAY - 1200.0).contains(&v) {
         t = sa_lon_t(w) * 36525.0 - dt_t(t) + ONE_THIRD;
     }
     t
@@ -354,7 +352,7 @@ fn shuo_high(w: f64) -> f64 {
     let mut t = msa_lon_t2(w) * 36525.0;
     t = t - dt_t(t) + ONE_THIRD;
     let v = (t + 0.5).rem_euclid(1.0) * SECOND_PER_DAY;
-    if v < 1800.0 || v > SECOND_PER_DAY - 1800.0 {
+    if !(1800.0..=SECOND_PER_DAY - 1800.0).contains(&v) {
         t = msa_lon_t(w) * 36525.0 - dt_t(t) + ONE_THIRD;
     }
     t

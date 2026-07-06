@@ -11,14 +11,11 @@ const CHANG_SHENG: &[&str; 12] = &["长生", "沐浴", "冠带", "临官", "帝�
 fn chang_sheng_offset(gan: &str) -> i64 {
     match gan {
         "甲" => 1,
-        "丙" => 10,
-        "戊" => 10,
+        "丙" | "戊" => 10,
         "庚" => 7,
         "壬" => 4,
         "乙" => 6,
-        "丁" => 9,
-        "己" => 9,
-        "辛" => 0,
+        "丁" | "己" => 9,
         "癸" => 3,
         _ => 0,
     }
@@ -31,14 +28,14 @@ pub struct EightChar<'a> {
 }
 
 impl<'a> EightChar<'a> {
-    pub(crate) fn from_lunar(lunar: &'a Lunar) -> Self {
+    pub(crate) const fn from_lunar(lunar: &'a Lunar) -> Self {
         Self { sect: 2, lunar }
     }
 
-    pub fn sect(&self) -> u8 {
+    pub const fn sect(&self) -> u8 {
         self.sect
     }
-    pub fn set_sect(&mut self, sect: u8) {
+    pub const fn set_sect(&mut self, sect: u8) {
         self.sect = if sect == 1 { 1 } else { 2 };
     }
     pub const fn lunar(&self) -> &Lunar {
@@ -50,10 +47,10 @@ impl<'a> EightChar<'a> {
         lunar_util::zhi_hide_gan(zhi).iter().map(|h| lunar_util::shi_shen(&format!("{day_gan}{h}"))).collect()
     }
 
-    pub fn day_gan_index(&self) -> i64 {
+    pub const fn day_gan_index(&self) -> i64 {
         if self.sect == 2 { self.lunar.day_gan_index_exact2() } else { self.lunar.day_gan_index_exact() }
     }
-    pub fn day_zhi_index(&self) -> i64 {
+    pub const fn day_zhi_index(&self) -> i64 {
         if self.sect == 2 { self.lunar.day_zhi_index_exact2() } else { self.lunar.day_zhi_index_exact() }
     }
 
@@ -150,7 +147,7 @@ impl<'a> EightChar<'a> {
     pub fn day_na_yin(&self) -> &'static str {
         lunar_util::nayin(&self.day())
     }
-    pub fn day_shi_shen_gan(&self) -> &'static str {
+    pub const fn day_shi_shen_gan(&self) -> &'static str {
         "日主"
     }
     pub fn day_shi_shen_zhi(&self) -> Vec<&'static str> {

@@ -13,7 +13,7 @@ pub struct SolarYear {
 }
 
 impl SolarYear {
-    pub fn from_year(year: i32) -> Self {
+    pub const fn from_year(year: i32) -> Self {
         Self { year }
     }
     pub const fn year(&self) -> i32 {
@@ -26,7 +26,7 @@ impl SolarYear {
         (0..MONTH_IN_YEAR).map(|i| first.next(i)).collect()
     }
 
-    pub fn next(&self, years: i32) -> Self {
+    pub const fn next(&self, years: i32) -> Self {
         Self::from_year(self.year + years)
     }
 }

@@ -15,7 +15,7 @@ pub struct XiaoYun<'a> {
 }
 
 impl<'a> XiaoYun<'a> {
-    pub(crate) fn new(
+    pub(crate) const fn new(
         lunar: &'a Lunar,
         da_yun_start_year: i32,
         da_yun_start_age: i32,
@@ -46,9 +46,9 @@ impl<'a> XiaoYun<'a> {
 
     pub fn gan_zhi(&self) -> String {
         let mut offset = lunar_util::get_jia_zi_index(&self.lunar.time_in_gan_zhi());
-        let mut add = self.index as i64 + 1;
+        let mut add = i64::from(self.index) + 1;
         if self.da_yun_index > 0 {
-            add += (self.da_yun_start_age - 1) as i64;
+            add += i64::from(self.da_yun_start_age - 1);
         }
         if self.forward {
             offset += add;

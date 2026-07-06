@@ -10,7 +10,7 @@ pub struct JieQi {
 }
 
 impl JieQi {
-    pub(crate) fn new(name: &'static str, solar: Solar) -> Self {
+    pub(crate) const fn new(name: &'static str, solar: Solar) -> Self {
         Self { name, solar }
     }
     #[inline]

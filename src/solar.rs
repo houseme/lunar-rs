@@ -7,9 +7,6 @@ use crate::holiday_util;
 use crate::lunar::Lunar;
 use crate::solar_util;
 
-/// J2000.0 历元儒略日。
-pub const J2000: f64 = 2_451_545.0;
-
 /// 阳历日期时间。
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Solar {
@@ -34,7 +31,7 @@ impl Solar {
         if !(1..=12).contains(&month) {
             return Err(LunarError::InvalidSolar { year, month, day, hour, minute, second });
         }
-        if day < 1 || day > 31 {
+        if !(1..=31).contains(&day) {
             return Err(LunarError::InvalidSolar { year, month, day, hour, minute, second });
         }
         if year == 1582 && month == 10 {
@@ -106,15 +103,16 @@ impl Solar {
             day += 1;
         }
 
-        Self::from_ymd_hms(year as i32, month as i32, day as i32, hour as i32, minute as i32, second as i32)
-            .unwrap_or_else(|_| Self {
+        Self::from_ymd_hms(year as i32, month as i32, day as i32, hour as i32, minute as i32, second as i32).unwrap_or(
+            Self {
                 year: year as i32,
                 month: month as i32,
                 day: day as i32,
                 hour: hour as i32,
                 minute: minute as i32,
                 second: second as i32,
-            })
+            },
+        )
     }
 
     #[inline]
@@ -143,7 +141,7 @@ impl Solar {
     }
 
     #[inline]
-    pub fn is_leap_year(&self) -> bool {
+    pub const fn is_leap_year(&self) -> bool {
         solar_util::is_leap_year(self.year)
     }
 
@@ -243,7 +241,7 @@ impl Solar {
         if let Some(f) = solar_util::FESTIVAL.get(key.as_str()) {
             l.push(*f);
         }
-        let weeks = ((self.day as f64) / 7.0).ceil() as i32;
+        let weeks = (f64::from(self.day) / 7.0).ceil() as i32;
         let week = self.week();
         let key2 = format!("{}-{}-{}", self.month, weeks, week);
         if let Some(f) = solar_util::WEEK_FESTIVAL.get(key2.as_str()) {
@@ -265,12 +263,12 @@ impl Solar {
     }
 
     /// 与另一日期的天数差（self - other）。
-    pub fn subtract(&self, other: &Solar) -> i32 {
+    pub fn subtract(&self, other: &Self) -> i32 {
         solar_util::days_between(other.year, other.month, other.day, self.year, self.month, self.day)
     }
 
     /// 与另一时刻的分钟差（self - other）。
-    pub fn subtract_minute(&self, other: &Solar) -> i32 {
+    pub fn subtract_minute(&self, other: &Self) -> i32 {
         let mut days = self.subtract(other);
         let cm = self.hour * 60 + self.minute;
         let sm = other.hour * 60 + other.minute;
@@ -282,12 +280,12 @@ impl Solar {
         m + days * 1440
     }
 
-    pub fn is_after(&self, other: &Solar) -> bool {
+    pub fn is_after(&self, other: &Self) -> bool {
         (self.year, self.month, self.day, self.hour, self.minute, self.second)
             > (other.year, other.month, other.day, other.hour, other.minute, other.second)
     }
 
-    pub fn is_before(&self, other: &Solar) -> bool {
+    pub fn is_before(&self, other: &Self) -> bool {
         solar_util::is_before(
             self.year,
             self.month,
@@ -305,7 +303,7 @@ impl Solar {
     }
 
     /// 推进 / 回退若干年。
-    pub fn next_year(&self, years: i32) -> Solar {
+    pub fn next_year(&self, years: i32) -> Self {
         let y = self.year + years;
         let m = self.month;
         let mut d = self.day;
@@ -316,11 +314,11 @@ impl Solar {
         } else if m == 2 && d > 28 && !solar_util::is_leap_year(y) {
             d = 28;
         }
-        Solar::from_ymd_hms(y, m, d, self.hour, self.minute, self.second).unwrap_or(*self)
+        Self::from_ymd_hms(y, m, d, self.hour, self.minute, self.second).unwrap_or(*self)
     }
 
     /// 推进 / 回退若干月。
-    pub fn next_month(&self, months: i32) -> Solar {
+    pub fn next_month(&self, months: i32) -> Self {
         let (y, m) = next_ym(self.year, self.month, months);
         let mut d = self.day;
         if y == 1582 && m == 10 {
@@ -333,11 +331,11 @@ impl Solar {
                 d = max_day;
             }
         }
-        Solar::from_ymd_hms(y, m, d, self.hour, self.minute, self.second).unwrap_or(*self)
+        Self::from_ymd_hms(y, m, d, self.hour, self.minute, self.second).unwrap_or(*self)
     }
 
     /// 推进 / 回退若干天（正确处理 1582 历法改革跳过的 10 天）。
-    pub fn next_day(&self, days: i32) -> Solar {
+    pub fn next_day(&self, days: i32) -> Self {
         let mut y = self.year;
         let mut m = self.month;
         let mut d = self.day;
@@ -370,30 +368,26 @@ impl Solar {
         if y == 1582 && m == 10 && d > 4 {
             d += 10;
         }
-        Solar::from_ymd_hms(y, m, d, self.hour, self.minute, self.second).unwrap_or(*self)
+        Self::from_ymd_hms(y, m, d, self.hour, self.minute, self.second).unwrap_or(*self)
     }
 
     /// 推进若干天，可选仅工作日。
-    pub fn next(&self, days: i32, only_workday: bool) -> Solar {
+    pub fn next(&self, days: i32, only_workday: bool) -> Self {
         if !only_workday {
             return self.next_day(days);
         }
         let mut o = *self;
         if days != 0 {
-            let mut rest = days;
-            let mut add = 1;
-            if days < 0 {
-                rest = -days;
-                add = -1;
-            }
+            let (mut rest, add) = if days < 0 { (-days, -1) } else { (days, 1) };
             while rest > 0 {
                 o = o.next_day(add);
-                let work = if let Some(holiday) = holiday_util::get_holiday_by_ymd(o.year, o.month, o.day) {
-                    holiday.is_work()
-                } else {
-                    let w = o.week();
-                    !(w == 0 || w == 6)
-                };
+                let work = holiday_util::get_holiday_by_ymd(o.year, o.month, o.day).map_or_else(
+                    || {
+                        let w = o.week();
+                        !(w == 0 || w == 6)
+                    },
+                    |holiday| holiday.is_work(),
+                );
                 if work {
                     rest -= 1;
                 }
@@ -403,17 +397,9 @@ impl Solar {
     }
 
     /// 推进 / 回退若干小时。
-    pub fn next_hour(&self, hours: i32) -> Solar {
+    pub fn next_hour(&self, hours: i32) -> Self {
         let h = self.hour + hours;
-        let n;
-        let mut hour;
-        if h < 0 {
-            n = -1;
-            hour = -h;
-        } else {
-            n = 1;
-            hour = h;
-        }
+        let (n, mut hour) = if h < 0 { (-1, -h) } else { (1, h) };
         let mut days = hour / 24 * n;
         hour = hour % 24 * n;
         if hour < 0 {
@@ -421,7 +407,7 @@ impl Solar {
             days -= 1;
         }
         let o = self.next_day(days);
-        Solar::from_ymd_hms(o.year, o.month, o.day, hour, o.minute, o.second).unwrap_or(o)
+        Self::from_ymd_hms(o.year, o.month, o.day, hour, o.minute, o.second).unwrap_or(o)
     }
 
     /// 薪资倍率（1 平时 / 2 休息日 / 3 法定节假日）。
@@ -469,7 +455,7 @@ impl fmt::Display for Solar {
 }
 
 /// 计算 (year, month) + months 后的 (year, month)。
-pub(crate) fn next_ym(year: i32, month: i32, months: i32) -> (i32, i32) {
+pub const fn next_ym(year: i32, month: i32, months: i32) -> (i32, i32) {
     let total = (year * 12 + (month - 1)) + months;
     let y = total.div_euclid(12);
     let m = total.rem_euclid(12) + 1;

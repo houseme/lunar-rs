@@ -200,7 +200,7 @@ pub static OTHER_FESTIVAL: LazyLock<HashMap<&'static str, Vec<&'static str>>> = 
 
 /// 是否公历闰年（1600 年前用儒略历规则）。
 #[inline]
-pub fn is_leap_year(year: i32) -> bool {
+pub const fn is_leap_year(year: i32) -> bool {
     if year < 1600 {
         return year % 4 == 0;
     }
@@ -208,7 +208,7 @@ pub fn is_leap_year(year: i32) -> bool {
 }
 
 /// 该年总天数（1582 年为 355）。
-pub fn days_of_year(year: i32) -> i32 {
+pub const fn days_of_year(year: i32) -> i32 {
     if year == 1582 {
         return 355;
     }
@@ -216,7 +216,7 @@ pub fn days_of_year(year: i32) -> i32 {
 }
 
 /// 该月天数（1582-10 为 21）。
-pub fn days_of_month(year: i32, month: i32) -> i32 {
+pub const fn days_of_month(year: i32, month: i32) -> i32 {
     if year == 1582 && month == 10 {
         return 21;
     }
@@ -236,24 +236,25 @@ pub fn days_in_year(year: i32, month: i32, day: i32) -> i32 {
 
 /// 儒略日（含时分秒小数）。
 pub fn julian_day(year: i32, month: i32, day: i32, hour: i32, minute: i32, second: i32) -> f64 {
-    let mut y = year;
-    let mut m = month;
-    let d = day as f64 + (((second as f64 / 60.0 + minute as f64) / 60.0 + hour as f64) / 24.0);
-    let mut g = false;
-    if y * 372 + m * 31 + d as i32 >= 588_829 {
-        g = true;
+    let mut normalized_year = year;
+    let mut normalized_month = month;
+    let day_fraction =
+        f64::from(day) + (((f64::from(second) / 60.0 + f64::from(minute)) / 60.0 + f64::from(hour)) / 24.0);
+    let gregorian = normalized_year * 372 + normalized_month * 31 + day_fraction as i32 >= 588_829;
+    if normalized_month <= 2 {
+        normalized_month += 12;
+        normalized_year -= 1;
     }
-    if m <= 2 {
-        m += 12;
-        y -= 1;
-    }
-    let n = if g {
-        let nv = y / 100;
+    let correction = if gregorian {
+        let nv = normalized_year / 100;
         2 - nv + nv / 4
     } else {
         0
     };
-    ((365.25 * (y as f64 + 4716.0)) as i64) as f64 + ((30.6001 * (m as f64 + 1.0)) as i64) as f64 + d + n as f64
+    ((365.25 * (f64::from(normalized_year) + 4716.0)) as i64) as f64
+        + ((30.6001 * (f64::from(normalized_month) + 1.0)) as i64) as f64
+        + day_fraction
+        + f64::from(correction)
         - 1524.5
 }
 
@@ -267,7 +268,7 @@ pub fn week(year: i32, month: i32, day: i32) -> i32 {
 /// 该月有几周（按指定起始星期）。
 pub fn weeks_of_month(year: i32, month: i32, start: i32) -> i32 {
     let total = days_of_month(year, month) + week(year, month, 1) - start;
-    ((total as f64) / 7.0).ceil() as i32
+    (f64::from(total) / 7.0).ceil() as i32
 }
 
 /// a 是否早于 b（逐字段比较）。
@@ -291,21 +292,23 @@ pub fn is_before(
 
 /// 两个日期之间的天数差。返回值：若 a 早于 b 为正，a 晚于 b 为负。
 pub fn days_between(ay: i32, am: i32, ad: i32, by: i32, bm: i32, bd: i32) -> i32 {
-    if ay == by {
-        days_in_year(by, bm, bd) - days_in_year(ay, am, ad)
-    } else if ay > by {
-        let mut days = days_of_year(by) - days_in_year(by, bm, bd);
-        for i in by + 1..ay {
-            days += days_of_year(i);
+    match ay.cmp(&by) {
+        std::cmp::Ordering::Equal => days_in_year(by, bm, bd) - days_in_year(ay, am, ad),
+        std::cmp::Ordering::Greater => {
+            let mut days = days_of_year(by) - days_in_year(by, bm, bd);
+            for i in by + 1..ay {
+                days += days_of_year(i);
+            }
+            days += days_in_year(ay, am, ad);
+            -days
         }
-        days += days_in_year(ay, am, ad);
-        -days
-    } else {
-        let mut days = days_of_year(ay) - days_in_year(ay, am, ad);
-        for i in ay + 1..by {
-            days += days_of_year(i);
+        std::cmp::Ordering::Less => {
+            let mut days = days_of_year(ay) - days_in_year(ay, am, ad);
+            for i in ay + 1..by {
+                days += days_of_year(i);
+            }
+            days += days_in_year(by, bm, bd);
+            days
         }
-        days += days_in_year(by, bm, bd);
-        days
     }
 }

@@ -12,13 +12,13 @@ use crate::shou_xing;
 use crate::solar::Solar;
 
 /// 二十四节气（冬至起算）。
-pub(crate) const JIE_QI: &[&str; 24] = &[
+pub const JIE_QI: &[&str; 24] = &[
     "冬至", "小寒", "大寒", "立春", "雨水", "惊蛰", "春分", "清明", "谷雨", "立夏", "小满", "芒种", "夏至", "小暑",
     "大暑", "立秋", "处暑", "白露", "秋分", "寒露", "霜降", "立冬", "小雪", "大雪",
 ];
 
 /// 31 项节气查找表（含跨年边界的拼音 token 副本）。**顺序承载逻辑**。
-pub(crate) const JIE_QI_IN_USE: &[&str; 31] = &[
+pub const JIE_QI_IN_USE: &[&str; 31] = &[
     "DA_XUE", "冬至", "小寒", "大寒", "立春", "雨水", "惊蛰", "春分", "清明", "谷雨", "立夏", "小满", "芒种", "夏至",
     "小暑", "大暑", "立秋", "处暑", "白露", "秋分", "寒露", "霜降", "立冬", "小雪", "大雪", "DONG_ZHI", "XIAO_HAN",
     "DA_HAN", "LI_CHUN", "YU_SHUI", "JING_ZHE",
@@ -55,6 +55,14 @@ const LEAP_12: &[i32] = &[
 ];
 
 static CACHE: LazyLock<RwLock<HashMap<i32, Arc<LunarYear>>>> = LazyLock::new(|| RwLock::new(HashMap::new()));
+const YMC_SHIFT_A_START: f64 = 1_724_360.0;
+const YMC_SHIFT_A_END: f64 = 1_729_794.0;
+const YMC_SHIFT_B_START: f64 = 1_807_724.0;
+const YMC_SHIFT_B_END: f64 = 1_808_699.0;
+
+fn is_ymc_boundary(dm: f64) -> bool {
+    (dm - YMC_SHIFT_A_END).abs() < f64::EPSILON || (dm - YMC_SHIFT_B_END).abs() < f64::EPSILON
+}
 
 /// 农历年。
 pub struct LunarYear {
@@ -67,23 +75,18 @@ pub struct LunarYear {
 
 impl LunarYear {
     /// 获取指定农历年（命中缓存复用）。
-    pub fn from_year(year: i32) -> Arc<LunarYear> {
+    pub fn from_year(year: i32) -> Arc<Self> {
         {
             let cache = CACHE.read().unwrap();
             if let Some(y) = cache.get(&year) {
                 return Arc::clone(y);
             }
         }
-        let mut y = LunarYear {
-            year,
-            gan_index: 0,
-            zhi_index: 0,
-            months: Vec::with_capacity(15),
-            jie_qi_julian_days: [0.0; 31],
-        };
+        let mut y =
+            Self { year, gan_index: 0, zhi_index: 0, months: Vec::with_capacity(15), jie_qi_julian_days: [0.0; 31] };
         let offset = year - 4;
-        let mut gan_index = offset.rem_euclid(10) as i64;
-        let mut zhi_index = offset.rem_euclid(12) as i64;
+        let mut gan_index = i64::from(offset.rem_euclid(10));
+        let mut zhi_index = i64::from(offset.rem_euclid(12));
         if gan_index < 0 {
             gan_index += 10;
         }
@@ -108,13 +111,13 @@ impl LunarYear {
         let mut months_idx = [0_i64; 15];
 
         let current_year = self.year;
-        let mut jd = ((current_year - 2000) as f64 * 365.2422 + 180.0).floor();
-        let mut w = ((jd - 355.0 + 183.0) / 365.2422).floor() * 365.2422 + 355.0;
+        let jd = (f64::from(current_year - 2000) * 365.2422 + 180.0).floor();
+        let mut w = ((jd - 355.0 + 183.0) / 365.2422).floor().mul_add(365.2422, 355.0);
         if shou_xing::calc_qi(w) > jd {
             w -= 365.2422;
         }
-        for i in 0..26 {
-            jq[i] = shou_xing::calc_qi(w + 15.2184 * i as f64);
+        for (i, item) in jq.iter_mut().enumerate().take(26) {
+            *item = shou_xing::calc_qi(15.2184f64.mul_add(i as f64, w));
         }
         let j = JIE_QI_IN_USE.len();
         for i in 0..j {
@@ -123,7 +126,7 @@ impl LunarYear {
             } else if i <= 26 {
                 shou_xing::qi_accurate_2(jq[i - 1])
             } else {
-                shou_xing::qi_accurate_2(jq[25] + 15.2184 * (i as f64 - 26.0))
+                shou_xing::qi_accurate_2(15.2184f64.mul_add(i as f64 - 26.0, jq[25]))
             };
             self.jie_qi_julian_days[i] = d + shou_xing::J2000;
         }
@@ -132,8 +135,8 @@ impl LunarYear {
         if w2 > jq[0] {
             w2 -= 29.53;
         }
-        for i in 0..16 {
-            hs[i] = shou_xing::calc_shuo(w2 + 29.5306 * i as f64);
+        for (i, item) in hs.iter_mut().enumerate() {
+            *item = shou_xing::calc_shuo(29.5306f64.mul_add(i as f64, w2));
         }
         for i in 0..15 {
             day_counts[i] = (hs[i + 1] - hs[i]) as i64;
@@ -170,11 +173,10 @@ impl LunarYear {
             let dm = hs[i] + shou_xing::J2000;
             let v2 = months_idx[i];
             let mut mc = YMC[(v2 % 12) as usize];
-            if (1724360.0..1729794.0).contains(&dm) {
+            if (YMC_SHIFT_A_START..YMC_SHIFT_A_END).contains(&dm) || (YMC_SHIFT_B_START..YMC_SHIFT_B_END).contains(&dm)
+            {
                 mc = YMC[((v2 + 1) % 12) as usize];
-            } else if (1807724.0..1808699.0).contains(&dm) {
-                mc = YMC[((v2 + 1) % 12) as usize];
-            } else if dm == 1729794.0 || dm == 1808699.0 {
+            } else if is_ymc_boundary(dm) {
                 mc = 12;
             }
             if fm == -1 {
@@ -189,7 +191,7 @@ impl LunarYear {
             let mut month_code = mc;
             if i as i64 == leap_index {
                 month_code = -month_code;
-            } else if dm == 1729794.0 || dm == 1808699.0 {
+            } else if is_ymc_boundary(dm) {
                 month_code = -11;
             }
             self.months.push(LunarMonth::new(
@@ -238,7 +240,7 @@ impl LunarYear {
         self.months.iter().filter(|m| m.year == self.year).map(|m| m.day_count).sum()
     }
     /// 31 个节气儒略日。
-    pub fn jie_qi_julian_days(&self) -> &[f64; 31] {
+    pub const fn jie_qi_julian_days(&self) -> &[f64; 31] {
         &self.jie_qi_julian_days
     }
     /// 查找当年指定月（返回 `None` 表示该年无此月）。
@@ -268,7 +270,7 @@ impl LunarYear {
     /// 年九星。
     pub fn nine_star(&self) -> NineStar {
         let index = lunar_util::get_jia_zi_index(&self.gan_zhi()) + 1;
-        let yuan = (((self.year + 2696) / 60) % 3) as i64;
+        let yuan = i64::from(((self.year + 2696) / 60) % 3);
         let mut offset = (62 + yuan * 3 - index) % 9;
         if offset == 0 {
             offset = 9;
@@ -320,8 +322,8 @@ impl LunarYear {
         lunar_util::position_desc(self.position_tai_sui())
     }
 
-    pub fn next(&self, n: i32) -> Arc<LunarYear> {
-        LunarYear::from_year(self.year + n)
+    pub fn next(&self, n: i32) -> Arc<Self> {
+        Self::from_year(self.year + n)
     }
 
     // ---- 杂占（几鼠偷粮 / 几牛耕田 等）----

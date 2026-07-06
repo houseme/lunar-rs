@@ -36,56 +36,56 @@ pub struct NineStar {
 }
 
 impl NineStar {
-    pub fn from_index(index: i64) -> Self {
+    pub const fn from_index(index: i64) -> Self {
         Self { index }
     }
     #[inline]
     pub const fn index(&self) -> i64 {
         self.index
     }
-    pub fn number(&self) -> &'static str {
+    pub const fn number(&self) -> &'static str {
         NUMBER[self.index as usize]
     }
-    pub fn color(&self) -> &'static str {
+    pub const fn color(&self) -> &'static str {
         COLOR[self.index as usize]
     }
-    pub fn wu_xing(&self) -> &'static str {
+    pub const fn wu_xing(&self) -> &'static str {
         WU_XING[self.index as usize]
     }
-    pub fn position(&self) -> &'static str {
+    pub const fn position(&self) -> &'static str {
         POSITION[self.index as usize]
     }
     pub fn position_desc(&self) -> &'static str {
         lunar_util::position_desc(self.position())
     }
-    pub fn name_in_xuan_kong(&self) -> &'static str {
+    pub const fn name_in_xuan_kong(&self) -> &'static str {
         NAME_XUAN_KONG[self.index as usize]
     }
-    pub fn name_in_bei_dou(&self) -> &'static str {
+    pub const fn name_in_bei_dou(&self) -> &'static str {
         NAME_BEI_DOU[self.index as usize]
     }
-    pub fn name_in_qi_men(&self) -> &'static str {
+    pub const fn name_in_qi_men(&self) -> &'static str {
         NAME_QI_MEN[self.index as usize]
     }
-    pub fn name_in_tai_yi(&self) -> &'static str {
+    pub const fn name_in_tai_yi(&self) -> &'static str {
         NAME_TAI_YI[self.index as usize]
     }
-    pub fn luck_in_qi_men(&self) -> &'static str {
+    pub const fn luck_in_qi_men(&self) -> &'static str {
         LUCK_QI_MEN[self.index as usize]
     }
-    pub fn luck_in_xuan_kong(&self) -> &'static str {
+    pub const fn luck_in_xuan_kong(&self) -> &'static str {
         LUCK_XUAN_KONG[self.index as usize]
     }
-    pub fn yin_yang_in_qi_men(&self) -> &'static str {
+    pub const fn yin_yang_in_qi_men(&self) -> &'static str {
         YIN_YANG_QI_MEN[self.index as usize]
     }
-    pub fn type_in_tai_yi(&self) -> &'static str {
+    pub const fn type_in_tai_yi(&self) -> &'static str {
         TYPE_TAI_YI[self.index as usize]
     }
-    pub fn ba_men_in_qi_men(&self) -> &'static str {
+    pub const fn ba_men_in_qi_men(&self) -> &'static str {
         BA_MEN_QI_MEN[self.index as usize]
     }
-    pub fn song_in_tai_yi(&self) -> &'static str {
+    pub const fn song_in_tai_yi(&self) -> &'static str {
         SONG_TAI_YI[self.index as usize]
     }
 }

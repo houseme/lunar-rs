@@ -65,9 +65,9 @@ fn convert_jie_qi(name: &str) -> &'static str {
 
 // 在 JIE_QI_IN_USE 中查找静态字符串（中文项），保证返回 'static。
 fn static_all_jieqi(name: &str) -> &'static str {
-    for s in JIE_QI_IN_USE.iter() {
+    for s in JIE_QI_IN_USE {
         if *s == name {
-            return *s;
+            return s;
         }
     }
     // 兜底（不应到达）
@@ -92,10 +92,10 @@ impl Lunar {
         if day > m.day_count() {
             return Err(LunarError::LunarDayOverflow { year, month, day, max: m.day_count() });
         }
-        let noon = Solar::from_julian_day(m.first_julian_day() + (day - 1) as f64);
+        let noon = Solar::from_julian_day(m.first_julian_day() + f64::from(day - 1));
         let solar = Solar::from_ymd_hms(noon.year(), noon.month(), noon.day(), hour, minute, second)
             .map_err(|_| LunarError::InvalidLunar { year, month, day })?;
-        let lunar_year = if noon.year() != year { LunarYear::from_year(noon.year()) } else { y };
+        let lunar_year = if noon.year() == year { y } else { LunarYear::from_year(noon.year()) };
         let mut lunar = Self {
             year,
             month,
@@ -141,7 +141,7 @@ impl Lunar {
         let mut lunar_year = 0_i32;
         let mut lunar_month = 0_i32;
         let mut lunar_day = 0_i32;
-        for m in ly.months().iter() {
+        for m in &ly.months() {
             let days = solar.subtract(&Solar::from_julian_day(m.first_julian_day()));
             if days < m.day_count() {
                 lunar_year = m.year();
@@ -194,8 +194,8 @@ impl Lunar {
 
     fn compute_year(&mut self) {
         let offset = self.year - 4;
-        let mut year_gan_index = offset.rem_euclid(10) as i64;
-        let mut year_zhi_index = offset.rem_euclid(12) as i64;
+        let mut year_gan_index = i64::from(offset.rem_euclid(10));
+        let mut year_zhi_index = i64::from(offset.rem_euclid(12));
         if year_gan_index < 0 {
             year_gan_index += 10;
         }
@@ -215,7 +215,7 @@ impl Lunar {
         let solar_ymd_hms = self.solar.to_ymd_hms();
 
         let li_chun_solar = self.jq("立春");
-        let li_chun = if li_chun_solar.year() != solar_year { self.jq("LI_CHUN") } else { li_chun_solar };
+        let li_chun = if li_chun_solar.year() == solar_year { li_chun_solar } else { self.jq("LI_CHUN") };
         let li_chun_ymd = li_chun.to_ymd();
         let li_chun_ymd_hms = li_chun.to_ymd_hms();
 
@@ -268,10 +268,7 @@ impl Lunar {
         while i < size {
             let jie = JIE_QI_IN_USE[i];
             let end = self.jq(jie);
-            let symd = match start {
-                Some(s) => s.to_ymd(),
-                None => ymd.clone(),
-            };
+            let symd = start.map_or_else(|| ymd.clone(), |s| s.to_ymd());
             if ymd >= symd && ymd < end.to_ymd() {
                 break;
             }
@@ -279,7 +276,7 @@ impl Lunar {
             index += 1;
             i += 2;
         }
-        let mut add = if index < 0 { 1 } else { 0 };
+        let mut add = i64::from(index < 0);
         let offset = (((self.year_gan_index_by_li_chun + add) % 5 + 1) * 2) % 10;
         add = index;
         if add < 0 {
@@ -298,10 +295,7 @@ impl Lunar {
         while i < size {
             let jie = JIE_QI_IN_USE[i];
             let end = self.jq(jie);
-            let stime = match start {
-                Some(s) => s.to_ymd_hms(),
-                None => ymdhms.clone(),
-            };
+            let stime = start.map_or_else(|| ymdhms.clone(), |s| s.to_ymd_hms());
             if ymdhms >= stime && ymdhms < end.to_ymd_hms() {
                 break;
             }
@@ -309,7 +303,7 @@ impl Lunar {
             index += 1;
             i += 2;
         }
-        add = if index < 0 { 1 } else { 0 };
+        add = i64::from(index < 0);
         let offset = (((self.year_gan_index_exact + add) % 5 + 1) * 2) % 10;
         add = index;
         if add < 0 {
@@ -364,7 +358,7 @@ impl Lunar {
     }
 
     fn jq(&self, key: &str) -> Solar {
-        *self.jie_qi.get(key).unwrap_or(&Solar::from_ymd(2000, 1, 1).unwrap())
+        self.jie_qi.get(key).copied().unwrap_or_else(|| Solar::from_ymd(2000, 1, 1).unwrap())
     }
 
     // ---- 字段访问 ----
@@ -397,7 +391,7 @@ impl Lunar {
         self.solar
     }
     /// 往后 / 往前推 n 天。
-    pub fn next(&self, days: i32) -> Lunar {
+    pub fn next(&self, days: i32) -> Self {
         self.solar.next_day(days).lunar()
     }
 
@@ -639,7 +633,7 @@ impl Lunar {
     pub fn jie_qi(&self) -> &'static str {
         let mut name = "冬至";
         let mut found = false;
-        for key in JIE_QI_IN_USE.iter() {
+        for key in JIE_QI_IN_USE {
             let d = self.jq(key);
             if d.year() == self.solar.year() && d.month() == self.solar.month() && d.day() == self.solar.day() {
                 name = key;
@@ -649,7 +643,7 @@ impl Lunar {
         }
         if found { convert_jie_qi(name) } else { "" }
     }
-    pub fn jie_qi_table(&self) -> &HashMap<&'static str, Solar> {
+    pub const fn jie_qi_table(&self) -> &HashMap<&'static str, Solar> {
         &self.jie_qi
     }
     pub fn jie_qi_list(&self) -> Vec<&'static str> {
@@ -657,7 +651,7 @@ impl Lunar {
     }
     pub fn current_jie_qi(&self) -> Option<JieQi> {
         let name = self.jie_qi();
-        if !name.is_empty() { Some(JieQi::new(name, self.solar)) } else { None }
+        if name.is_empty() { None } else { Some(JieQi::new(name, self.solar)) }
     }
 
     fn near_jie_qi(&self, forward: bool, conditions: Option<&[&'static str]>, whole_day: bool) -> Option<JieQi> {
@@ -666,7 +660,7 @@ impl Lunar {
         let filter = !filters.is_empty();
         let today = if whole_day { self.solar.to_ymd() } else { self.solar.to_ymd_hms() };
         let mut near: Option<(&'static str, Solar)> = None;
-        for key in JIE_QI_IN_USE.iter() {
+        for key in JIE_QI_IN_USE {
             let jq_name = convert_jie_qi(key);
             if filter && !filters.contains_key(jq_name) {
                 continue;
@@ -843,7 +837,7 @@ impl Lunar {
         lunar_util::position_desc(self.year_position_tai_sui_by_sect(2))
     }
 
-    fn month_position_tai_sui_inner(&self, month_zhi_index: i64, month_gan_index: i64) -> &'static str {
+    fn month_position_tai_sui_inner(month_zhi_index: i64, month_gan_index: i64) -> &'static str {
         let mut m = month_zhi_index - lunar_util::BASE_MONTH_ZHI_INDEX;
         if m < 0 {
             m += 12;
@@ -864,13 +858,13 @@ impl Lunar {
             3 => (self.month_zhi_index_exact, self.month_gan_index_exact),
             _ => (self.month_zhi_index, self.month_gan_index),
         };
-        self.month_position_tai_sui_inner(mzi, mgi)
+        Self::month_position_tai_sui_inner(mzi, mgi)
     }
     pub fn month_position_tai_sui_desc(&self) -> &'static str {
         lunar_util::position_desc(self.month_position_tai_sui())
     }
 
-    fn day_position_tai_sui_inner(&self, day_in_gan_zhi: &str, year_zhi_index: i64) -> &'static str {
+    fn day_position_tai_sui_inner(day_in_gan_zhi: &str, year_zhi_index: i64) -> &'static str {
         if "甲子，乙丑，丙寅，丁卯，戊辰，己巳".contains(day_in_gan_zhi) {
             "震"
         } else if "丙子，丁丑，戊寅，己卯，庚辰，辛巳".contains(day_in_gan_zhi) {
@@ -894,7 +888,7 @@ impl Lunar {
             3 => (self.day_in_gan_zhi(), self.year_zhi_index_exact),
             _ => (self.day_in_gan_zhi_exact2(), self.year_zhi_index_by_li_chun),
         };
-        self.day_position_tai_sui_inner(&day_in_gan_zhi, year_zhi_index)
+        Self::day_position_tai_sui_inner(&day_in_gan_zhi, year_zhi_index)
     }
     pub fn day_position_tai_sui_desc(&self) -> &'static str {
         lunar_util::position_desc(self.day_position_tai_sui())
@@ -1092,10 +1086,10 @@ impl Lunar {
         let idx = ((month + self.day - 2) % 6) as usize;
         lunar_util::tables::LIU_YAO[idx]
     }
-    pub fn week(&self) -> i32 {
+    pub const fn week(&self) -> i32 {
         self.week_index
     }
-    pub fn week_in_chinese(&self) -> &'static str {
+    pub const fn week_in_chinese(&self) -> &'static str {
         solar_util::WEEK[self.week_index as usize]
     }
 
@@ -1242,7 +1236,7 @@ impl Lunar {
                 break;
             }
         }
-        let mut index = (self.solar.subtract(&jq.solar()) / 5) as i64;
+        let mut index = i64::from(self.solar.subtract(&jq.solar()) / 5);
         if index > 2 {
             index = 2;
         }
@@ -1261,7 +1255,7 @@ impl Lunar {
             year_offset += 60;
         }
         let yuan = ((self.year + year_offset as i32 + 2696) / 60) % 3;
-        let mut offset = (62 + yuan as i64 * 3 - index_exact) % 9;
+        let mut offset = (62 + i64::from(yuan) * 3 - index_exact) % 9;
         if offset == 0 {
             offset = 9;
         }
@@ -1278,7 +1272,7 @@ impl Lunar {
         };
         self.year_nine_star_inner(&g)
     }
-    fn month_nine_star_inner(&self, year_zhi_index: i64, month_zhi_index: i64) -> NineStar {
+    const fn month_nine_star_inner(year_zhi_index: i64, month_zhi_index: i64) -> NineStar {
         let index = year_zhi_index % 3;
         let mut n = 27 - index * 3;
         if month_zhi_index < lunar_util::BASE_MONTH_ZHI_INDEX {
@@ -1287,16 +1281,16 @@ impl Lunar {
         let offset = (n - month_zhi_index) % 9;
         NineStar::from_index(offset)
     }
-    pub fn month_nine_star(&self) -> NineStar {
+    pub const fn month_nine_star(&self) -> NineStar {
         self.month_nine_star_by_sect(2)
     }
-    pub fn month_nine_star_by_sect(&self, sect: u8) -> NineStar {
+    pub const fn month_nine_star_by_sect(&self, sect: u8) -> NineStar {
         let (yzi, mzi) = match sect {
             1 => (self.year_zhi_index, self.month_zhi_index),
             3 => (self.year_zhi_index_exact, self.month_zhi_index_exact),
             _ => (self.year_zhi_index_by_li_chun, self.month_zhi_index),
         };
-        self.month_nine_star_inner(yzi, mzi)
+        Self::month_nine_star_inner(yzi, mzi)
     }
     pub fn day_nine_star(&self) -> NineStar {
         let solar_ymd = self.solar.to_ymd();
@@ -1335,16 +1329,12 @@ impl Lunar {
         } else {
             0
         };
-        NineStar::from_index(offset as i64)
+        NineStar::from_index(i64::from(offset))
     }
     pub fn time_nine_star(&self) -> NineStar {
         let solar_ymd = self.solar.to_ymd();
-        let mut asc = false;
-        if solar_ymd >= self.jq("冬至").to_ymd() && solar_ymd < self.jq("夏至").to_ymd() {
-            asc = true;
-        } else if solar_ymd >= self.jq("DONG_ZHI").to_ymd() {
-            asc = true;
-        }
+        let asc = (solar_ymd >= self.jq("冬至").to_ymd() && solar_ymd < self.jq("夏至").to_ymd())
+            || solar_ymd >= self.jq("DONG_ZHI").to_ymd();
         let mut start: i64 = if asc { 6 } else { 2 };
         let day_zhi = self.day_zhi();
         if "子午卯酉".contains(day_zhi) {
@@ -1357,17 +1347,17 @@ impl Lunar {
     }
 
     // ---- 包装类型 ----
-    pub fn eight_char(&self) -> EightChar<'_> {
+    pub const fn eight_char(&self) -> EightChar<'_> {
         EightChar::from_lunar(self)
     }
 
     /// 佛历。
-    pub fn foto(&self) -> crate::foto::Foto<'_> {
+    pub const fn foto(&self) -> crate::foto::Foto<'_> {
         crate::foto::Foto::from_lunar(self)
     }
 
     /// 道历。
-    pub fn tao(&self) -> crate::tao::Tao<'_> {
+    pub const fn tao(&self) -> crate::tao::Tao<'_> {
         crate::tao::Tao::from_lunar(self)
     }
 

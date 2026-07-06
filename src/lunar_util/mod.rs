@@ -52,7 +52,7 @@ pub fn get_jia_zi_index(gan_zhi: &str) -> i64 {
 
 /// 把整数格式化为 2 位大写十六进制（与 Go 的 `hex` 一致）。
 fn hex_str(n: i64) -> String {
-    let h = if n < 0 { format!("{:x}", n) } else { format!("{:x}", n as u64) };
+    let h = if n < 0 { format!("{n:x}") } else { format!("{:x}", n as u64) };
     let h = if h.len() < 2 { format!("0{h}") } else { h };
     h.to_uppercase()
 }
@@ -119,16 +119,13 @@ fn get_day_yi_ji(month_gan_zhi: &str, day_gan_zhi: &str, yi: bool) -> Vec<&'stat
     let needle = format!("{day}=");
     let mut right = tables::DAY_YI_JI;
     let mut result = Vec::new();
-    loop {
-        let Some(idx) = right.find(&needle) else {
-            break;
-        };
+    while let Some(idx) = right.find(&needle) {
         right = &right[idx + 3..];
         let mut left = right;
-        if let Some(eq) = left.find('=') {
-            if eq >= 2 {
-                left = &left[..eq - 2];
-            }
+        if let Some(eq) = left.find('=')
+            && eq >= 2
+        {
+            left = &left[..eq - 2];
         }
         let Some(colon) = left.find(':') else {
             break;
@@ -183,10 +180,10 @@ fn get_time_yi_ji(day_gan_zhi: &str, time_gan_zhi: &str, yi: bool) -> Vec<&'stat
     let mut result = Vec::new();
     if let Some(idx) = tables::TIME_YI_JI.find(&needle) {
         let mut left = &tables::TIME_YI_JI[idx + 5..];
-        if let Some(eq) = left.find('=') {
-            if eq >= 4 {
-                left = &left[..eq - 4];
-            }
+        if let Some(eq) = left.find('=')
+            && eq >= 4
+        {
+            left = &left[..eq - 4];
         }
         let end = left.find(',').unwrap_or(left.len());
         let seg = if yi { &left[..end] } else { &left[end + 1..] };
@@ -282,7 +279,7 @@ pub fn shi_shen(two_gans: &str) -> &'static str {
 }
 /// 藏干。
 pub fn zhi_hide_gan(zhi: &str) -> &'static [&'static str] {
-    maps::ZHI_HIDE_GAN.get(zhi).map(|v| v.as_slice()).unwrap_or(&[])
+    maps::ZHI_HIDE_GAN.get(zhi).map_or(&[], std::vec::Vec::as_slice)
 }
 /// 煞方。
 pub fn sha(zhi: &str) -> &'static str {

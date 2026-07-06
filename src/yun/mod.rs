@@ -44,26 +44,25 @@ impl<'a> Yun<'a> {
         let current = self.lunar.solar();
         let (start, end) =
             if self.forward { (current, next.unwrap().solar()) } else { (prev.unwrap().solar(), current) };
-        let (mut year, mut month, mut day, mut hour) = (0_i32, 0_i32, 0_i32, 0_i32);
-        if sect == 2 {
+        let (year, month, day, hour) = if sect == 2 {
             let mut minutes = end.subtract_minute(&start);
-            year = minutes / 4320;
+            let year = minutes / 4320;
             minutes -= year * 4320;
-            month = minutes / 360;
+            let month = minutes / 360;
             minutes -= month * 360;
-            day = minutes / 12;
+            let day = minutes / 12;
             minutes -= day * 12;
-            hour = minutes * 2;
+            (year, month, day, minutes * 2)
         } else {
-            let end_time_zhi_index = if end.hour() != 23 {
+            let end_time_zhi_index = if end.hour() == 23 {
+                11
+            } else {
                 lunar_util::get_time_zhi_index(&format!("{:02}:{:02}", end.hour(), end.minute()))
-            } else {
-                11
             };
-            let start_time_zhi_index = if start.hour() != 23 {
-                lunar_util::get_time_zhi_index(&format!("{:02}:{:02}", start.hour(), start.minute()))
-            } else {
+            let start_time_zhi_index = if start.hour() == 23 {
                 11
+            } else {
+                lunar_util::get_time_zhi_index(&format!("{:02}:{:02}", start.hour(), start.minute()))
             };
             let mut hour_diff = end_time_zhi_index - start_time_zhi_index;
             let mut day_diff = end.subtract(&start);
@@ -72,11 +71,12 @@ impl<'a> Yun<'a> {
                 day_diff -= 1;
             }
             let month_diff = (hour_diff * 10 / 30) as i32;
-            month = day_diff * 4 + month_diff;
-            day = (hour_diff as i32) * 10 - month_diff * 30;
-            year = month / 12;
+            let mut month = day_diff * 4 + month_diff;
+            let day = (hour_diff as i32) * 10 - month_diff * 30;
+            let year = month / 12;
             month -= year * 12;
-        }
+            (year, month, day, 0)
+        };
         self.start_year = year;
         self.start_month = month;
         self.start_day = day;

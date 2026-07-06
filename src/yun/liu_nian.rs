@@ -15,7 +15,7 @@ pub struct LiuNian<'a> {
 }
 
 impl<'a> LiuNian<'a> {
-    pub(crate) fn new(
+    pub(crate) const fn new(
         lunar: &'a Lunar,
         da_yun_start_year: i32,
         da_yun_start_age: i32,
@@ -43,11 +43,11 @@ impl<'a> LiuNian<'a> {
     }
 
     pub fn gan_zhi(&self) -> String {
-        let li_chun = self.lunar.jie_qi_table().get("立春").copied().unwrap_or(self.lunar.solar());
+        let li_chun = self.lunar.jie_qi_table().get("立春").copied().unwrap_or_else(|| self.lunar.solar());
         let offset_base = lunar_util::get_jia_zi_index(&li_chun.lunar().year_in_gan_zhi_exact());
-        let mut offset = offset_base + self.index as i64;
+        let mut offset = offset_base + i64::from(self.index);
         if self.da_yun_index > 0 {
-            offset += (self.da_yun_start_age - 1) as i64;
+            offset += i64::from(self.da_yun_start_age - 1);
         }
         let size = lunar_util::tables::JIA_ZI.len() as i64;
         let offset = offset.rem_euclid(size);

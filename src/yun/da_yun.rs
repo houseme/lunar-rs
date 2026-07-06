@@ -16,7 +16,7 @@ pub struct DaYun<'a> {
 }
 
 impl<'a> DaYun<'a> {
-    pub(crate) fn new(lunar: &'a Lunar, yun_start_year: i32, index: i32, forward: bool) -> Self {
+    pub(crate) const fn new(lunar: &'a Lunar, yun_start_year: i32, index: i32, forward: bool) -> Self {
         let birth_year = lunar.solar().year();
         let year = yun_start_year;
         let (start_year, start_age, end_year, end_age);
@@ -60,9 +60,9 @@ impl<'a> DaYun<'a> {
         }
         let mut offset = lunar_util::get_jia_zi_index(&self.lunar.month_in_gan_zhi_exact());
         if self.forward {
-            offset += self.index as i64;
+            offset += i64::from(self.index);
         } else {
-            offset -= self.index as i64;
+            offset -= i64::from(self.index);
         }
         let size = lunar_util::tables::JIA_ZI.len() as i64;
         offset = offset.rem_euclid(size);

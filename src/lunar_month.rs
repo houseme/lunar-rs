@@ -30,7 +30,7 @@ impl LunarMonth {
     }
 
     /// 由年月查找（该年无此月返回 `None`）。
-    pub fn from_ym(year: i32, month: i32) -> Option<LunarMonth> {
+    pub fn from_ym(year: i32, month: i32) -> Option<Self> {
         LunarYear::from_year(year).get_month(month)
     }
 
@@ -66,8 +66,8 @@ impl LunarMonth {
     /// 月天干索引（年干遁月）。
     pub fn gan_index(&self) -> i64 {
         let offset = (LunarYear::from_year(self.year).gan_index() + 1) % 5 * 2;
-        let m = if self.month < 0 { -self.month } else { self.month };
-        ((m - 1) as i64 + offset) % 10
+        let m = self.month.abs();
+        (i64::from(m - 1) + offset) % 10
     }
 
     pub fn gan(&self) -> &'static str {
@@ -140,7 +140,7 @@ impl LunarMonth {
     pub fn nine_star(&self) -> NineStar {
         let index = LunarYear::from_year(self.year).zhi_index() % 3;
         let m = self.month.abs();
-        let month_zhi_index = (13 + m) as i64 % 12;
+        let month_zhi_index = i64::from(13 + m) % 12;
         let mut n = 27 - index * 3;
         if month_zhi_index < lunar_util::BASE_MONTH_ZHI_INDEX {
             n -= 3;
@@ -150,9 +150,9 @@ impl LunarMonth {
     }
 
     /// 推进 / 回退 n 个月（跨年）。
-    pub fn next(&self, n: i32) -> Option<LunarMonth> {
+    pub fn next(&self, n: i32) -> Option<Self> {
         if n == 0 {
-            return LunarMonth::from_ym(self.year, self.month);
+            return Self::from_ym(self.year, self.month);
         }
         if n > 0 {
             let mut rest = n;

@@ -125,12 +125,9 @@ impl<'a> LunarTime<'a> {
     pub fn nine_star(&self) -> NineStar {
         let solar_ymd = self.lunar.solar().to_ymd();
         let jq = self.lunar.jie_qi_table();
-        let dong_zhi = jq.get("冬至").copied().unwrap_or(self.lunar.solar());
-        let xia_zhi = jq.get("夏至").copied().unwrap_or(self.lunar.solar());
-        let mut asc = false;
-        if solar_ymd >= dong_zhi.to_ymd() && solar_ymd < xia_zhi.to_ymd() {
-            asc = true;
-        }
+        let dong_zhi = jq.get("冬至").copied().unwrap_or_else(|| self.lunar.solar());
+        let xia_zhi = jq.get("夏至").copied().unwrap_or_else(|| self.lunar.solar());
+        let asc = solar_ymd >= dong_zhi.to_ymd() && solar_ymd < xia_zhi.to_ymd();
         let mut start = if asc { 7_i64 } else { 3_i64 };
         let day_zhi = self.lunar.day_zhi();
         if "子午卯酉".contains(day_zhi) {

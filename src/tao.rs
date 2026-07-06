@@ -40,7 +40,7 @@ pub struct Tao<'a> {
 }
 
 impl<'a> Tao<'a> {
-    pub(crate) fn from_lunar(lunar: &'a Lunar) -> Self {
+    pub(crate) const fn from_lunar(lunar: &'a Lunar) -> Self {
         Self { lunar }
     }
 
@@ -118,7 +118,7 @@ impl<'a> Tao<'a> {
         self.lunar.day_gan() == "戊"
     }
     pub fn is_day_an_wu(&self) -> bool {
-        let m = self.month().abs() as usize;
+        let m = self.month().unsigned_abs() as usize;
         tao_util::AN_WU.get(m - 1).copied().unwrap_or("") == self.lunar.day_zhi()
     }
     pub fn is_day_wu(&self) -> bool {

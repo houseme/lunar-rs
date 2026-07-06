@@ -8,7 +8,7 @@ pub struct ShuJiu {
 }
 
 impl ShuJiu {
-    pub(crate) fn new(name: String, index: i32) -> Self {
+    pub(crate) const fn new(name: String, index: i32) -> Self {
         Self { name, index }
     }
     /// 名称（一九 / 二九 …）。

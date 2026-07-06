@@ -1,6 +1,7 @@
 //! 佛历。对应 lunar-go `calendar/Foto.go`。
 
 use std::fmt;
+use std::fmt::Write as _;
 
 use crate::foto_util;
 use crate::lunar::Lunar;
@@ -23,7 +24,7 @@ impl FotoFestival {
     fn from_record(o: &[&str]) -> Self {
         let name = o.first().unwrap_or(&"").to_string();
         let result = o.get(1).unwrap_or(&"").to_string();
-        let every_month = o.get(2).map(|x| *x == "true").unwrap_or(false);
+        let every_month = o.get(2).is_some_and(|x| *x == "true");
         let remark = o.get(3).unwrap_or(&"").to_string();
         Self { name, result, every_month, remark }
     }
@@ -43,10 +44,10 @@ impl FotoFestival {
 
 impl fmt::Display for FotoFestival {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if !self.remark.is_empty() {
-            write!(f, "{} {} {}", self.name, self.result, self.remark)
-        } else {
+        if self.remark.is_empty() {
             write!(f, "{} {}", self.name, self.result)
+        } else {
+            write!(f, "{} {} {}", self.name, self.result, self.remark)
         }
     }
 }
@@ -57,14 +58,14 @@ pub struct Foto<'a> {
 }
 
 impl<'a> Foto<'a> {
-    pub(crate) fn from_lunar(lunar: &'a Lunar) -> Self {
+    pub(crate) const fn from_lunar(lunar: &'a Lunar) -> Self {
         Self { lunar }
     }
 
     pub const fn lunar(&self) -> &Lunar {
         self.lunar
     }
-    pub fn year(&self) -> i32 {
+    pub const fn year(&self) -> i32 {
         let sy = self.lunar.solar().year();
         let mut y = sy - DEAD_YEAR;
         if sy == self.lunar.year() {
@@ -109,14 +110,14 @@ impl<'a> Foto<'a> {
         foto_util::OTHER_FESTIVAL.get(key.as_str()).cloned().unwrap_or_default()
     }
 
-    pub fn is_month_zhai(&self) -> bool {
+    pub const fn is_month_zhai(&self) -> bool {
         let m = self.month();
         m == 1 || m == 5 || m == 9
     }
     pub fn is_day_yang_gong(&self) -> bool {
         self.festivals().iter().any(|f| f.name() == "杨公忌")
     }
-    pub fn is_day_zhai_shuo_wang(&self) -> bool {
+    pub const fn is_day_zhai_shuo_wang(&self) -> bool {
         let d = self.day();
         d == 1 || d == 15
     }
@@ -125,14 +126,14 @@ impl<'a> Foto<'a> {
         if d == 8 || d == 14 || d == 15 || d == 23 || d == 29 || d == 30 {
             return true;
         }
-        if d == 28 {
-            if let Some(m) = LunarMonth::from_ym(self.lunar.year(), self.month()) {
-                return m.day_count() != 30;
-            }
+        if d == 28
+            && let Some(m) = LunarMonth::from_ym(self.lunar.year(), self.month())
+        {
+            return m.day_count() != 30;
         }
         false
     }
-    pub fn is_day_zhai_ten(&self) -> bool {
+    pub const fn is_day_zhai_ten(&self) -> bool {
         let d = self.day();
         d == 1 || d == 8 || d == 14 || d == 15 || d == 18 || d == 23 || d == 24 || d == 28 || d == 29 || d == 30
     }
@@ -168,7 +169,7 @@ impl<'a> Foto<'a> {
     pub fn to_full_string(&self) -> String {
         let mut s = self.to_string_cn();
         for f in self.festivals() {
-            s.push_str(&format!(" ({f})"));
+            let _ = write!(s, " ({f})");
         }
         s
     }

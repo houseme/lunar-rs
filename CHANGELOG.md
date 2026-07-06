@@ -93,6 +93,8 @@ and this project uses semantic versioning once releases are published.
   precision-oriented extracted constants intentionally trigger numeric lints.
 - Refactored time-branch index lookup to parse `HH:MM` with zero heap
   allocations instead of building comparison strings.
+- Cleaned up compiler and Clippy warnings across calendar, holiday, lunar year,
+  solar traversal, and fortune-cycle modules.
 
 ### Fixed
 

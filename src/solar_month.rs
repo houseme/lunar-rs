@@ -14,7 +14,7 @@ pub struct SolarMonth {
 }
 
 impl SolarMonth {
-    pub fn from_ym(year: i32, month: i32) -> Self {
+    pub const fn from_ym(year: i32, month: i32) -> Self {
         Self { year, month }
     }
     pub const fn year(&self) -> i32 {
@@ -47,7 +47,7 @@ impl SolarMonth {
     }
 
     /// 推进 / 回退若干月。
-    pub fn next(&self, months: i32) -> Self {
+    pub const fn next(&self, months: i32) -> Self {
         let (n, m_abs) = if months < 0 { (-1, -months) } else { (1, months) };
         let mut y = self.year + (m_abs / 12) * n;
         let mut m = self.month + (m_abs % 12) * n;

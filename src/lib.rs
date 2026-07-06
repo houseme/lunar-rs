@@ -61,7 +61,7 @@ pub mod solar_util;
 pub mod lunar_util;
 
 mod foto_util;
-mod holiday_util;
+pub mod holiday_util;
 mod nine_star_util;
 mod tao_util;
 

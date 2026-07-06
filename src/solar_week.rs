@@ -15,7 +15,7 @@ pub struct SolarWeek {
 }
 
 impl SolarWeek {
-    pub fn from_ymd(year: i32, month: i32, day: i32, start: i32) -> Self {
+    pub const fn from_ymd(year: i32, month: i32, day: i32, start: i32) -> Self {
         Self { year, month, day, start }
     }
     pub const fn year(&self) -> i32 {
@@ -34,7 +34,7 @@ impl SolarWeek {
         if offset < 0 {
             offset += 7;
         }
-        ((self.day + offset) as f64 / 7.0).ceil() as i32
+        (f64::from(self.day + offset) / 7.0).ceil() as i32
     }
 
     /// 当年第几周。
@@ -43,7 +43,7 @@ impl SolarWeek {
         if offset < 0 {
             offset += 7;
         }
-        ((solar_util::days_in_year(self.year, self.month, self.day) + offset) as f64 / 7.0).ceil() as i32
+        (f64::from(solar_util::days_in_year(self.year, self.month, self.day) + offset) / 7.0).ceil() as i32
     }
 
     /// 周第一天。

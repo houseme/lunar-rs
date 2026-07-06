@@ -31,7 +31,7 @@ impl LiuYue {
             "丁" | "壬" => 8,
             _ => 0,
         };
-        let i = self.index as i64;
+        let i = i64::from(self.index);
         let gan = lunar_util::tables::GAN[((i + offset) % 10 + 1) as usize];
         let zhi = lunar_util::tables::ZHI[((i + lunar_util::BASE_MONTH_ZHI_INDEX) % 12 + 1) as usize];
         format!("{gan}{zhi}")
