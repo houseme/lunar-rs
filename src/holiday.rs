@@ -3,6 +3,7 @@
 use std::fmt;
 
 /// 一个法定节假日 / 调休日记录。
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Debug)]
 pub struct Holiday {
     day: String,

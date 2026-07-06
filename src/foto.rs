@@ -12,6 +12,7 @@ use crate::lunar_util;
 pub const DEAD_YEAR: i32 = -543;
 
 /// 佛历节日记录。
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Debug)]
 pub struct FotoFestival {
     name: String,

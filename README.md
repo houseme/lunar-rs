@@ -10,8 +10,8 @@ The implementation is a Rust port inspired by
 astronomical algorithms and embedded data tables. The core crate is designed to
 avoid third-party runtime dependencies.
 
-> Status: active 0.1.0 port. `cargo check` passes. The golden integration test
-> suite is being aligned with the reference implementation.
+> Status: active 0.1.0 port. `cargo test` and crate doctests currently pass
+> against the local golden integration suite.
 
 ## Features
 
@@ -29,7 +29,12 @@ avoid third-party runtime dependencies.
 - BaZi/EightChar, DaYun, LiuNian, LiuYue, and XiaoYun fortune-cycle primitives.
 - Buddhist and Taoist calendar models available from `Lunar::foto()` and
   `Lunar::tao()`.
-- Zero third-party dependencies in `[dependencies]`.
+- Runtime holiday data override hooks via `holiday_util::set_holidays(...)`,
+  `set_holiday_data(...)`, and `reset_holidays()`.
+- Optional `serde` support for owned core calendar data types behind the
+  `serde` feature.
+- The default build keeps zero third-party runtime dependencies; optional
+  features can opt into extra integration support.
 
 ## Installation
 
@@ -137,13 +142,14 @@ println!("Taoist calendar: {}", tao.to_string_cn());
 ```bash
 cargo check
 cargo test
+cargo bench --bench convert
 ```
 
 Current local validation:
 
 - `cargo check` passes.
-- `cargo test` compiles and runs the golden suite; most cases pass, with one
-  full-string reference-alignment case still pending.
+- `cargo test` passes the current golden integration suite.
+- Doc tests pass.
 
 ## Project Layout
 

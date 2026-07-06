@@ -6,6 +6,7 @@
 use std::fmt;
 
 /// lunar-rs 的统一错误类型。
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum LunarError {

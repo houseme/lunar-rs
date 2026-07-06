@@ -65,6 +65,7 @@ fn is_ymc_boundary(dm: f64) -> bool {
 }
 
 /// 农历年。
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct LunarYear {
     pub(crate) year: i32,
     pub(crate) gan_index: i64,

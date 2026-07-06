@@ -7,7 +7,7 @@
 [lunar-javascript](https://github.com/6tail/lunar-javascript)，并移植寿星天文历
 相关天文算法与数据表。核心 crate 设计目标是零第三方运行时依赖。
 
-> 当前状态：0.1.0 移植阶段。`cargo check` 已通过，黄金测试仍在继续与参考实现对齐。
+> 当前状态：0.1.0 移植阶段。当前本地黄金测试与 doctest 已全部通过。
 
 ## 功能特性
 
@@ -21,7 +21,11 @@
 - 九星、数九、三伏、阳历年/月/周/季度/半年等辅助模型。
 - 八字四柱、大运、流年、流月、小运等运程基础能力。
 - 可通过 `Lunar::foto()` 与 `Lunar::tao()` 获取佛历、道历模型。
-- `[dependencies]` 下无第三方依赖。
+- 提供 `holiday_util::set_holidays(...)`、`set_holiday_data(...)`、
+  `reset_holidays()` 等法定节假日运行时覆盖接口。
+- 提供可选 `serde` feature，为核心拥有所有权的数据类型提供序列化支持。
+- 默认构建下 `[dependencies]` 仍保持零第三方运行时依赖；可选 feature
+  可按需开启额外集成能力。
 
 ## 安装
 
@@ -129,12 +133,14 @@ println!("道历：{}", tao.to_string_cn());
 ```bash
 cargo check
 cargo test
+cargo bench --bench convert
 ```
 
 当前本地验证结果：
 
 - `cargo check` 通过。
-- `cargo test` 可编译并运行黄金用例；大部分用例已通过，仍有一个完整字符串对齐用例待修正。
+- `cargo test` 当前黄金用例全部通过。
+- doctest 通过。
 
 ## 目录结构
 

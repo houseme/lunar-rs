@@ -1,6 +1,7 @@
 //! 数九（冬至后每九天为一九，共九九八十一天）。
 
 /// 数九。
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Debug)]
 pub struct ShuJiu {
     name: String,

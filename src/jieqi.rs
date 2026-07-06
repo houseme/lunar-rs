@@ -3,19 +3,20 @@
 use crate::solar::Solar;
 
 /// 一个节气 / 节令 / 气令及其阳历时刻。
-#[derive(Clone, Copy, Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Debug)]
 pub struct JieQi {
-    name: &'static str,
+    name: String,
     solar: Solar,
 }
 
 impl JieQi {
-    pub(crate) const fn new(name: &'static str, solar: Solar) -> Self {
-        Self { name, solar }
+    pub(crate) fn new(name: impl Into<String>, solar: Solar) -> Self {
+        Self { name: name.into(), solar }
     }
     #[inline]
-    pub const fn name(&self) -> &'static str {
-        self.name
+    pub fn name(&self) -> &str {
+        &self.name
     }
     #[inline]
     pub const fn solar(&self) -> Solar {

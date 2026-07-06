@@ -7,6 +7,7 @@ use crate::solar_util;
 use crate::solar_week::SolarWeek;
 
 /// 阳历月。
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Copy, Debug)]
 pub struct SolarMonth {
     year: i32,

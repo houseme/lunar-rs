@@ -10,6 +10,7 @@ use crate::tao_util;
 pub const BIRTH_YEAR: i32 = -2697;
 
 /// 道历节日记录。
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Debug)]
 pub struct TaoFestival {
     name: String,

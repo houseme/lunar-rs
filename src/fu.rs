@@ -1,6 +1,7 @@
 //! 三伏（初伏 / 中伏 / 末伏）。
 
 /// 三伏。
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Debug)]
 pub struct Fu {
     name: String,

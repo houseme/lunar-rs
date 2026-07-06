@@ -7,6 +7,7 @@ use crate::solar_month::SolarMonth;
 const MONTH_IN_HALF_YEAR: i32 = 6;
 
 /// 阳历半年。
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Copy, Debug)]
 pub struct SolarHalfYear {
     year: i32,

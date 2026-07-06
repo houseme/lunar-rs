@@ -16,6 +16,7 @@ use crate::solar::Solar;
 use crate::solar_util;
 
 /// 农历日期时间。
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Lunar {
     year: i32,
     month: i32,
@@ -42,7 +43,7 @@ pub struct Lunar {
     time_gan_index: i64,
     time_zhi_index: i64,
     week_index: i32,
-    jie_qi: HashMap<&'static str, Solar>,
+    jie_qi: HashMap<String, Solar>,
     solar: Solar,
 }
 
@@ -188,7 +189,7 @@ impl Lunar {
         let size = JIE_QI_IN_USE.len();
         for i in 0..size {
             let name = JIE_QI_IN_USE[i];
-            self.jie_qi.insert(name, Solar::from_julian_day(julian_days[i]));
+            self.jie_qi.insert(name.to_string(), Solar::from_julian_day(julian_days[i]));
         }
     }
 
@@ -643,7 +644,7 @@ impl Lunar {
         }
         if found { convert_jie_qi(name) } else { "" }
     }
-    pub const fn jie_qi_table(&self) -> &HashMap<&'static str, Solar> {
+    pub const fn jie_qi_table(&self) -> &HashMap<String, Solar> {
         &self.jie_qi
     }
     pub fn jie_qi_list(&self) -> Vec<&'static str> {

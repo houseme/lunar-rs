@@ -76,6 +76,14 @@ and this project uses semantic versioning once releases are published.
 - Added golden integration tests in `tests/lunar_core.rs` for Solar, Lunar,
   JieQi, leap months, 1582 reform handling, festivals, traversal, and reference
   alignment.
+- Added runtime holiday override APIs:
+  - `holiday_util::holiday_names`,
+  - `holiday_util::holiday_data`,
+  - `holiday_util::set_holidays`,
+  - `holiday_util::set_holiday_data`,
+  - `holiday_util::reset_holidays`.
+- Added a stable `cargo bench --bench convert` benchmark target for conversion,
+  formatting, and JieQi lookup hot paths.
 - Added English and Chinese README documentation.
 
 ### Changed
@@ -84,6 +92,8 @@ and this project uses semantic versioning once releases are published.
 - Switched the toolchain file to `rust-toolchain.toml`.
 - Updated CI workflow action references and crate package names.
 - Exposed `solar_util` for integration tests and utility users.
+- Added optional `serde` support for owned core calendar data types behind the
+  `serde` feature flag.
 - Replaced the starter example code with the calendar library API surface.
 - Normalized ShouXing floating-point data literals and removed extracted inline
   comments from generated constant data.
@@ -105,12 +115,6 @@ and this project uses semantic versioning once releases are published.
 - Fixed `Lunar::eight_char()` to return an explicitly borrowed `EightChar<'_>`.
 - Fixed two-digit upper bounds in `lunar_util::get_time_zhi_index`, keeping time
   branch comparisons lexicographically stable.
-
-### Known Issues
-
-- `cargo check` passes, but `cargo test` still has one golden full-string
-  alignment case pending. The remaining difference is in detailed `Lunar`
-  full-string output for one reference case.
 
 ## [0.1.0] - Unreleased
 

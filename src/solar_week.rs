@@ -6,6 +6,7 @@ use crate::solar::Solar;
 use crate::solar_util;
 
 /// 阳历周（`start` 为每周起始星期，0=周日）。
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Copy, Debug)]
 pub struct SolarWeek {
     year: i32,

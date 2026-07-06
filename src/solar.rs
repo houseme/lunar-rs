@@ -8,6 +8,7 @@ use crate::lunar::Lunar;
 use crate::solar_util;
 
 /// 阳历日期时间。
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Solar {
     pub(crate) year: i32,

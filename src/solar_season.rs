@@ -7,6 +7,7 @@ use crate::solar_month::SolarMonth;
 const MONTH_IN_SEASON: i32 = 3;
 
 /// 阳历季度。
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Copy, Debug)]
 pub struct SolarSeason {
     year: i32,

@@ -23,11 +23,17 @@ path = "src/lib.rs"
 [dependencies]
 # The core calendar engine has zero third-party dependencies by design:
 # all astronomy (ShouXing / VSOP87), GanZhi and JieQi computation is self-contained.
+serde = { version = "1", features = ["derive"], optional = true }
 
 [features]
 default = []
 # Optional internationalization (English message tables, runtime language switching).
 i18n = []
+serde = ["dep:serde"]
+
+[[bench]]
+name = "convert"
+harness = false
 
 [profile.release]
 lto = true

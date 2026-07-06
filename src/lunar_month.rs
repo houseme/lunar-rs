@@ -6,6 +6,7 @@ use crate::nine_star::NineStar;
 use crate::solar::Solar;
 
 /// 农历月（`month` 为负表示闰月）。
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Copy, Debug)]
 pub struct LunarMonth {
     pub(crate) year: i32,
