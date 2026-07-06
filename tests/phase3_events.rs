@@ -1,4 +1,7 @@
-use lunar_rs::{CalendarKind, Event, EventKind, EventQuery, EventSource, Lunar, Solar};
+use lunar_rs::{
+    CalendarKind, Event, EventKind, EventQuery, EventSource, Lunar, Solar, scan_events_in_range,
+    scan_events_in_range_filtered,
+};
 
 #[test]
 fn solar_events_include_festivals_and_jieqi() {
@@ -162,4 +165,38 @@ fn event_query_filters_by_calendar_and_detail() {
     let foto = lunar.foto();
     let detail_events = foto.find_events(&EventQuery::new().with_detail_contains("犯者"));
     assert!(detail_events.iter().all(|event| event.detail().is_some_and(|detail| detail.contains("犯者"))));
+}
+
+#[test]
+fn range_scan_collects_and_sorts_events() {
+    let start = Solar::from_ymd(2021, 12, 20).unwrap();
+    let end = Solar::from_ymd(2021, 12, 22).unwrap();
+
+    let events = scan_events_in_range(start, end);
+    assert!(!events.is_empty());
+    assert!(events.iter().any(|event| matches!(event.kind(), EventKind::JieQi) && event.name() == "冬至"));
+
+    let mut previous = None::<String>;
+    for event in &events {
+        let current = format!("{}:{}:{}", event.solar().to_ymd_hms(), event.priority(), event.name());
+        if let Some(prev) = &previous {
+            assert!(prev <= &current);
+        }
+        previous = Some(current);
+    }
+}
+
+#[test]
+fn range_scan_filtered_supports_event_query() {
+    let start = Solar::from_ymd(2021, 12, 20).unwrap();
+    let end = Solar::from_ymd(2021, 12, 22).unwrap();
+
+    let jieqi_events = scan_events_in_range_filtered(start, end, &EventQuery::new().with_kind(EventKind::JieQi));
+    assert_eq!(jieqi_events.len(), 1);
+    assert_eq!(jieqi_events[0].name(), "冬至");
+
+    let holiday_events = Solar::from_ymd(2024, 1, 1)
+        .unwrap()
+        .events_until(Solar::from_ymd(2024, 1, 3).unwrap());
+    assert!(holiday_events.iter().any(|event| matches!(event.kind(), EventKind::Holiday)));
 }

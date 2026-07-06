@@ -29,6 +29,9 @@
   `find_events(...)` 过滤查询接口。
 - 事件规则层现已补充 `priority`、`source_id`、`is_observed`，并统一由
   `Holiday` / `JieQi` / `FotoFestival` / `TaoFestival` 等源对象构造事件。
+- 现已提供事件区间扫描能力：`scan_events_in_range(...)`、
+  `scan_events_in_range_filtered(...)`，以及 `Solar` / `Lunar` 的
+  `events_until(...)` / `find_events_until(...)` 便捷入口。
 - 提供 `holiday_util::set_holidays(...)`、`set_holiday_data(...)`、
   `reset_holidays()` 等法定节假日运行时覆盖接口。
 - 提供基于 `i18n` feature 的显式语言辅助方法，可翻译星期、星座、节气、

@@ -124,6 +124,11 @@ and this project uses semantic versioning once releases are published.
   - `EventQuery`,
   - `filter_events(...)`,
   - `find_events(...)` on `Solar`, `Lunar`, `Foto` and `Tao`.
+- Added event range-scan utilities:
+  - `scan_events_in_range(...)`,
+  - `scan_events_in_range_filtered(...)`,
+  - `events_until(...)`,
+  - `find_events_until(...)` on `Solar` and `Lunar`.
 - Added event rule metadata and centralized event construction:
   - `priority`,
   - `source_id`,

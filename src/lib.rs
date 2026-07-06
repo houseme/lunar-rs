@@ -94,7 +94,10 @@ mod yun;
 pub use culture::{Direction, Duty, EarthBranch, Element, HeavenStem, Phase, Phenology, SixtyCycle, Zodiac};
 pub use eight_char::EightChar;
 pub use error::LunarError;
-pub use event::{CalendarKind, Event, EventKind, EventQuery, EventSource, dedup_events, filter_events, sort_events};
+pub use event::{
+    CalendarKind, Event, EventKind, EventQuery, EventSource, dedup_events, filter_events, scan_events_in_range,
+    scan_events_in_range_filtered, sort_events,
+};
 pub use foto::Foto;
 pub use fu::Fu;
 pub use holiday::Holiday;

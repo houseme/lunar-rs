@@ -328,3 +328,27 @@ impl<'a> EventQuery<'a> {
 pub fn filter_events(events: &[Event], query: &EventQuery<'_>) -> Vec<Event> {
     events.iter().filter(|event| query.matches(event)).cloned().collect()
 }
+
+pub fn scan_events_in_range(start: Solar, end: Solar) -> Vec<Event> {
+    let mut events = Vec::new();
+    if start.is_after(&end) {
+        return events;
+    }
+
+    let mut cursor = start;
+    loop {
+        events.extend(cursor.all_events());
+        if cursor == end {
+            break;
+        }
+        cursor = cursor.next_day(1);
+    }
+
+    dedup_events(&mut events);
+    events
+}
+
+pub fn scan_events_in_range_filtered(start: Solar, end: Solar, query: &EventQuery<'_>) -> Vec<Event> {
+    let events = scan_events_in_range(start, end);
+    filter_events(&events, query)
+}
