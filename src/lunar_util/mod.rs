@@ -24,7 +24,7 @@ pub fn get_time_zhi_index(hm: &str) -> i64 {
     let mut i = 1;
     while i < 22 {
         let lo = format!("{i:02}:00");
-        let hi = format!("{}:59", i + 1);
+        let hi = format!("{:02}:59", i + 1);
         if hm >= lo.as_str() && hm <= hi.as_str() {
             return x;
         }
