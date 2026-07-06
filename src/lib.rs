@@ -54,6 +54,8 @@
     clippy::needless_pass_by_value
 )]
 
+#[doc(hidden)]
+pub mod differential_support;
 mod error;
 mod shou_xing;
 pub mod solar_util;

@@ -84,6 +84,12 @@ and this project uses semantic versioning once releases are published.
   - `holiday_util::reset_holidays`.
 - Added a stable `cargo bench --bench convert` benchmark target for conversion,
   formatting, and JieQi lookup hot paths.
+- Added domain-split integration suites for Solar, Lunar, JieQi, and
+  EightChar golden cases.
+- Added an ignored differential-test skeleton that can compare `lunar-rs`
+  against an external reference binary.
+- Added `lunar_ref_driver`, a sample differential-testing driver that emits the
+  stable solar snapshot protocol used by the ignored diff suite.
 - Added English and Chinese README documentation.
 
 ### Changed

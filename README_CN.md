@@ -134,6 +134,7 @@ println!("道历：{}", tao.to_string_cn());
 cargo check
 cargo test
 cargo bench --bench convert
+cargo run --bin lunar_ref_driver -- solar 2024 4 22 23 30 0
 ```
 
 当前本地验证结果：
@@ -141,6 +142,13 @@ cargo bench --bench convert
 - `cargo check` 通过。
 - `cargo test` 当前黄金用例全部通过。
 - doctest 通过。
+
+差分测试工作流：
+
+```bash
+cargo run --bin lunar_ref_driver -- solar 2024 4 22 23 30 0
+LUNAR_RS_DIFF_REF_BIN=/path/to/reference-driver cargo test diff_reference_sample_matrix -- --ignored
+```
 
 ## 目录结构
 
@@ -150,7 +158,10 @@ cargo bench --bench convert
 - `src/eight_char.rs`、`src/yun/`：八字与运程。
 - `src/foto*.rs`、`src/tao*.rs`：佛历与道历。
 - `src/holiday*.rs`：中国法定节假日数据与查询。
-- `tests/lunar_core.rs`：从参考实现迁移的黄金用例。
+- `tests/solar.rs`、`tests/lunar.rs`、`tests/jieqi.rs`、`tests/eight_char.rs`：
+  按领域拆分的黄金用例。
+- `tests/differential.rs`：默认忽略、可接外部参考实现的差分测试骨架。
+- `src/bin/lunar_ref_driver.rs`：输出稳定 `key=value` 快照的差分测试示例驱动。
 
 ## 许可证
 

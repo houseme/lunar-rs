@@ -143,6 +143,7 @@ println!("Taoist calendar: {}", tao.to_string_cn());
 cargo check
 cargo test
 cargo bench --bench convert
+cargo run --bin lunar_ref_driver -- solar 2024 4 22 23 30 0
 ```
 
 Current local validation:
@@ -150,6 +151,13 @@ Current local validation:
 - `cargo check` passes.
 - `cargo test` passes the current golden integration suite.
 - Doc tests pass.
+
+Differential test workflow:
+
+```bash
+cargo run --bin lunar_ref_driver -- solar 2024 4 22 23 30 0
+LUNAR_RS_DIFF_REF_BIN=/path/to/reference-driver cargo test diff_reference_sample_matrix -- --ignored
+```
 
 ## Project Layout
 
@@ -159,7 +167,12 @@ Current local validation:
 - `src/eight_char.rs`, `src/yun/`: BaZi and fortune-cycle APIs.
 - `src/foto*.rs`, `src/tao*.rs`: Buddhist and Taoist calendar support.
 - `src/holiday*.rs`: Chinese public holiday data and lookup helpers.
-- `tests/lunar_core.rs`: Golden cases ported from reference implementations.
+- `tests/solar.rs`, `tests/lunar.rs`, `tests/jieqi.rs`, `tests/eight_char.rs`:
+  Golden cases split by domain.
+- `tests/differential.rs`: ignored differential-test skeleton for external
+  reference implementations.
+- `src/bin/lunar_ref_driver.rs`: sample differential-testing driver that emits
+  stable `key=value` snapshots.
 
 ## License
 
