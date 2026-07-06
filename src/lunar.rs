@@ -6,7 +6,7 @@ use std::fmt;
 use crate::LunarError;
 use crate::culture::{Direction, Duty, EarthBranch, HeavenStem, Phase, Phenology, SixtyCycle, Zodiac};
 use crate::eight_char::EightChar;
-use crate::event::{CalendarKind, Event, EventKind, EventSource};
+use crate::event::{CalendarKind, Event, EventKind, EventSource, dedup_events};
 use crate::fu::Fu;
 use crate::jieqi::JieQi;
 use crate::lunar_time::LunarTime;
@@ -898,6 +898,21 @@ impl Lunar {
             ));
         }
 
+        events
+    }
+
+    /// Aggregated events across solar, lunar, buddhist and taoist contexts.
+    pub fn all_events(&self) -> Vec<Event> {
+        let mut events: Vec<Event> = self
+            .solar
+            .events()
+            .into_iter()
+            .filter(|event| matches!(event.kind(), EventKind::SolarFestival | EventKind::SolarOtherFestival))
+            .collect();
+        events.extend(self.events());
+        events.extend(self.foto().events());
+        events.extend(self.tao().events());
+        dedup_events(&mut events);
         events
     }
 

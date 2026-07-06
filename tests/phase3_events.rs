@@ -1,4 +1,4 @@
-use lunar_rs::{CalendarKind, EventKind, EventSource, Lunar, Solar};
+use lunar_rs::{CalendarKind, Event, EventKind, EventSource, Lunar, Solar};
 
 #[test]
 fn solar_events_include_festivals_and_jieqi() {
@@ -64,4 +64,47 @@ fn tao_events_are_exposed_through_unified_model() {
             && matches!(event.calendar_kind(), CalendarKind::Tao)
             && matches!(event.source(), EventSource::BuiltInFestival)
     }));
+}
+
+#[test]
+fn all_events_aggregate_multiple_calendar_contexts() {
+    let solar = Solar::from_ymd(2021, 12, 21).unwrap();
+    let solar_events = solar.all_events();
+    assert!(solar_events.iter().any(|event| matches!(event.kind(), EventKind::JieQi)));
+    assert!(solar_events.iter().any(|event| matches!(event.kind(), EventKind::TaoFestival)));
+
+    let lunar = solar.lunar();
+    let lunar_events = lunar.all_events();
+    assert!(lunar_events.iter().any(|event| matches!(event.kind(), EventKind::JieQi)));
+    assert!(lunar_events.iter().any(|event| matches!(event.kind(), EventKind::TaoFestival)));
+}
+
+#[test]
+fn event_display_text_and_dedup_sort_are_stable() {
+    let solar = Solar::from_ymd(2024, 1, 1).unwrap();
+    let holiday = solar
+        .events()
+        .into_iter()
+        .find(|event| matches!(event.kind(), EventKind::Holiday))
+        .expect("expected holiday event");
+    assert!(holiday.display_text().contains("holiday target"));
+
+    let mut events = vec![
+        Event::with_detail(
+            EventKind::SolarFestival,
+            CalendarKind::Solar,
+            EventSource::BuiltInFestival,
+            "B",
+            solar,
+            "detail",
+        ),
+        Event::new(EventKind::SolarFestival, CalendarKind::Solar, EventSource::BuiltInFestival, "A", solar),
+        Event::new(EventKind::SolarFestival, CalendarKind::Solar, EventSource::BuiltInFestival, "A", solar),
+    ];
+
+    lunar_rs::dedup_events(&mut events);
+
+    assert_eq!(events.len(), 2);
+    assert_eq!(events[0].name(), "A");
+    assert_eq!(events[1].display_text(), "B (detail)");
 }

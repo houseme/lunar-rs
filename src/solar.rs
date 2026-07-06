@@ -2,7 +2,7 @@
 
 use std::fmt;
 
-use crate::event::{CalendarKind, Event, EventKind, EventSource};
+use crate::event::{CalendarKind, Event, EventKind, EventSource, dedup_events};
 use crate::LunarError;
 use crate::holiday_util;
 use crate::lunar::Lunar;
@@ -346,6 +346,19 @@ impl Solar {
             events.push(Event::new(EventKind::JieQi, CalendarKind::Solar, EventSource::JieQi, jieqi.name(), *self));
         }
 
+        events
+    }
+
+    /// Aggregated events across solar, lunar, buddhist and taoist contexts.
+    pub fn all_events(&self) -> Vec<Event> {
+        let mut events = self.events();
+        let lunar = self.lunar();
+        events.extend(lunar.events().into_iter().filter(|event| {
+            matches!(event.kind(), EventKind::LunarFestival | EventKind::LunarOtherFestival)
+        }));
+        events.extend(lunar.foto().events());
+        events.extend(lunar.tao().events());
+        dedup_events(&mut events);
         events
     }
 

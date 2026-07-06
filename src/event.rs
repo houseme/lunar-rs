@@ -37,6 +37,24 @@ pub enum EventKind {
     JieQi,
 }
 
+impl EventKind {
+    pub const fn is_solar(&self) -> bool {
+        matches!(self, Self::SolarFestival | Self::SolarOtherFestival | Self::Holiday | Self::JieQi)
+    }
+
+    pub const fn is_lunar(&self) -> bool {
+        matches!(self, Self::LunarFestival | Self::LunarOtherFestival | Self::Holiday | Self::JieQi)
+    }
+
+    pub const fn is_foto(&self) -> bool {
+        matches!(self, Self::FotoFestival | Self::FotoOtherFestival)
+    }
+
+    pub const fn is_tao(&self) -> bool {
+        matches!(self, Self::TaoFestival)
+    }
+}
+
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Event {
@@ -88,6 +106,13 @@ impl Event {
         self.detail.as_deref()
     }
 
+    pub fn display_text(&self) -> String {
+        match &self.detail {
+            Some(detail) if !detail.is_empty() => format!("{} ({detail})", self.name),
+            _ => self.name.clone(),
+        }
+    }
+
     pub const fn category_label(&self) -> &'static str {
         match self.kind {
             EventKind::SolarFestival => "solar_festival",
@@ -119,4 +144,52 @@ impl Event {
             CalendarKind::Tao => "tao",
         }
     }
+}
+
+fn event_kind_rank(kind: &EventKind) -> u8 {
+    match kind {
+        EventKind::JieQi => 0,
+        EventKind::Holiday => 1,
+        EventKind::SolarFestival => 2,
+        EventKind::SolarOtherFestival => 3,
+        EventKind::LunarFestival => 4,
+        EventKind::LunarOtherFestival => 5,
+        EventKind::FotoFestival => 6,
+        EventKind::FotoOtherFestival => 7,
+        EventKind::TaoFestival => 8,
+    }
+}
+
+pub fn sort_events(events: &mut [Event]) {
+    events.sort_by(|a, b| {
+        (
+            a.solar.year(),
+            a.solar.month(),
+            a.solar.day(),
+            a.solar.hour(),
+            a.solar.minute(),
+            a.solar.second(),
+            event_kind_rank(&a.kind),
+            a.calendar_label(),
+            a.name.as_str(),
+            a.detail.as_deref().unwrap_or(""),
+        )
+            .cmp(&(
+                b.solar.year(),
+                b.solar.month(),
+                b.solar.day(),
+                b.solar.hour(),
+                b.solar.minute(),
+                b.solar.second(),
+                event_kind_rank(&b.kind),
+                b.calendar_label(),
+                b.name.as_str(),
+                b.detail.as_deref().unwrap_or(""),
+            ))
+    });
+}
+
+pub fn dedup_events(events: &mut Vec<Event>) {
+    sort_events(events);
+    events.dedup();
 }
