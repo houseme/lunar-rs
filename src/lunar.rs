@@ -1357,8 +1357,18 @@ impl Lunar {
     }
 
     // ---- 包装类型 ----
-    pub fn eight_char(&self) -> EightChar {
+    pub fn eight_char(&self) -> EightChar<'_> {
         EightChar::from_lunar(self)
+    }
+
+    /// 佛历。
+    pub fn foto(&self) -> crate::foto::Foto<'_> {
+        crate::foto::Foto::from_lunar(self)
+    }
+
+    /// 道历。
+    pub fn tao(&self) -> crate::tao::Tao<'_> {
+        crate::tao::Tao::from_lunar(self)
     }
 
     /// 当前时辰。
