@@ -129,6 +129,15 @@ impl<'a> Tao<'a> {
     pub fn to_string_cn(&self) -> String {
         format!("{}年{}月{}", self.year_in_chinese(), self.month_in_chinese(), self.day_in_chinese())
     }
+
+    #[cfg(feature = "i18n")]
+    pub fn to_string_in_lang(&self, language: crate::i18n::Language) -> String {
+        match language {
+            crate::i18n::Language::ZhCn => self.to_string_cn(),
+            crate::i18n::Language::En => format!("Taoist {}-{:02}-{:02}", self.year(), self.month().abs(), self.day()),
+        }
+    }
+
     pub fn to_full_string(&self) -> String {
         format!(
             "道歷{}年，天運{}年，{}月，{}日。{}月{}日，{}时。",
@@ -139,6 +148,23 @@ impl<'a> Tao<'a> {
             self.month_in_chinese(),
             self.day_in_chinese(),
             self.lunar.time_zhi()
+        )
+    }
+
+    #[cfg(feature = "i18n")]
+    pub fn to_full_string_in_lang(&self, language: crate::i18n::Language) -> String {
+        if matches!(language, crate::i18n::Language::ZhCn) {
+            return self.to_full_string();
+        }
+        format!(
+            "Taoist {} Year, TianYun {} Year, {} Month, {} Day. {} Month {} Day, {} Hour.",
+            self.year(),
+            self.lunar.year_in_gan_zhi_in_lang(language),
+            self.lunar.month_in_gan_zhi_in_lang(language),
+            self.lunar.day_in_gan_zhi_in_lang(language),
+            self.month(),
+            self.day(),
+            self.lunar.time_in_gan_zhi_in_lang(language)
         )
     }
 }

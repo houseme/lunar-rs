@@ -93,7 +93,8 @@ and this project uses semantic versioning once releases are published.
 - Added `scripts/run_differential_self_check.sh` to exercise the ignored diff
   suite against the in-repo sample driver.
 - Added an initial `i18n` feature implementation with explicit language-aware
-  helpers for weekday, constellation, JieQi, ShengXiao, and GanZhi output.
+  helpers for weekday, constellation, JieQi, ShengXiao, GanZhi, NineStar, and
+  full-string output on core calendar objects.
 - Added English and Chinese README documentation.
 
 ### Changed

@@ -140,3 +140,42 @@ pub fn jieqi(name: &str, language: Language) -> &'static str {
         _ => "",
     }
 }
+
+pub fn color(name: &str, language: Language) -> &'static str {
+    match name {
+        "白" => pick(language, "白", "White"),
+        "黑" => pick(language, "黑", "Black"),
+        "碧" => pick(language, "碧", "Jade"),
+        "绿" => pick(language, "绿", "Green"),
+        "黄" => pick(language, "黄", "Yellow"),
+        "赤" => pick(language, "赤", "Red"),
+        "紫" => pick(language, "紫", "Purple"),
+        _ => "",
+    }
+}
+
+pub fn wu_xing(name: &str, language: Language) -> &'static str {
+    match name {
+        "木" => pick(language, "木", "Wood"),
+        "火" => pick(language, "火", "Fire"),
+        "土" => pick(language, "土", "Earth"),
+        "金" => pick(language, "金", "Metal"),
+        "水" => pick(language, "水", "Water"),
+        _ => "",
+    }
+}
+
+pub fn bei_dou(name: &str, language: Language) -> &'static str {
+    match name {
+        "天枢" => pick(language, "天枢", "Tian Shu"),
+        "天璇" => pick(language, "天璇", "Tian Xuan"),
+        "天玑" => pick(language, "天玑", "Tian Ji"),
+        "天权" => pick(language, "天权", "Tian Quan"),
+        "玉衡" => pick(language, "玉衡", "Yu Heng"),
+        "开阳" => pick(language, "开阳", "Kai Yang"),
+        "摇光" => pick(language, "摇光", "Yao Guang"),
+        "洞明" => pick(language, "洞明", "Dong Ming"),
+        "隐元" => pick(language, "隐元", "Yin Yuan"),
+        _ => "",
+    }
+}

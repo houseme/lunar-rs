@@ -24,7 +24,7 @@
 - 提供 `holiday_util::set_holidays(...)`、`set_holiday_data(...)`、
   `reset_holidays()` 等法定节假日运行时覆盖接口。
 - 提供基于 `i18n` feature 的显式语言辅助方法，可翻译星期、星座、节气、
-  生肖与干支。
+  生肖、干支、九星以及核心对象的完整字符串输出。
 - 提供可选 `serde` feature，为核心拥有所有权的数据类型提供序列化支持。
 - 默认构建下 `[dependencies]` 仍保持零第三方运行时依赖；可选 feature
   可按需开启额外集成能力。

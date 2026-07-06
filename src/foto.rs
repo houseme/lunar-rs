@@ -167,8 +167,31 @@ impl<'a> Foto<'a> {
     pub fn to_string_cn(&self) -> String {
         format!("{}年{}月{}", self.year_in_chinese(), self.month_in_chinese(), self.day_in_chinese())
     }
+
+    #[cfg(feature = "i18n")]
+    pub fn to_string_in_lang(&self, language: crate::i18n::Language) -> String {
+        match language {
+            crate::i18n::Language::ZhCn => self.to_string_cn(),
+            crate::i18n::Language::En => {
+                format!("Buddhist {}-{:02}-{:02}", self.year(), self.month().abs(), self.day())
+            }
+        }
+    }
+
     pub fn to_full_string(&self) -> String {
         let mut s = self.to_string_cn();
+        for f in self.festivals() {
+            let _ = write!(s, " ({f})");
+        }
+        s
+    }
+
+    #[cfg(feature = "i18n")]
+    pub fn to_full_string_in_lang(&self, language: crate::i18n::Language) -> String {
+        if matches!(language, crate::i18n::Language::ZhCn) {
+            return self.to_full_string();
+        }
+        let mut s = self.to_string_in_lang(language);
         for f in self.festivals() {
             let _ = write!(s, " ({f})");
         }

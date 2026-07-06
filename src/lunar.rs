@@ -1416,6 +1416,19 @@ impl fmt::Display for Lunar {
 }
 
 impl Lunar {
+    /// 基础字符串（显式语言版本，需启用 `i18n` feature）。
+    #[cfg(feature = "i18n")]
+    pub fn to_string_in_lang(&self, language: crate::i18n::Language) -> String {
+        match language {
+            crate::i18n::Language::ZhCn => self.to_string(),
+            crate::i18n::Language::En => {
+                let month =
+                    if self.month < 0 { format!("Leap{:02}", self.month.abs()) } else { format!("{:02}", self.month) };
+                format!("Lunar {}-{}-{:02}", self.year, month, self.day)
+            }
+        }
+    }
+
     /// 完整字符串（与 lunar-go `ToFullString` 对齐）。
     pub fn to_full_string(&self) -> String {
         let mut s = String::new();
@@ -1499,6 +1512,99 @@ impl Lunar {
         s.push_str(") 冲 [");
         s.push_str(&self.day_chong_desc());
         s.push_str("] 煞 [");
+        s.push_str(self.day_sha());
+        s.push(']');
+        s
+    }
+
+    /// 完整字符串（显式语言版本，需启用 `i18n` feature）。
+    #[cfg(feature = "i18n")]
+    pub fn to_full_string_in_lang(&self, language: crate::i18n::Language) -> String {
+        if matches!(language, crate::i18n::Language::ZhCn) {
+            return self.to_full_string();
+        }
+
+        let mut s = String::new();
+        s.push_str(&self.to_string_in_lang(language));
+        s.push(' ');
+        s.push_str(&self.year_in_gan_zhi_in_lang(language));
+        s.push('(');
+        s.push_str(self.year_sheng_xiao_in_lang(language));
+        s.push_str(") Year ");
+        s.push_str(&self.month_in_gan_zhi_in_lang(language));
+        s.push('(');
+        s.push_str(self.month_sheng_xiao_in_lang(language));
+        s.push_str(") Month ");
+        s.push_str(&self.day_in_gan_zhi_in_lang(language));
+        s.push('(');
+        s.push_str(self.day_sheng_xiao_in_lang(language));
+        s.push_str(") Day ");
+        s.push_str(&self.time_in_gan_zhi_in_lang(language));
+        s.push('(');
+        s.push_str(self.time_sheng_xiao_in_lang(language));
+        s.push_str(") Hour NaYin [");
+        s.push_str(self.year_nayin());
+        s.push(' ');
+        s.push_str(self.month_nayin());
+        s.push(' ');
+        s.push_str(self.day_nayin());
+        s.push(' ');
+        s.push_str(self.time_nayin());
+        s.push_str("] Weekday ");
+        s.push_str(self.week_in_lang(language));
+        for f in self.festivals() {
+            s.push_str(" (");
+            s.push_str(f);
+            s.push(')');
+        }
+        for f in self.other_festivals() {
+            s.push_str(" (");
+            s.push_str(f);
+            s.push(')');
+        }
+        let jq = self.jie_qi_in_lang(language);
+        if !jq.is_empty() {
+            s.push_str(" [");
+            s.push_str(jq);
+            s.push(']');
+        }
+        s.push_str(" Direction ");
+        s.push_str(self.gong());
+        s.push_str(" Beast ");
+        s.push_str(self.shou());
+        s.push_str(" Xiu [");
+        s.push_str(self.xiu());
+        s.push_str(self.zheng());
+        s.push_str(self.animal());
+        s.push_str("](");
+        s.push_str(self.xiu_luck());
+        s.push_str(") PengZu [");
+        s.push_str(self.peng_zu_gan());
+        s.push(' ');
+        s.push_str(self.peng_zu_zhi());
+        s.push_str("] Xi Position [");
+        s.push_str(self.day_position_xi());
+        s.push_str("](");
+        s.push_str(self.day_position_xi_desc());
+        s.push_str(") YangGui Position [");
+        s.push_str(self.day_position_yang_gui());
+        s.push_str("](");
+        s.push_str(self.day_position_yang_gui_desc());
+        s.push_str(") YinGui Position [");
+        s.push_str(self.day_position_yin_gui());
+        s.push_str("](");
+        s.push_str(self.day_position_yin_gui_desc());
+        s.push_str(") Fu Position [");
+        s.push_str(self.day_position_fu());
+        s.push_str("](");
+        s.push_str(self.day_position_fu_desc());
+        s.push_str(") Cai Position [");
+        s.push_str(self.day_position_cai());
+        s.push_str("](");
+        s.push_str(self.day_position_cai_desc());
+        s.push_str(") Chong [");
+        s.push_str(&self.day_chong_desc());
+        s.push_str("] Sha [");
         s.push_str(self.day_sha());
         s.push(']');
         s

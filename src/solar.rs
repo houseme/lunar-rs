@@ -223,6 +223,12 @@ impl Solar {
         format!("{} {:02}:{:02}:{:02}", self.to_ymd(), self.hour, self.minute, self.second)
     }
 
+    /// 显式语言版本的基础字符串。
+    #[cfg(feature = "i18n")]
+    pub fn to_string_in_lang(&self, _language: crate::i18n::Language) -> String {
+        self.to_ymd()
+    }
+
     /// 完整字符串：日期 + 闰年 + 星期 + 节日 + 星座。
     pub fn to_full_string(&self) -> String {
         let mut s = self.to_ymd_hms();
@@ -244,6 +250,35 @@ impl Solar {
         s.push(' ');
         s += self.xing_zuo();
         s += "座";
+        s
+    }
+
+    /// 完整字符串（显式语言版本，需启用 `i18n` feature）。
+    #[cfg(feature = "i18n")]
+    pub fn to_full_string_in_lang(&self, language: crate::i18n::Language) -> String {
+        if matches!(language, crate::i18n::Language::ZhCn) {
+            return self.to_full_string();
+        }
+
+        let mut s = self.to_ymd_hms();
+        if self.is_leap_year() {
+            s.push_str(" Leap Year");
+        }
+        s.push_str(" Weekday ");
+        s.push_str(self.week_in_lang(language));
+        for f in self.festivals() {
+            s.push_str(" (");
+            s.push_str(f);
+            s.push(')');
+        }
+        for f in self.other_festivals() {
+            s.push_str(" (");
+            s.push_str(f);
+            s.push(')');
+        }
+        s.push(' ');
+        s.push_str(self.xing_zuo_in_lang(language));
+        s.push_str(" Sign");
         s
     }
 

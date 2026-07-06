@@ -89,6 +89,35 @@ impl NineStar {
     pub const fn song_in_tai_yi(&self) -> &'static str {
         SONG_TAI_YI[self.index as usize]
     }
+
+    #[cfg(feature = "i18n")]
+    pub fn name_in_bei_dou_in_lang(&self, language: crate::i18n::Language) -> &'static str {
+        crate::i18n::bei_dou(self.name_in_bei_dou(), language)
+    }
+
+    #[cfg(feature = "i18n")]
+    pub fn color_in_lang(&self, language: crate::i18n::Language) -> &'static str {
+        crate::i18n::color(self.color(), language)
+    }
+
+    #[cfg(feature = "i18n")]
+    pub fn wu_xing_in_lang(&self, language: crate::i18n::Language) -> &'static str {
+        crate::i18n::wu_xing(self.wu_xing(), language)
+    }
+
+    #[cfg(feature = "i18n")]
+    pub fn to_string_in_lang(&self, language: crate::i18n::Language) -> String {
+        match language {
+            crate::i18n::Language::ZhCn => self.to_string(),
+            crate::i18n::Language::En => format!(
+                "{} {} {} {}",
+                self.number(),
+                self.color_in_lang(language),
+                self.wu_xing_in_lang(language),
+                self.name_in_bei_dou_in_lang(language)
+            ),
+        }
+    }
 }
 
 impl fmt::Display for NineStar {

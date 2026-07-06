@@ -32,7 +32,8 @@ avoid third-party runtime dependencies.
 - Runtime holiday data override hooks via `holiday_util::set_holidays(...)`,
   `set_holiday_data(...)`, and `reset_holidays()`.
 - Experimental explicit-language helpers behind the `i18n` feature for weekday,
-  constellation, JieQi, ShengXiao, and GanZhi translation.
+  constellation, JieQi, ShengXiao, GanZhi, NineStar, and full-string rendering
+  on core calendar objects.
 - Optional `serde` support for owned core calendar data types behind the
   `serde` feature.
 - The default build keeps zero third-party runtime dependencies; optional
