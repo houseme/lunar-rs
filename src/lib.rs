@@ -95,9 +95,10 @@ pub use culture::{Direction, Duty, EarthBranch, Element, HeavenStem, Phase, Phen
 pub use eight_char::EightChar;
 pub use error::LunarError;
 pub use event::{
-    CalendarKind, Event, EventDayGroup, EventKind, EventQuery, EventSource, dedup_events, filter_events,
-    group_events_by_day, scan_event_days_in_range, scan_event_days_in_range_filtered, scan_events_in_range,
-    scan_events_in_range_filtered, sort_events,
+    CalendarKind, Event, EventDayGroup, EventKind, EventQuery, EventSource, EventWeekGroup, dedup_events, filter_events,
+    group_event_days_by_week, group_events_by_day, scan_event_days_in_range, scan_event_days_in_range_filtered,
+    scan_event_weeks_in_range, scan_event_weeks_in_range_filtered, scan_events_in_range, scan_events_in_range_filtered,
+    sort_events,
 };
 pub use foto::Foto;
 pub use fu::Fu;

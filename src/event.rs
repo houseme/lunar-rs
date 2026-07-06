@@ -497,3 +497,75 @@ pub fn scan_event_days_in_range(start: Solar, end: Solar) -> Vec<EventDayGroup> 
 pub fn scan_event_days_in_range_filtered(start: Solar, end: Solar, query: &EventQuery<'_>) -> Vec<EventDayGroup> {
     group_events_by_day(scan_events_in_range_filtered(start, end, query))
 }
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct EventWeekGroup {
+    start: Solar,
+    end: Solar,
+    days: Vec<EventDayGroup>,
+}
+
+impl EventWeekGroup {
+    pub fn new(start: Solar, end: Solar, days: Vec<EventDayGroup>) -> Self {
+        Self { start, end, days }
+    }
+
+    pub const fn start(&self) -> Solar {
+        self.start
+    }
+
+    pub const fn end(&self) -> Solar {
+        self.end
+    }
+
+    pub fn days(&self) -> &[EventDayGroup] {
+        &self.days
+    }
+}
+
+pub fn group_event_days_by_week(days: Vec<EventDayGroup>, week_start: i32) -> Vec<EventWeekGroup> {
+    let mut groups = Vec::new();
+    let mut current_start: Option<Solar> = None;
+    let mut current_end: Option<Solar> = None;
+    let mut current_days: Vec<EventDayGroup> = Vec::new();
+
+    for day in days {
+        let week = crate::SolarWeek::from_ymd(day.solar().year(), day.solar().month(), day.solar().day(), week_start);
+        let week_start_day = week.first_day();
+        let week_end_day = week_start_day.next_day(6);
+
+        if current_start == Some(week_start_day) {
+            current_days.push(day);
+            current_end = Some(week_end_day);
+            continue;
+        }
+
+        if let (Some(start), Some(end)) = (current_start, current_end) {
+            groups.push(EventWeekGroup::new(start, end, std::mem::take(&mut current_days)));
+        }
+
+        current_start = Some(week_start_day);
+        current_end = Some(week_end_day);
+        current_days.push(day);
+    }
+
+    if let (Some(start), Some(end)) = (current_start, current_end) {
+        groups.push(EventWeekGroup::new(start, end, current_days));
+    }
+
+    groups
+}
+
+pub fn scan_event_weeks_in_range(start: Solar, end: Solar, week_start: i32) -> Vec<EventWeekGroup> {
+    group_event_days_by_week(scan_event_days_in_range(start, end), week_start)
+}
+
+pub fn scan_event_weeks_in_range_filtered(
+    start: Solar,
+    end: Solar,
+    week_start: i32,
+    query: &EventQuery<'_>,
+) -> Vec<EventWeekGroup> {
+    group_event_days_by_week(scan_event_days_in_range_filtered(start, end, query), week_start)
+}

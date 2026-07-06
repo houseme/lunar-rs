@@ -1,6 +1,7 @@
 use lunar_rs::{
-    CalendarKind, Event, EventKind, EventQuery, EventSource, Lunar, Solar, SolarMonth, group_events_by_day,
-    scan_event_days_in_range, scan_events_in_range, scan_events_in_range_filtered,
+    CalendarKind, Event, EventKind, EventQuery, EventSource, Lunar, Solar, SolarMonth, SolarWeek, group_event_days_by_week,
+    group_events_by_day, scan_event_days_in_range, scan_event_weeks_in_range, scan_events_in_range,
+    scan_events_in_range_filtered,
 };
 
 #[test]
@@ -252,4 +253,29 @@ fn solar_month_event_days_support_query() {
     assert_eq!(groups[0].solar().to_ymd(), "2021-12-07");
     assert_eq!(groups[1].solar().to_ymd(), "2021-12-21");
     assert!(groups.iter().all(|group| group.events().iter().all(|event| matches!(event.kind(), EventKind::JieQi))));
+}
+
+#[test]
+fn week_views_group_events_into_one_week_bucket() {
+    let start = Solar::from_ymd(2021, 12, 20).unwrap();
+    let end = Solar::from_ymd(2021, 12, 22).unwrap();
+    let weeks = scan_event_weeks_in_range(start, end, 0);
+
+    assert_eq!(weeks.len(), 1);
+    assert_eq!(weeks[0].start().to_ymd(), "2021-12-19");
+    assert_eq!(weeks[0].end().to_ymd(), "2021-12-25");
+    assert!(!weeks[0].days().is_empty());
+
+    let regrouped = group_event_days_by_week(scan_event_days_in_range(start, end), 0);
+    assert_eq!(regrouped.len(), 1);
+    assert_eq!(regrouped[0].start().to_ymd(), "2021-12-19");
+}
+
+#[test]
+fn solar_week_view_supports_query() {
+    let week = SolarWeek::from_ymd(2021, 12, 21, 0);
+    let weeks = week.find_event_weeks(&EventQuery::new().with_kind(EventKind::JieQi));
+
+    assert_eq!(weeks.len(), 1);
+    assert!(weeks[0].days().iter().all(|group| group.events().iter().all(|event| matches!(event.kind(), EventKind::JieQi))));
 }

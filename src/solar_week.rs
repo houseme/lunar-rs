@@ -2,6 +2,7 @@
 
 use std::fmt;
 
+use crate::event::{EventDayGroup, EventQuery, EventWeekGroup, scan_event_weeks_in_range, scan_event_weeks_in_range_filtered};
 use crate::solar::Solar;
 use crate::solar_util;
 
@@ -71,6 +72,36 @@ impl SolarWeek {
     /// 当周属于当月的日期。
     pub fn days_in_month(&self) -> Vec<Solar> {
         self.days().into_iter().filter(|d| d.month() == self.month).collect()
+    }
+
+    /// 当周按日分组的事件视图。
+    pub fn event_days(&self) -> Vec<EventDayGroup> {
+        let start = self.first_day();
+        let end = start.next_day(6);
+        let mut weeks = scan_event_weeks_in_range(start, end, self.start);
+        weeks.pop().map_or_else(Vec::new, |week| week.days().to_vec())
+    }
+
+    /// 当周按周分组的事件视图。
+    pub fn event_weeks(&self) -> Vec<EventWeekGroup> {
+        let start = self.first_day();
+        let end = start.next_day(6);
+        scan_event_weeks_in_range(start, end, self.start)
+    }
+
+    /// 当周按日分组的事件视图（带过滤条件）。
+    pub fn find_event_days(&self, query: &EventQuery<'_>) -> Vec<EventDayGroup> {
+        let start = self.first_day();
+        let end = start.next_day(6);
+        let mut weeks = scan_event_weeks_in_range_filtered(start, end, self.start, query);
+        weeks.pop().map_or_else(Vec::new, |week| week.days().to_vec())
+    }
+
+    /// 当周按周分组的事件视图（带过滤条件）。
+    pub fn find_event_weeks(&self, query: &EventQuery<'_>) -> Vec<EventWeekGroup> {
+        let start = self.first_day();
+        let end = start.next_day(6);
+        scan_event_weeks_in_range_filtered(start, end, self.start, query)
     }
 
     /// 推进 / 回退若干周。
