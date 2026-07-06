@@ -1,6 +1,6 @@
 use lunar_rs::{
-    CalendarKind, Event, EventKind, EventQuery, EventSource, Lunar, Solar, scan_events_in_range,
-    scan_events_in_range_filtered,
+    CalendarKind, Event, EventKind, EventQuery, EventSource, Lunar, Solar, SolarMonth, group_events_by_day,
+    scan_event_days_in_range, scan_events_in_range, scan_events_in_range_filtered,
 };
 
 #[test]
@@ -215,4 +215,41 @@ fn range_scan_filtered_supports_event_query() {
         .unwrap()
         .events_until(Solar::from_ymd(2024, 1, 3).unwrap());
     assert!(holiday_events.iter().any(|event| matches!(event.kind(), EventKind::Holiday)));
+}
+
+#[test]
+fn grouped_event_days_keep_day_boundaries() {
+    let start = Solar::from_ymd(2021, 12, 20).unwrap();
+    let end = Solar::from_ymd(2021, 12, 22).unwrap();
+
+    let groups = scan_event_days_in_range(start, end);
+    assert!(!groups.is_empty());
+    assert!(groups.iter().any(|group| group.solar().to_ymd() == "2021-12-21"));
+    assert!(groups.iter().all(|group| {
+        group.events().iter().all(|event| event.solar().to_ymd() == group.solar().to_ymd())
+    }));
+}
+
+#[test]
+fn group_events_by_day_dedups_and_sorts() {
+    let solar = Solar::from_ymd(2024, 1, 1).unwrap();
+    let mut events = solar.events();
+    events.extend(solar.events());
+
+    let groups = group_events_by_day(events);
+    assert_eq!(groups.len(), 1);
+    let events = groups[0].events();
+    let holiday_count = events.iter().filter(|event| matches!(event.kind(), EventKind::Holiday)).count();
+    assert_eq!(holiday_count, 1);
+}
+
+#[test]
+fn solar_month_event_days_support_query() {
+    let month = SolarMonth::from_ym(2021, 12);
+    let groups = month.find_event_days(&EventQuery::new().with_kind(EventKind::JieQi));
+
+    assert_eq!(groups.len(), 2);
+    assert_eq!(groups[0].solar().to_ymd(), "2021-12-07");
+    assert_eq!(groups[1].solar().to_ymd(), "2021-12-21");
+    assert!(groups.iter().all(|group| group.events().iter().all(|event| matches!(event.kind(), EventKind::JieQi))));
 }

@@ -2,6 +2,7 @@
 
 use std::fmt;
 
+use crate::event::{EventDayGroup, EventQuery, scan_event_days_in_range, scan_event_days_in_range_filtered};
 use crate::solar::Solar;
 use crate::solar_util;
 use crate::solar_week::SolarWeek;
@@ -45,6 +46,20 @@ impl SolarMonth {
             }
         }
         out
+    }
+
+    /// 当月按日分组的事件视图。
+    pub fn event_days(&self) -> Vec<EventDayGroup> {
+        let first = Solar::from_ymd(self.year, self.month, 1).unwrap();
+        let last = Solar::from_ymd(self.year, self.month, solar_util::days_of_month(self.year, self.month)).unwrap();
+        scan_event_days_in_range(first, last)
+    }
+
+    /// 当月按日分组的事件视图（带过滤条件）。
+    pub fn find_event_days(&self, query: &EventQuery<'_>) -> Vec<EventDayGroup> {
+        let first = Solar::from_ymd(self.year, self.month, 1).unwrap();
+        let last = Solar::from_ymd(self.year, self.month, solar_util::days_of_month(self.year, self.month)).unwrap();
+        scan_event_days_in_range_filtered(first, last, query)
     }
 
     /// 推进 / 回退若干月。

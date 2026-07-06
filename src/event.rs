@@ -450,3 +450,50 @@ pub fn scan_events_in_range_filtered(start: Solar, end: Solar, query: &EventQuer
     let events = scan_events_in_range(start, end);
     filter_events(&events, query)
 }
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct EventDayGroup {
+    solar: Solar,
+    events: Vec<Event>,
+}
+
+impl EventDayGroup {
+    pub fn new(solar: Solar, mut events: Vec<Event>) -> Self {
+        dedup_events(&mut events);
+        Self { solar, events }
+    }
+
+    pub const fn solar(&self) -> Solar {
+        self.solar
+    }
+
+    pub fn events(&self) -> &[Event] {
+        &self.events
+    }
+}
+
+pub fn group_events_by_day(mut events: Vec<Event>) -> Vec<EventDayGroup> {
+    dedup_events(&mut events);
+    let mut groups: Vec<EventDayGroup> = Vec::new();
+
+    for event in events {
+        if let Some(group) = groups.last_mut()
+            && group.solar.to_ymd() == event.solar().to_ymd()
+        {
+            group.events.push(event);
+            continue;
+        }
+        groups.push(EventDayGroup::new(event.solar(), vec![event]));
+    }
+
+    groups
+}
+
+pub fn scan_event_days_in_range(start: Solar, end: Solar) -> Vec<EventDayGroup> {
+    group_events_by_day(scan_events_in_range(start, end))
+}
+
+pub fn scan_event_days_in_range_filtered(start: Solar, end: Solar, query: &EventQuery<'_>) -> Vec<EventDayGroup> {
+    group_events_by_day(scan_events_in_range_filtered(start, end, query))
+}
