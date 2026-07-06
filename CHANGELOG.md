@@ -90,6 +90,8 @@ and this project uses semantic versioning once releases are published.
   against an external reference binary.
 - Added `lunar_ref_driver`, a sample differential-testing driver that emits the
   stable solar snapshot protocol used by the ignored diff suite.
+- Added `scripts/run_differential_self_check.sh` to exercise the ignored diff
+  suite against the in-repo sample driver.
 - Added English and Chinese README documentation.
 
 ### Changed

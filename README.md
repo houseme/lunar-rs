@@ -157,6 +157,7 @@ Differential test workflow:
 ```bash
 cargo run --bin lunar_ref_driver -- solar 2024 4 22 23 30 0
 LUNAR_RS_DIFF_REF_BIN=/path/to/reference-driver cargo test diff_reference_sample_matrix -- --ignored
+sh scripts/run_differential_self_check.sh
 ```
 
 ## Project Layout
@@ -173,6 +174,8 @@ LUNAR_RS_DIFF_REF_BIN=/path/to/reference-driver cargo test diff_reference_sample
   reference implementations.
 - `src/bin/lunar_ref_driver.rs`: sample differential-testing driver that emits
   stable `key=value` snapshots.
+- `scripts/run_differential_self_check.sh`: one-command local protocol smoke
+  check using the sample driver itself.
 
 ## License
 
