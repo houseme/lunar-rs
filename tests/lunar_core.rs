@@ -3,7 +3,7 @@
 //! 注：项目 CJK 排版工具会在 CJK/拉丁边界插入空格，故合成串（to_full_string）
 //! 采用去空白后比较；分量值（纯 CJK / 纯 ASCII）直接逐字比较。
 
-use lunar_rs::{Lunar, Solar};
+use lunar_rs::{Lunar, Solar, lunar_util};
 
 fn norm(s: &str) -> String {
     s.chars().filter(|c| !c.is_whitespace()).collect()
@@ -167,6 +167,22 @@ fn days_between_1582() {
     assert_eq!(solar_util::days_between(1582, 1, 1, 1583, 1, 1), 355);
     assert_eq!(solar_util::days_between(1582, 10, 4, 1582, 11, 1), 18);
     assert_eq!(solar_util::days_between(1582, 10, 4, 1582, 10, 15), 1);
+}
+
+#[test]
+fn time_zhi_index_boundaries() {
+    assert_eq!(lunar_util::get_time_zhi_index("00:00"), 0);
+    assert_eq!(lunar_util::get_time_zhi_index("00:59"), 0);
+    assert_eq!(lunar_util::get_time_zhi_index("01:00"), 1);
+    assert_eq!(lunar_util::get_time_zhi_index("02:59"), 1);
+    assert_eq!(lunar_util::get_time_zhi_index("03:00"), 2);
+    assert_eq!(lunar_util::get_time_zhi_index("21:00"), 11);
+    assert_eq!(lunar_util::get_time_zhi_index("22:59"), 11);
+    assert_eq!(lunar_util::get_time_zhi_index("23:00"), 0);
+    assert_eq!(lunar_util::get_time_zhi_index("23:59:59"), 0);
+    assert_eq!(lunar_util::get_time_zhi_index(""), 0);
+    assert_eq!(lunar_util::get_time_zhi_index("1:00"), 0);
+    assert_eq!(lunar_util::get_time_zhi_index("24:00"), 0);
 }
 
 #[test]

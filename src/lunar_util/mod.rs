@@ -16,22 +16,23 @@ pub const ZHI_TIAN_SHEN_OFFSET: [i64; 12] = [4, 2, 0, 10, 8, 6, 4, 2, 0, 10, 8, 
 
 /// `"HH:MM"` → 时辰索引（0..11，子=0）。
 pub fn get_time_zhi_index(hm: &str) -> i64 {
-    if hm.is_empty() {
+    let bytes = hm.as_bytes();
+    if bytes.len() < 5 || bytes[2] != b':' {
         return 0;
     }
-    let hm = if hm.len() > 5 { &hm[..5] } else { hm };
-    let mut x = 1_i64;
-    let mut i = 1;
-    while i < 22 {
-        let lo = format!("{i:02}:00");
-        let hi = format!("{:02}:59", i + 1);
-        if hm >= lo.as_str() && hm <= hi.as_str() {
-            return x;
-        }
-        x += 1;
-        i += 2;
+
+    let hour = match (bytes[0], bytes[1]) {
+        (b'0'..=b'2', b'0'..=b'9') => i64::from((bytes[0] - b'0') * 10 + (bytes[1] - b'0')),
+        _ => return 0,
+    };
+    if !(0..=23).contains(&hour) {
+        return 0;
     }
-    0
+
+    match hour {
+        1..=22 => (hour + 1) / 2,
+        _ => 0,
+    }
 }
 
 /// `"HH:MM"` → 地支名。

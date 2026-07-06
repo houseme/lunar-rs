@@ -91,6 +91,8 @@ and this project uses semantic versioning once releases are published.
   READMEs.
 - Scoped Clippy allow rules to ShouXing generated data and engine modules where
   precision-oriented extracted constants intentionally trigger numeric lints.
+- Refactored time-branch index lookup to parse `HH:MM` with zero heap
+  allocations instead of building comparison strings.
 
 ### Fixed
 
