@@ -878,24 +878,12 @@ impl Lunar {
             ));
         }
         if let Some(jieqi) = self.current_jie_qi() {
-            events.push(Event::new(EventKind::JieQi, CalendarKind::Lunar, EventSource::JieQi, jieqi.name(), self.solar));
+            events.push(jieqi.to_event(CalendarKind::Lunar));
         }
         for holiday in
             crate::holiday_util::get_holidays(&format!("{:04}{:02}{:02}", self.solar.year(), self.solar.month(), self.solar.day()))
         {
-            let detail = if holiday.is_work() {
-                format!("workday remap to {}", holiday.target())
-            } else {
-                format!("holiday target {}", holiday.target())
-            };
-            events.push(Event::with_detail(
-                EventKind::Holiday,
-                CalendarKind::Lunar,
-                EventSource::HolidayData,
-                holiday.name(),
-                self.solar,
-                detail,
-            ));
+            events.push(holiday.to_event(self.solar, CalendarKind::Lunar));
         }
 
         events

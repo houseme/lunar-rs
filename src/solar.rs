@@ -328,22 +328,10 @@ impl Solar {
             ));
         }
         for holiday in holiday_util::get_holidays(&format!("{:04}{:02}{:02}", self.year, self.month, self.day)) {
-            let detail = if holiday.is_work() {
-                format!("workday remap to {}", holiday.target())
-            } else {
-                format!("holiday target {}", holiday.target())
-            };
-            events.push(Event::with_detail(
-                EventKind::Holiday,
-                CalendarKind::Solar,
-                EventSource::HolidayData,
-                holiday.name(),
-                *self,
-                detail,
-            ));
+            events.push(holiday.to_event(*self, CalendarKind::Solar));
         }
         if let Some(jieqi) = self.lunar().current_jie_qi() {
-            events.push(Event::new(EventKind::JieQi, CalendarKind::Solar, EventSource::JieQi, jieqi.name(), *self));
+            events.push(jieqi.to_event(CalendarKind::Solar));
         }
 
         events

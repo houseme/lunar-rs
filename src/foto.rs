@@ -42,6 +42,16 @@ impl FotoFestival {
     pub fn remark(&self) -> &str {
         &self.remark
     }
+
+    pub fn to_event(&self, solar: crate::Solar) -> Event {
+        let mut detail = format!("result={}", self.result());
+        if !self.remark().is_empty() {
+            detail.push_str(" remark=");
+            detail.push_str(self.remark());
+        }
+        detail.push_str(&format!(" every_month={}", self.every_month()));
+        Event::with_detail(EventKind::FotoFestival, CalendarKind::Foto, EventSource::BuiltInFestival, self.name(), solar, detail)
+    }
 }
 
 impl fmt::Display for FotoFestival {
@@ -118,19 +128,7 @@ impl<'a> Foto<'a> {
         let solar = self.lunar.solar();
 
         for festival in self.festivals() {
-            let detail = if festival.remark().is_empty() {
-                festival.result().to_string()
-            } else {
-                format!("{} {}", festival.result(), festival.remark())
-            };
-            events.push(Event::with_detail(
-                EventKind::FotoFestival,
-                CalendarKind::Foto,
-                EventSource::BuiltInFestival,
-                festival.name(),
-                solar,
-                detail,
-            ));
+            events.push(festival.to_event(solar));
         }
 
         for name in self.other_festivals() {

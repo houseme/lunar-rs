@@ -2,6 +2,9 @@
 
 use std::fmt;
 
+use crate::event::{CalendarKind, Event, EventKind, EventSource};
+use crate::solar::Solar;
+
 /// 一个法定节假日 / 调休日记录。
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Debug)]
@@ -31,6 +34,11 @@ impl Holiday {
     #[inline]
     pub fn target(&self) -> &str {
         &self.target
+    }
+
+    pub fn to_event(&self, solar: Solar, calendar_kind: CalendarKind) -> Event {
+        let detail = format!("work={} target={}", self.work, self.target);
+        Event::with_detail(EventKind::Holiday, calendar_kind, EventSource::HolidayData, self.name(), solar, detail)
     }
 }
 

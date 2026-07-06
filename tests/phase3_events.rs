@@ -9,7 +9,11 @@ fn solar_events_include_festivals_and_jieqi() {
 
     let solar = Solar::from_ymd(2021, 12, 21).unwrap();
     let events = solar.events();
-    assert!(events.iter().any(|event| matches!(event.kind(), EventKind::JieQi) && event.name() == "冬至"));
+    let jieqi = events
+        .iter()
+        .find(|event| matches!(event.kind(), EventKind::JieQi) && event.name() == "冬至")
+        .expect("expected jieqi event");
+    assert!(jieqi.detail().is_some_and(|detail| detail.starts_with("at=2021-12-21")));
 }
 
 #[test]
@@ -37,7 +41,7 @@ fn holiday_events_include_detail() {
     assert!(matches!(holiday.source(), EventSource::HolidayData));
     assert_eq!(holiday.calendar_label(), "solar");
     assert_eq!(holiday.source_label(), "holiday_data");
-    assert!(holiday.detail().is_some());
+    assert_eq!(holiday.detail(), Some("work=false target=2024-01-01"));
 }
 
 #[test]
@@ -50,6 +54,9 @@ fn foto_events_are_exposed_through_unified_model() {
         assert!(matches!(event.kind(), EventKind::FotoFestival | EventKind::FotoOtherFestival));
         assert!(matches!(event.calendar_kind(), CalendarKind::Foto));
         assert_eq!(event.category_label().starts_with("foto_"), true);
+    }
+    if let Some(event) = events.iter().find(|event| matches!(event.kind(), EventKind::FotoFestival)) {
+        assert!(event.detail().is_some_and(|detail| detail.contains("result=")));
     }
 }
 
@@ -64,6 +71,9 @@ fn tao_events_are_exposed_through_unified_model() {
             && matches!(event.calendar_kind(), CalendarKind::Tao)
             && matches!(event.source(), EventSource::BuiltInFestival)
     }));
+    if let Some(event) = events.iter().find(|event| matches!(event.kind(), EventKind::TaoFestival) && event.has_detail()) {
+        assert!(event.detail().is_some_and(|detail| detail.starts_with("remark=")));
+    }
 }
 
 #[test]
@@ -87,7 +97,7 @@ fn event_display_text_and_dedup_sort_are_stable() {
         .into_iter()
         .find(|event| matches!(event.kind(), EventKind::Holiday))
         .expect("expected holiday event");
-    assert!(holiday.display_text().contains("holiday target"));
+    assert!(holiday.display_text().contains("work=false target=2024-01-01"));
 
     let mut events = vec![
         Event::with_detail(

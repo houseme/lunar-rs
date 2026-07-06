@@ -28,6 +28,21 @@ impl TaoFestival {
     pub fn remark(&self) -> &str {
         &self.remark
     }
+
+    pub fn to_event(&self, solar: crate::Solar) -> Event {
+        if self.remark().is_empty() {
+            Event::new(EventKind::TaoFestival, CalendarKind::Tao, EventSource::BuiltInFestival, self.name(), solar)
+        } else {
+            Event::with_detail(
+                EventKind::TaoFestival,
+                CalendarKind::Tao,
+                EventSource::BuiltInFestival,
+                self.name(),
+                solar,
+                format!("remark={}", self.remark()),
+            )
+        }
+    }
 }
 
 impl fmt::Display for TaoFestival {
@@ -100,23 +115,7 @@ impl<'a> Tao<'a> {
     /// Unified events for the current Taoist calendar date.
     pub fn events(&self) -> Vec<Event> {
         let solar = self.lunar.solar();
-        self.festivals()
-            .into_iter()
-            .map(|festival| {
-                if festival.remark().is_empty() {
-                    Event::new(EventKind::TaoFestival, CalendarKind::Tao, EventSource::BuiltInFestival, festival.name(), solar)
-                } else {
-                    Event::with_detail(
-                        EventKind::TaoFestival,
-                        CalendarKind::Tao,
-                        EventSource::BuiltInFestival,
-                        festival.name(),
-                        solar,
-                        festival.remark(),
-                    )
-                }
-            })
-            .collect()
+        self.festivals().into_iter().map(|festival| festival.to_event(solar)).collect()
     }
 
     pub fn find_events(&self, query: &EventQuery<'_>) -> Vec<Event> {

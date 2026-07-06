@@ -113,6 +113,10 @@ impl Event {
         }
     }
 
+    pub fn has_detail(&self) -> bool {
+        self.detail.as_deref().is_some_and(|detail| !detail.is_empty())
+    }
+
     pub const fn category_label(&self) -> &'static str {
         match self.kind {
             EventKind::SolarFestival => "solar_festival",
