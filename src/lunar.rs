@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use std::fmt;
 
 use crate::LunarError;
+use crate::culture::{Direction, EarthBranch, HeavenStem, SixtyCycle, Zodiac};
 use crate::eight_char::EightChar;
 use crate::fu::Fu;
 use crate::jieqi::JieQi;
@@ -456,6 +457,9 @@ impl Lunar {
     pub fn year_gan(&self) -> &'static str {
         lunar_util::tables::GAN[(self.year_gan_index + 1) as usize]
     }
+    pub fn year_heaven_stem(&self) -> HeavenStem {
+        HeavenStem::from_index(self.year_gan_index as usize)
+    }
     pub fn year_gan_by_li_chun(&self) -> &'static str {
         lunar_util::tables::GAN[(self.year_gan_index_by_li_chun + 1) as usize]
     }
@@ -465,6 +469,9 @@ impl Lunar {
     pub fn year_zhi(&self) -> &'static str {
         lunar_util::tables::ZHI[(self.year_zhi_index + 1) as usize]
     }
+    pub fn year_earth_branch(&self) -> EarthBranch {
+        EarthBranch::from_index(self.year_zhi_index as usize)
+    }
     pub fn year_zhi_by_li_chun(&self) -> &'static str {
         lunar_util::tables::ZHI[(self.year_zhi_index_by_li_chun + 1) as usize]
     }
@@ -473,6 +480,9 @@ impl Lunar {
     }
     pub fn year_in_gan_zhi(&self) -> String {
         format!("{}{}", self.year_gan(), self.year_zhi())
+    }
+    pub fn year_sixty_cycle(&self) -> SixtyCycle {
+        SixtyCycle::from_name(&self.year_in_gan_zhi()).expect("year ganzhi must map to sixty-cycle")
     }
     #[cfg(feature = "i18n")]
     pub fn year_in_gan_zhi_in_lang(&self, language: crate::i18n::Language) -> String {
@@ -488,17 +498,26 @@ impl Lunar {
     pub fn month_gan(&self) -> &'static str {
         lunar_util::tables::GAN[(self.month_gan_index + 1) as usize]
     }
+    pub fn month_heaven_stem(&self) -> HeavenStem {
+        HeavenStem::from_index(self.month_gan_index as usize)
+    }
     pub fn month_gan_exact(&self) -> &'static str {
         lunar_util::tables::GAN[(self.month_gan_index_exact + 1) as usize]
     }
     pub fn month_zhi(&self) -> &'static str {
         lunar_util::tables::ZHI[(self.month_zhi_index + 1) as usize]
     }
+    pub fn month_earth_branch(&self) -> EarthBranch {
+        EarthBranch::from_index(self.month_zhi_index as usize)
+    }
     pub fn month_zhi_exact(&self) -> &'static str {
         lunar_util::tables::ZHI[(self.month_zhi_index_exact + 1) as usize]
     }
     pub fn month_in_gan_zhi(&self) -> String {
         format!("{}{}", self.month_gan(), self.month_zhi())
+    }
+    pub fn month_sixty_cycle(&self) -> SixtyCycle {
+        SixtyCycle::from_name(&self.month_in_gan_zhi()).expect("month ganzhi must map to sixty-cycle")
     }
     #[cfg(feature = "i18n")]
     pub fn month_in_gan_zhi_in_lang(&self, language: crate::i18n::Language) -> String {
@@ -511,6 +530,9 @@ impl Lunar {
     pub fn day_gan(&self) -> &'static str {
         lunar_util::tables::GAN[(self.day_gan_index + 1) as usize]
     }
+    pub fn day_heaven_stem(&self) -> HeavenStem {
+        HeavenStem::from_index(self.day_gan_index as usize)
+    }
     pub fn day_gan_exact(&self) -> &'static str {
         lunar_util::tables::GAN[(self.day_gan_index_exact + 1) as usize]
     }
@@ -520,6 +542,9 @@ impl Lunar {
     pub fn day_zhi(&self) -> &'static str {
         lunar_util::tables::ZHI[(self.day_zhi_index + 1) as usize]
     }
+    pub fn day_earth_branch(&self) -> EarthBranch {
+        EarthBranch::from_index(self.day_zhi_index as usize)
+    }
     pub fn day_zhi_exact(&self) -> &'static str {
         lunar_util::tables::ZHI[(self.day_zhi_index_exact + 1) as usize]
     }
@@ -528,6 +553,9 @@ impl Lunar {
     }
     pub fn day_in_gan_zhi(&self) -> String {
         format!("{}{}", self.day_gan(), self.day_zhi())
+    }
+    pub fn day_sixty_cycle(&self) -> SixtyCycle {
+        SixtyCycle::from_name(&self.day_in_gan_zhi()).expect("day ganzhi must map to sixty-cycle")
     }
     #[cfg(feature = "i18n")]
     pub fn day_in_gan_zhi_in_lang(&self, language: crate::i18n::Language) -> String {
@@ -543,11 +571,20 @@ impl Lunar {
     pub fn time_gan(&self) -> &'static str {
         lunar_util::tables::GAN[(self.time_gan_index + 1) as usize]
     }
+    pub fn time_heaven_stem(&self) -> HeavenStem {
+        HeavenStem::from_index(self.time_gan_index as usize)
+    }
     pub fn time_zhi(&self) -> &'static str {
         lunar_util::tables::ZHI[(self.time_zhi_index + 1) as usize]
     }
+    pub fn time_earth_branch(&self) -> EarthBranch {
+        EarthBranch::from_index(self.time_zhi_index as usize)
+    }
     pub fn time_in_gan_zhi(&self) -> String {
         format!("{}{}", self.time_gan(), self.time_zhi())
+    }
+    pub fn time_sixty_cycle(&self) -> SixtyCycle {
+        SixtyCycle::from_name(&self.time_in_gan_zhi()).expect("time ganzhi must map to sixty-cycle")
     }
     #[cfg(feature = "i18n")]
     pub fn time_in_gan_zhi_in_lang(&self, language: crate::i18n::Language) -> String {
@@ -572,6 +609,9 @@ impl Lunar {
     pub fn year_sheng_xiao(&self) -> &'static str {
         lunar_util::tables::SHENG_XIAO[(self.year_zhi_index + 1) as usize]
     }
+    pub fn year_zodiac(&self) -> Zodiac {
+        self.year_earth_branch().zodiac()
+    }
     #[cfg(feature = "i18n")]
     pub fn year_sheng_xiao_in_lang(&self, language: crate::i18n::Language) -> &'static str {
         crate::i18n::sheng_xiao(self.year_sheng_xiao(), language)
@@ -585,6 +625,9 @@ impl Lunar {
     pub fn month_sheng_xiao(&self) -> &'static str {
         lunar_util::tables::SHENG_XIAO[(self.month_zhi_index + 1) as usize]
     }
+    pub fn month_zodiac(&self) -> Zodiac {
+        self.month_earth_branch().zodiac()
+    }
     #[cfg(feature = "i18n")]
     pub fn month_sheng_xiao_in_lang(&self, language: crate::i18n::Language) -> &'static str {
         crate::i18n::sheng_xiao(self.month_sheng_xiao(), language)
@@ -592,12 +635,18 @@ impl Lunar {
     pub fn day_sheng_xiao(&self) -> &'static str {
         lunar_util::tables::SHENG_XIAO[(self.day_zhi_index + 1) as usize]
     }
+    pub fn day_zodiac(&self) -> Zodiac {
+        self.day_earth_branch().zodiac()
+    }
     #[cfg(feature = "i18n")]
     pub fn day_sheng_xiao_in_lang(&self, language: crate::i18n::Language) -> &'static str {
         crate::i18n::sheng_xiao(self.day_sheng_xiao(), language)
     }
     pub fn time_sheng_xiao(&self) -> &'static str {
         lunar_util::tables::SHENG_XIAO[(self.time_zhi_index + 1) as usize]
+    }
+    pub fn time_zodiac(&self) -> Zodiac {
+        self.time_earth_branch().zodiac()
     }
     #[cfg(feature = "i18n")]
     pub fn time_sheng_xiao_in_lang(&self, language: crate::i18n::Language) -> &'static str {
@@ -823,11 +872,17 @@ impl Lunar {
     pub fn day_position_xi(&self) -> &'static str {
         lunar_util::tables::POSITION_XI[(self.day_gan_index + 1) as usize]
     }
+    pub fn day_position_xi_direction(&self) -> Direction {
+        Direction::new(self.day_position_xi())
+    }
     pub fn day_position_xi_desc(&self) -> &'static str {
         lunar_util::position_desc(self.day_position_xi())
     }
     pub fn day_position_yang_gui(&self) -> &'static str {
         lunar_util::tables::POSITION_YANG_GUI[(self.day_gan_index + 1) as usize]
+    }
+    pub fn day_position_yang_gui_direction(&self) -> Direction {
+        Direction::new(self.day_position_yang_gui())
     }
     pub fn day_position_yang_gui_desc(&self) -> &'static str {
         lunar_util::position_desc(self.day_position_yang_gui())
@@ -835,11 +890,17 @@ impl Lunar {
     pub fn day_position_yin_gui(&self) -> &'static str {
         lunar_util::tables::POSITION_YIN_GUI[(self.day_gan_index + 1) as usize]
     }
+    pub fn day_position_yin_gui_direction(&self) -> Direction {
+        Direction::new(self.day_position_yin_gui())
+    }
     pub fn day_position_yin_gui_desc(&self) -> &'static str {
         lunar_util::position_desc(self.day_position_yin_gui())
     }
     pub fn day_position_fu(&self) -> &'static str {
         self.day_position_fu_by_sect(2)
+    }
+    pub fn day_position_fu_direction(&self) -> Direction {
+        Direction::new(self.day_position_fu())
     }
     pub fn day_position_fu_by_sect(&self, sect: u8) -> &'static str {
         let offset = (self.day_gan_index + 1) as usize;
@@ -850,6 +911,9 @@ impl Lunar {
     }
     pub fn day_position_cai(&self) -> &'static str {
         lunar_util::tables::POSITION_CAI[(self.day_gan_index + 1) as usize]
+    }
+    pub fn day_position_cai_direction(&self) -> Direction {
+        Direction::new(self.day_position_cai())
     }
     pub fn day_position_cai_desc(&self) -> &'static str {
         lunar_util::position_desc(self.day_position_cai())

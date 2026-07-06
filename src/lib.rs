@@ -69,6 +69,7 @@ pub mod holiday_util;
 mod nine_star_util;
 mod tao_util;
 
+mod culture;
 mod eight_char;
 mod foto;
 mod fu;
@@ -89,6 +90,7 @@ mod solar_year;
 mod tao;
 mod yun;
 
+pub use culture::{Direction, EarthBranch, Element, HeavenStem, SixtyCycle, Zodiac};
 pub use eight_char::EightChar;
 pub use error::LunarError;
 pub use foto::Foto;

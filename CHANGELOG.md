@@ -98,6 +98,14 @@ and this project uses semantic versioning once releases are published.
 - Added an initial `i18n` feature implementation with explicit language-aware
   helpers for weekday, constellation, JieQi, ShengXiao, GanZhi, NineStar, and
   full-string output on core calendar objects.
+- Added the first Phase 2 typed domain API slice:
+  - `HeavenStem`,
+  - `EarthBranch`,
+  - `SixtyCycle`,
+  - `Zodiac`,
+  - `Direction`,
+  - `Element`,
+  - plus typed getters on `Lunar` and `NineStar`.
 - Added English and Chinese README documentation.
 
 ### Changed

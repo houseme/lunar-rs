@@ -2,6 +2,7 @@
 
 use std::fmt;
 
+use crate::culture::{Direction, Element};
 use crate::lunar_util;
 
 const NUMBER: &[&str; 9] = &["一", "二", "三", "四", "五", "六", "七", "八", "九"];
@@ -53,8 +54,14 @@ impl NineStar {
     pub const fn wu_xing(&self) -> &'static str {
         WU_XING[self.index as usize]
     }
+    pub fn element(&self) -> Element {
+        Element::new(self.wu_xing())
+    }
     pub const fn position(&self) -> &'static str {
         POSITION[self.index as usize]
+    }
+    pub fn position_direction(&self) -> Direction {
+        Direction::new(self.position())
     }
     pub fn position_desc(&self) -> &'static str {
         lunar_util::position_desc(self.position())
