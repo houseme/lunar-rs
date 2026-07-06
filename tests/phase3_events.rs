@@ -1,4 +1,4 @@
-use lunar_rs::{EventKind, Lunar, Solar};
+use lunar_rs::{CalendarKind, EventKind, EventSource, Lunar, Solar};
 
 #[test]
 fn solar_events_include_festivals_and_jieqi() {
@@ -33,6 +33,10 @@ fn holiday_events_include_detail() {
         .expect("expected at least one holiday event");
 
     assert_eq!(holiday.solar(), solar);
+    assert!(matches!(holiday.calendar_kind(), CalendarKind::Solar));
+    assert!(matches!(holiday.source(), EventSource::HolidayData));
+    assert_eq!(holiday.calendar_label(), "solar");
+    assert_eq!(holiday.source_label(), "holiday_data");
     assert!(holiday.detail().is_some());
 }
 
@@ -44,6 +48,7 @@ fn foto_events_are_exposed_through_unified_model() {
 
     if let Some(event) = events.first() {
         assert!(matches!(event.kind(), EventKind::FotoFestival | EventKind::FotoOtherFestival));
+        assert!(matches!(event.calendar_kind(), CalendarKind::Foto));
         assert_eq!(event.category_label().starts_with("foto_"), true);
     }
 }
@@ -54,5 +59,9 @@ fn tao_events_are_exposed_through_unified_model() {
     let tao = lunar.tao();
     let events = tao.events();
 
-    assert!(events.iter().any(|event| matches!(event.kind(), EventKind::TaoFestival)));
+    assert!(events.iter().any(|event| {
+        matches!(event.kind(), EventKind::TaoFestival)
+            && matches!(event.calendar_kind(), CalendarKind::Tao)
+            && matches!(event.source(), EventSource::BuiltInFestival)
+    }));
 }

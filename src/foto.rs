@@ -3,7 +3,7 @@
 use std::fmt;
 use std::fmt::Write as _;
 
-use crate::event::{Event, EventKind};
+use crate::event::{CalendarKind, Event, EventKind, EventSource};
 use crate::foto_util;
 use crate::lunar::Lunar;
 use crate::lunar_month::LunarMonth;
@@ -123,11 +123,24 @@ impl<'a> Foto<'a> {
             } else {
                 format!("{} {}", festival.result(), festival.remark())
             };
-            events.push(Event::with_detail(EventKind::FotoFestival, festival.name(), solar, detail));
+            events.push(Event::with_detail(
+                EventKind::FotoFestival,
+                CalendarKind::Foto,
+                EventSource::BuiltInFestival,
+                festival.name(),
+                solar,
+                detail,
+            ));
         }
 
         for name in self.other_festivals() {
-            events.push(Event::new(EventKind::FotoOtherFestival, name, solar));
+            events.push(Event::new(
+                EventKind::FotoOtherFestival,
+                CalendarKind::Foto,
+                EventSource::BuiltInOtherFestival,
+                name,
+                solar,
+            ));
         }
 
         events

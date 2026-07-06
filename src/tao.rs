@@ -2,7 +2,7 @@
 
 use std::fmt;
 
-use crate::event::{Event, EventKind};
+use crate::event::{CalendarKind, Event, EventKind, EventSource};
 use crate::lunar::Lunar;
 use crate::lunar_util;
 use crate::tao_util;
@@ -104,9 +104,16 @@ impl<'a> Tao<'a> {
             .into_iter()
             .map(|festival| {
                 if festival.remark().is_empty() {
-                    Event::new(EventKind::TaoFestival, festival.name(), solar)
+                    Event::new(EventKind::TaoFestival, CalendarKind::Tao, EventSource::BuiltInFestival, festival.name(), solar)
                 } else {
-                    Event::with_detail(EventKind::TaoFestival, festival.name(), solar, festival.remark())
+                    Event::with_detail(
+                        EventKind::TaoFestival,
+                        CalendarKind::Tao,
+                        EventSource::BuiltInFestival,
+                        festival.name(),
+                        solar,
+                        festival.remark(),
+                    )
                 }
             })
             .collect()

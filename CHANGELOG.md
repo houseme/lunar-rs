@@ -116,6 +116,10 @@ and this project uses semantic versioning once releases are published.
   - `Lunar::events()`,
   - `Foto::events()`,
   - `Tao::events()`.
+- Added second-layer event semantics:
+  - `CalendarKind`,
+  - `EventSource`,
+  - source/calendar/detail label helpers on `Event`.
 - Added English and Chinese README documentation.
 
 ### Changed

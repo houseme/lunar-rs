@@ -23,6 +23,8 @@
 - 可通过 `Lunar::foto()` 与 `Lunar::tao()` 获取佛历、道历模型。
 - 提供 `Solar::events()`、`Lunar::events()`、`Foto::events()`、
   `Tao::events()` 的最小统一事件聚合出口，可查询节日、节气与法定假日。
+- 统一事件模型现已包含 `EventKind`、`CalendarKind`、`EventSource`、
+  锚定阳历日期和可选 detail 文本，便于下游稳定消费。
 - 提供 `holiday_util::set_holidays(...)`、`set_holiday_data(...)`、
   `reset_holidays()` 等法定节假日运行时覆盖接口。
 - 提供基于 `i18n` feature 的显式语言辅助方法，可翻译星期、星座、节气、

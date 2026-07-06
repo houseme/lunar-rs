@@ -2,7 +2,7 @@
 
 use std::fmt;
 
-use crate::event::{Event, EventKind};
+use crate::event::{CalendarKind, Event, EventKind, EventSource};
 use crate::LunarError;
 use crate::holiday_util;
 use crate::lunar::Lunar;
@@ -316,10 +316,16 @@ impl Solar {
         let mut events = Vec::new();
 
         for name in self.festivals() {
-            events.push(Event::new(EventKind::SolarFestival, name, *self));
+            events.push(Event::new(EventKind::SolarFestival, CalendarKind::Solar, EventSource::BuiltInFestival, name, *self));
         }
         for name in self.other_festivals() {
-            events.push(Event::new(EventKind::SolarOtherFestival, name, *self));
+            events.push(Event::new(
+                EventKind::SolarOtherFestival,
+                CalendarKind::Solar,
+                EventSource::BuiltInOtherFestival,
+                name,
+                *self,
+            ));
         }
         for holiday in holiday_util::get_holidays(&format!("{:04}{:02}{:02}", self.year, self.month, self.day)) {
             let detail = if holiday.is_work() {
@@ -327,10 +333,17 @@ impl Solar {
             } else {
                 format!("holiday target {}", holiday.target())
             };
-            events.push(Event::with_detail(EventKind::Holiday, holiday.name(), *self, detail));
+            events.push(Event::with_detail(
+                EventKind::Holiday,
+                CalendarKind::Solar,
+                EventSource::HolidayData,
+                holiday.name(),
+                *self,
+                detail,
+            ));
         }
         if let Some(jieqi) = self.lunar().current_jie_qi() {
-            events.push(Event::new(EventKind::JieQi, jieqi.name(), *self));
+            events.push(Event::new(EventKind::JieQi, CalendarKind::Solar, EventSource::JieQi, jieqi.name(), *self));
         }
 
         events

@@ -6,7 +6,7 @@ use std::fmt;
 use crate::LunarError;
 use crate::culture::{Direction, Duty, EarthBranch, HeavenStem, Phase, Phenology, SixtyCycle, Zodiac};
 use crate::eight_char::EightChar;
-use crate::event::{Event, EventKind};
+use crate::event::{CalendarKind, Event, EventKind, EventSource};
 use crate::fu::Fu;
 use crate::jieqi::JieQi;
 use crate::lunar_time::LunarTime;
@@ -866,13 +866,19 @@ impl Lunar {
         let mut events = Vec::new();
 
         for name in self.festivals() {
-            events.push(Event::new(EventKind::LunarFestival, name, self.solar));
+            events.push(Event::new(EventKind::LunarFestival, CalendarKind::Lunar, EventSource::BuiltInFestival, name, self.solar));
         }
         for name in self.other_festivals() {
-            events.push(Event::new(EventKind::LunarOtherFestival, name, self.solar));
+            events.push(Event::new(
+                EventKind::LunarOtherFestival,
+                CalendarKind::Lunar,
+                EventSource::BuiltInOtherFestival,
+                name,
+                self.solar,
+            ));
         }
         if let Some(jieqi) = self.current_jie_qi() {
-            events.push(Event::new(EventKind::JieQi, jieqi.name(), self.solar));
+            events.push(Event::new(EventKind::JieQi, CalendarKind::Lunar, EventSource::JieQi, jieqi.name(), self.solar));
         }
         for holiday in
             crate::holiday_util::get_holidays(&format!("{:04}{:02}{:02}", self.solar.year(), self.solar.month(), self.solar.day()))
@@ -882,7 +888,14 @@ impl Lunar {
             } else {
                 format!("holiday target {}", holiday.target())
             };
-            events.push(Event::with_detail(EventKind::Holiday, holiday.name(), self.solar, detail));
+            events.push(Event::with_detail(
+                EventKind::Holiday,
+                CalendarKind::Lunar,
+                EventSource::HolidayData,
+                holiday.name(),
+                self.solar,
+                detail,
+            ));
         }
 
         events
