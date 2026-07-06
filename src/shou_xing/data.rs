@@ -1,3 +1,4 @@
+#![allow(clippy::approx_constant, clippy::unreadable_literal, clippy::suboptimal_flops, clippy::inconsistent_digit_grouping, clippy::excessive_precision, clippy::pedantic, clippy::nursery, clippy::cast_possible_truncation, clippy::cast_possible_wrap, clippy::cast_sign_loss, clippy::cast_precision_loss, clippy::float_cmp)]
 // Auto-extracted from lunar-go ShouXingUtil.go — do not edit by hand.
 // 寿星天文历常量表（VSOP87/ELP 级数、章动、ΔT、长历查表）。
 // 已剔除 Go 行注释；整数字面量规范化为 N.0；XL1_* 零填充至 2652。

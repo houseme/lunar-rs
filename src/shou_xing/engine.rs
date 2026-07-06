@@ -1,3 +1,4 @@
+#![allow(clippy::approx_constant, clippy::unreadable_literal, clippy::suboptimal_flops, clippy::inconsistent_digit_grouping, clippy::excessive_precision, clippy::pedantic, clippy::nursery, clippy::cast_possible_truncation, clippy::cast_possible_wrap, clippy::cast_sign_loss, clippy::cast_precision_loss, clippy::float_cmp)]
 //! 寿星天文历算法引擎。
 //!
 //! 这是整个库的精度根基。所有函数与 lunar-go `ShouXingUtil.go` 逐行对齐，
