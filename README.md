@@ -27,7 +27,8 @@ avoid third-party runtime dependencies.
 - Nine Star, ShuJiu, SanFu, SolarYear, SolarMonth, SolarWeek, SolarSeason, and
   SolarHalfYear helper models.
 - BaZi/EightChar, DaYun, LiuNian, LiuYue, and XiaoYun fortune-cycle primitives.
-- Buddhist and Taoist calendar data/model groundwork.
+- Buddhist and Taoist calendar models available from `Lunar::foto()` and
+  `Lunar::tao()`.
 - Zero third-party dependencies in `[dependencies]`.
 
 ## Installation
@@ -116,6 +117,19 @@ let yun = eight_char.yun(1 as Gender);
 
 println!("BaZi: {} {} {} {}", eight_char.year(), eight_char.month(), eight_char.day(), eight_char.time());
 println!("Yun starts at {} years {} months", yun.start_year(), yun.start_month());
+```
+
+Buddhist and Taoist calendars:
+
+```rust
+use lunar_rs::Solar;
+
+let lunar = Solar::from_ymd(2024, 5, 15).unwrap().lunar();
+let foto = lunar.foto();
+let tao = lunar.tao();
+
+println!("Buddhist calendar: {}", foto.to_string_cn());
+println!("Taoist calendar: {}", tao.to_string_cn());
 ```
 
 ## Validation

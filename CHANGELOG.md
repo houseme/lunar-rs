@@ -70,6 +70,8 @@ and this project uses semantic versioning once releases are published.
   - `TaoFestival`,
   - Taoist festival maps,
   - BaHui, BaJie, SanHui, SanYuan, WuLa, and Wu-day helpers.
+- Added `Lunar::foto()` and `Lunar::tao()` convenience wrappers for Buddhist
+  and Taoist calendar access.
 - Added `LunarError` as the unified error type for invalid Solar/Lunar inputs.
 - Added golden integration tests in `tests/lunar_core.rs` for Solar, Lunar,
   JieQi, leap months, 1582 reform handling, festivals, traversal, and reference
@@ -85,6 +87,10 @@ and this project uses semantic versioning once releases are published.
 - Replaced the starter example code with the calendar library API surface.
 - Normalized ShouXing floating-point data literals and removed extracted inline
   comments from generated constant data.
+- Documented Buddhist and Taoist calendar access in both English and Chinese
+  READMEs.
+- Scoped Clippy allow rules to ShouXing generated data and engine modules where
+  precision-oriented extracted constants intentionally trigger numeric lints.
 
 ### Fixed
 
@@ -92,6 +98,9 @@ and this project uses semantic versioning once releases are published.
 - Fixed Taoist HashMap lookups by using string-slice keys.
 - Removed duplicate imports from generated Buddhist data includes.
 - Refined Lunar WuHou indexing.
+- Fixed `Lunar::eight_char()` to return an explicitly borrowed `EightChar<'_>`.
+- Fixed two-digit upper bounds in `lunar_util::get_time_zhi_index`, keeping time
+  branch comparisons lexicographically stable.
 
 ### Known Issues
 

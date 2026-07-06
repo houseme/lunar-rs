@@ -20,7 +20,7 @@
 - 农历年、农历月元数据与月份生成。
 - 九星、数九、三伏、阳历年/月/周/季度/半年等辅助模型。
 - 八字四柱、大运、流年、流月、小运等运程基础能力。
-- 佛历、道历相关数据、节日与模型基础。
+- 可通过 `Lunar::foto()` 与 `Lunar::tao()` 获取佛历、道历模型。
 - `[dependencies]` 下无第三方依赖。
 
 ## 安装
@@ -109,6 +109,19 @@ let yun = eight_char.yun(1 as Gender);
 
 println!("八字：{} {} {} {}", eight_char.year(), eight_char.month(), eight_char.day(), eight_char.time());
 println!("起运：{} 年 {} 个月", yun.start_year(), yun.start_month());
+```
+
+佛历与道历：
+
+```rust
+use lunar_rs::Solar;
+
+let lunar = Solar::from_ymd(2024, 5, 15).unwrap().lunar();
+let foto = lunar.foto();
+let tao = lunar.tao();
+
+println!("佛历：{}", foto.to_string_cn());
+println!("道历：{}", tao.to_string_cn());
 ```
 
 ## 验证
