@@ -8,6 +8,7 @@ use std::fmt;
 use crate::lunar_util;
 use crate::solar_util;
 
+const DIRECTION_NAMES: [&str; 9] = ["北", "西南", "东", "东南", "中", "西北", "西", "东北", "南"];
 const STEM_ELEMENTS: [&str; 10] = ["木", "木", "火", "火", "土", "土", "金", "金", "水", "水"];
 const BRANCH_ELEMENTS: [&str; 12] = ["水", "土", "木", "木", "土", "火", "火", "土", "金", "金", "土", "水"];
 const ELEMENT_DIRECTIONS: [(&str, &str); 5] = [("木", "东"), ("火", "南"), ("土", "中"), ("金", "西"), ("水", "北")];
@@ -23,6 +24,7 @@ const XIU_ANIMAL_NAMES: [&str; 28] = [
 const BEAST_NAMES: [&str; 4] = ["青龙", "玄武", "白虎", "朱雀"];
 const ZONE_NAMES: [&str; 4] = ["东", "北", "西", "南"];
 const TERRAIN_NAMES: [&str; 12] = ["长生", "沐浴", "冠带", "临官", "帝旺", "衰", "病", "死", "墓", "绝", "胎", "养"];
+const LAND_NAMES: [&str; 9] = ["玄天", "朱天", "苍天", "阳天", "钧天", "幽天", "颢天", "变天", "炎天"];
 const NAYIN_NAMES: [&str; 30] = [
     "海中金",
     "炉中火",
@@ -106,6 +108,18 @@ pub struct Direction {
 impl Direction {
     pub const fn new(name: &'static str) -> Self {
         Self { name }
+    }
+
+    pub const fn from_index(index: usize) -> Self {
+        Self { name: DIRECTION_NAMES[index % DIRECTION_NAMES.len()] }
+    }
+
+    pub fn from_name(name: &str) -> Option<Self> {
+        DIRECTION_NAMES.iter().position(|value| *value == name).map(Self::from_index)
+    }
+
+    pub fn index(&self) -> usize {
+        DIRECTION_NAMES.iter().position(|value| *value == self.name).unwrap_or(0)
     }
 
     pub const fn name(&self) -> &'static str {
@@ -967,6 +981,40 @@ impl Terrain {
 }
 
 impl fmt::Display for Terrain {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.name())
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct Land {
+    index: usize,
+}
+
+impl Land {
+    pub const fn from_index(index: usize) -> Self {
+        Self { index }
+    }
+
+    pub fn from_name(name: &str) -> Option<Self> {
+        LAND_NAMES.iter().position(|value| *value == name).map(Self::from_index)
+    }
+
+    pub const fn index(&self) -> usize {
+        self.index
+    }
+
+    pub fn name(&self) -> &'static str {
+        LAND_NAMES[self.index % LAND_NAMES.len()]
+    }
+
+    pub const fn direction(&self) -> Direction {
+        Direction::from_index(self.index)
+    }
+}
+
+impl fmt::Display for Land {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(self.name())
     }
@@ -1903,6 +1951,7 @@ impl_named_culture!(
     Shou,
     Zone,
     Terrain,
+    Land,
     Week,
     Xiu,
     XunKong,
@@ -1940,6 +1989,20 @@ impl CycleItem for Constellation {
 
     fn size() -> usize {
         solar_util::XINGZUO.len()
+    }
+}
+
+impl CycleItem for Direction {
+    fn from_cycle_index(index: usize) -> Self {
+        Self::from_index(index % Self::size())
+    }
+
+    fn index(&self) -> usize {
+        self.index()
+    }
+
+    fn size() -> usize {
+        DIRECTION_NAMES.len()
     }
 }
 
@@ -2080,6 +2143,20 @@ impl CycleItem for Terrain {
 
     fn size() -> usize {
         TERRAIN_NAMES.len()
+    }
+}
+
+impl CycleItem for Land {
+    fn from_cycle_index(index: usize) -> Self {
+        Self::from_index(index % Self::size())
+    }
+
+    fn index(&self) -> usize {
+        self.index()
+    }
+
+    fn size() -> usize {
+        LAND_NAMES.len()
     }
 }
 

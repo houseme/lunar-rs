@@ -1,7 +1,7 @@
 use lunar_rs::{
     Constellation, CultureDay, CycleItem, Direction, Duty, EarthBranch, Element, GodLuck, HeavenStem,
-    HideHeavenStemType, Lunar, LunarMonth, LunarYear, MinorRen, NamedCulture, Nayin, NineStar, Phase, PlumRainKind,
-    SixtyCycle, Solar, TabooKind, Zodiac,
+    HideHeavenStemType, Land, Lunar, LunarMonth, LunarYear, MinorRen, NamedCulture, Nayin, NineStar, Phase,
+    PlumRainKind, SixtyCycle, Solar, TabooKind, Zodiac,
 };
 
 #[test]
@@ -77,6 +77,22 @@ fn common_culture_traits_unify_names_cycles_and_day_indices() {
     let plum = Solar::from_ymd(2024, 7, 6).unwrap().lunar().plum_rain_day().unwrap();
     assert_eq!(CultureDay::day_index(&plum), None);
     assert!(plum.is_boundary());
+}
+
+#[test]
+fn typed_land_and_direction_follow_tyme_cycles() {
+    let north = Direction::from_name("北").unwrap();
+    assert_eq!(north.index(), 0);
+    assert_eq!(north.next(1).name(), "西南");
+    assert_eq!(Direction::from_index(8).next(1).name(), "北");
+
+    let land = Land::from_name("炎天").unwrap();
+    assert_eq!(land.index(), 8);
+    assert_eq!(land.name(), "炎天");
+    assert_eq!(land.direction().name(), "南");
+    assert_eq!(land.next(1).name(), "玄天");
+    assert_eq!(land.steps_close_to(0), 1);
+    assert_eq!(Land::from_index(13).name(), "钧天");
 }
 
 #[test]
