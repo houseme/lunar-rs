@@ -679,6 +679,31 @@ impl God {
         Self { name: name.into(), luck }
     }
 
+    pub fn from_index(index: usize) -> Self {
+        let index = index % Self::size();
+        let luck = if index < 60 { GodLuck::Auspicious } else { GodLuck::Inauspicious };
+        Self::new(lunar_util::tables::SHEN_SHA[index], luck)
+    }
+
+    pub fn from_name(name: &str) -> Option<Self> {
+        lunar_util::tables::SHEN_SHA.iter().position(|value| *value == name).map(Self::from_index)
+    }
+
+    pub fn index(&self) -> Option<usize> {
+        lunar_util::tables::SHEN_SHA.iter().position(|value| *value == self.name())
+    }
+
+    pub fn next(&self, offset: isize) -> Option<Self> {
+        let index = self.index()?;
+        let size = Self::size() as isize;
+        let next_index = (index as isize + offset).rem_euclid(size) as usize;
+        Some(Self::from_index(next_index))
+    }
+
+    pub const fn size() -> usize {
+        lunar_util::tables::SHEN_SHA.len()
+    }
+
     pub fn name(&self) -> &str {
         &self.name
     }

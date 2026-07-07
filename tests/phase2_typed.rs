@@ -1,5 +1,5 @@
 use lunar_rs::{
-    Constellation, CultureDay, CycleItem, Direction, Duty, EarthBranch, Element, GodLuck, HeavenStem,
+    Constellation, CultureDay, CycleItem, Direction, Duty, EarthBranch, Element, God, GodLuck, HeavenStem,
     HideHeavenStemType, Land, Lunar, LunarMonth, LunarYear, MinorRen, NamedCulture, Nayin, NineStar, Phase,
     PlumRainKind, SixtyCycle, Solar, TabooKind, Xun, YuanCycle, YunCycle, Zodiac,
 };
@@ -238,6 +238,13 @@ fn typed_god_and_taboo_api_wrap_existing_almanac_data() {
         gods.iter().filter(|god| god.luck() == GodLuck::Auspicious).map(|god| god.name().to_string()).collect();
     let inauspicious: Vec<_> =
         gods.iter().filter(|god| god.luck() == GodLuck::Inauspicious).map(|god| god.name().to_string()).collect();
+
+    let first_god = God::from_name("天恩").unwrap();
+    assert_eq!(first_god.index(), Some(0));
+    assert_eq!(first_god.luck(), GodLuck::Auspicious);
+    assert_eq!(first_god.next(1).unwrap().name(), "鸣吠");
+    assert_eq!(God::from_name("月煞").unwrap().luck(), GodLuck::Inauspicious);
+    assert_eq!(God::new("自定义", GodLuck::Auspicious).index(), None);
 
     assert_eq!(auspicious, vec!["天恩", "续世", "明堂"]);
     assert_eq!(inauspicious, vec!["月煞", "月虚", "血支", "天贼", "五虚", "土符", "归忌", "血忌"]);
