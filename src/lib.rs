@@ -127,13 +127,14 @@ pub use bengali::{Bengali, BengaliMonth, BengaliYear};
 pub use byzantine::{Byzantine, ByzantineMonth, ByzantineYear};
 pub use coptic::{Coptic, CopticMonth, CopticYear};
 pub use culture::{
-    Beast, ChongSha, Constellation, CultureDay, CycleItem, Direction, DogDay, Duty, EarthBranch, Element, FetusDay,
-    FetusEarthBranch, FetusHeavenStem, FetusMonth, God, GodLuck, HeavenStem, HideHeavenStem, HideHeavenStemDay,
-    HideHeavenStemType, KitchenGodSteed, Land, LiuYao, Lu, MinorRen, NamedCulture, Nayin, Nine, NineDay, PengZu,
-    PengZuEarthBranch, PengZuHeavenStem, Phase, PhaseDay, Phenology, PhenologyDay, PlumRainDay, PlumRainKind, Season,
-    Shou, SixtyCycle, SixtyCycleDay, SixtyCycleHour, SixtyCycleMonth, SixtyCycleYear, SolarTermDay, Taboo, TabooKind,
-    TaiPosition, TaiSuiPosition, Terrain, ThreePillars, TianShen, TianShenType, Week, Xiu, XiuAnimal, Xun, XunKong,
-    YearFortune, YearFortuneKind, YuanCycle, YunCycle, Zodiac, Zone,
+    Beast, ChongSha, Constellation, CultureDay, CycleItem, Direction, DogDay, Duty, EarthBranch, Ecliptic, Element,
+    FetusDay, FetusEarthBranch, FetusHeavenStem, FetusMonth, God, GodLuck, HeavenStem, HideHeavenStem,
+    HideHeavenStemDay, HideHeavenStemType, KitchenGodSteed, Land, LiuYao, Lu, MinorRen, NamedCulture, Nayin, Nine,
+    NineDay, PengZu, PengZuEarthBranch, PengZuHeavenStem, Phase, PhaseDay, Phenology, PhenologyDay, PlumRainDay,
+    PlumRainKind, Season, SevenStar, Shou, SixStar, SixtyCycle, SixtyCycleDay, SixtyCycleHour, SixtyCycleMonth,
+    SixtyCycleYear, SolarTermDay, Taboo, TabooKind, TaiPosition, TaiSuiPosition, TenStar, Terrain, ThreePillars,
+    TianShen, TianShenType, TwelveStar, Week, Xiu, XiuAnimal, Xun, XunKong, YearFortune, YearFortuneKind, YuanCycle,
+    YunCycle, Zodiac, Zone,
 };
 pub use dangi::{Dangi, DangiMonth, DangiYear};
 pub use eight_char::{

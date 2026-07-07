@@ -239,5 +239,6 @@
 | `P2` | `Task 83` | KitchenGodSteed 灶马头 typed 聚合对象 | `已完成` | [docs/tasks/83-phase-next-kitchen-god-steed.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/83-phase-next-kitchen-god-steed.md) |
 | `P3` | `Task 84` | God 神煞大表反查与步进 API | `已完成` | [docs/tasks/84-phase-next-god-table-api.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/84-phase-next-god-table-api.md) |
 | `P3` | `Task 85` | Taboo 宜忌事项大表反查与步进 API | `已完成` | [docs/tasks/85-phase-next-taboo-table-api.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/85-phase-next-taboo-table-api.md) |
+| `P2` | `Task 86` | 星曜循环对象一次性补齐 | `已完成` | [docs/tasks/86-phase-next-star-cycle-objects.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/86-phase-next-star-cycle-objects.md) |
 
-后续建议继续按新对标文档和本索引中的 `Task 59` - `Task 85` 推进，不再把已经完成的 Phase 4 多历法工作重复列为待办。
+后续建议继续按新对标文档和本索引中的 `Task 59` - `Task 86` 推进，不再把已经完成的 Phase 4 多历法工作重复列为待办。

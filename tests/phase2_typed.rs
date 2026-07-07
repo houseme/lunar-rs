@@ -1,7 +1,8 @@
 use lunar_rs::{
     Constellation, CultureDay, CycleItem, Direction, Duty, EarthBranch, Element, God, GodLuck, HeavenStem,
     HideHeavenStemType, Land, Lunar, LunarMonth, LunarYear, MinorRen, NamedCulture, Nayin, NineStar, Phase,
-    PlumRainKind, SixtyCycle, Solar, Taboo, TabooKind, Xun, YuanCycle, YunCycle, Zodiac,
+    PlumRainKind, SevenStar, SixStar, SixtyCycle, Solar, Taboo, TabooKind, TenStar, TwelveStar, Xun, YuanCycle,
+    YunCycle, Zodiac,
 };
 
 #[test]
@@ -53,6 +54,23 @@ fn typed_primitives_map_names_and_relationships() {
     assert_eq!(avoid.index(), 1);
     assert_eq!(avoid.name(), "忌");
     assert_eq!(avoid.next(1), TabooKind::Recommend);
+
+    let six_star = SixStar::from_name("佛灭").unwrap();
+    assert_eq!(six_star.index(), 3);
+    assert_eq!(six_star.next(1).name(), "大安");
+
+    let seven_star = SevenStar::from_index(6);
+    assert_eq!(seven_star.name(), "土");
+    assert_eq!(seven_star.next(1).name(), "日");
+
+    let twelve_star = TwelveStar::from_name("天刑").unwrap();
+    assert_eq!(twelve_star.index(), 2);
+    assert_eq!(twelve_star.ecliptic().name(), "黑道");
+    assert_eq!(twelve_star.ecliptic().luck(), GodLuck::Inauspicious);
+
+    let ten_star = TenStar::from_name("正印").unwrap();
+    assert_eq!(ten_star.index(), 9);
+    assert_eq!(ten_star.next(1).name(), "比肩");
 }
 
 #[test]
@@ -83,6 +101,8 @@ fn common_culture_traits_unify_names_cycles_and_day_indices() {
     assert_eq!(culture_name(&Duty::new("建")), "建");
     assert_eq!(culture_name(&GodLuck::Auspicious), "吉");
     assert_eq!(culture_name(&TabooKind::Recommend), "宜");
+    assert_eq!(culture_name(&SixStar::from_name("先胜").unwrap()), "先胜");
+    assert_eq!(culture_name(&TwelveStar::from_name("青龙").unwrap()), "青龙");
     assert_eq!(next_name(HeavenStem::from_name("癸").unwrap(), 1), "甲");
     assert_eq!(next_name(EarthBranch::from_name("亥").unwrap(), 1), "子");
     assert_eq!(next_name(SixtyCycle::from_name("癸亥").unwrap(), 1), "甲子");
@@ -91,6 +111,8 @@ fn common_culture_traits_unify_names_cycles_and_day_indices() {
     assert_eq!(next_name(Duty::from_name("闭").unwrap(), 1), "建");
     assert_eq!(next_name(GodLuck::Inauspicious, 1), "吉");
     assert_eq!(next_name(TabooKind::Avoid, 1), "宜");
+    assert_eq!(next_name(SevenStar::from_name("土").unwrap(), 1), "日");
+    assert_eq!(next_name(TenStar::from_name("正印").unwrap(), 1), "比肩");
     assert_eq!(next_name(MinorRen::from_name("空亡").unwrap(), 1), "大安");
     assert_eq!(Constellation::from_name("白羊").unwrap().steps_to(1), 1);
     assert_eq!(Constellation::from_name("白羊").unwrap().steps_back_to(11), -1);

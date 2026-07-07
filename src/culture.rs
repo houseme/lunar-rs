@@ -28,6 +28,13 @@ const TERRAIN_NAMES: [&str; 12] = ["长生", "沐浴", "冠带", "临官", "帝�
 const LAND_NAMES: [&str; 9] = ["玄天", "朱天", "苍天", "阳天", "钧天", "幽天", "颢天", "变天", "炎天"];
 const YUAN_CYCLE_NAMES: [&str; 3] = ["上元", "中元", "下元"];
 const YUN_CYCLE_NAMES: [&str; 9] = ["一运", "二运", "三运", "四运", "五运", "六运", "七运", "八运", "九运"];
+const SIX_STAR_NAMES: [&str; 6] = ["先胜", "友引", "先负", "佛灭", "大安", "赤口"];
+const SEVEN_STAR_NAMES: [&str; 7] = ["日", "月", "火", "水", "木", "金", "土"];
+const ECLIPTIC_NAMES: [&str; 2] = ["黄道", "黑道"];
+const TWELVE_STAR_NAMES: [&str; 12] =
+    ["青龙", "明堂", "天刑", "朱雀", "金匮", "天德", "白虎", "玉堂", "天牢", "玄武", "司命", "勾陈"];
+const TWELVE_STAR_ECLIPTIC_INDICES: [usize; 12] = [0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1];
+const TEN_STAR_NAMES: [&str; 10] = ["比肩", "劫财", "食神", "伤官", "偏财", "正财", "七杀", "正官", "偏印", "正印"];
 const KITCHEN_GOD_STEED_NUMBERS: [&str; 12] =
     ["一", "二", "三", "四", "五", "六", "七", "八", "九", "十", "十一", "十二"];
 const NAYIN_NAMES: [&str; 30] = [
@@ -1957,6 +1964,164 @@ impl fmt::Display for YunCycle {
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct SixStar {
+    index: usize,
+}
+
+impl SixStar {
+    pub const fn from_index(index: usize) -> Self {
+        Self { index: index % SIX_STAR_NAMES.len() }
+    }
+
+    pub fn from_name(name: &str) -> Option<Self> {
+        SIX_STAR_NAMES.iter().position(|value| *value == name).map(Self::from_index)
+    }
+
+    pub const fn index(&self) -> usize {
+        self.index
+    }
+
+    pub fn name(&self) -> &'static str {
+        SIX_STAR_NAMES[self.index % SIX_STAR_NAMES.len()]
+    }
+}
+
+impl fmt::Display for SixStar {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.name())
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct SevenStar {
+    index: usize,
+}
+
+impl SevenStar {
+    pub const fn from_index(index: usize) -> Self {
+        Self { index: index % SEVEN_STAR_NAMES.len() }
+    }
+
+    pub fn from_name(name: &str) -> Option<Self> {
+        SEVEN_STAR_NAMES.iter().position(|value| *value == name).map(Self::from_index)
+    }
+
+    pub const fn index(&self) -> usize {
+        self.index
+    }
+
+    pub fn name(&self) -> &'static str {
+        SEVEN_STAR_NAMES[self.index % SEVEN_STAR_NAMES.len()]
+    }
+}
+
+impl fmt::Display for SevenStar {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.name())
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct Ecliptic {
+    index: usize,
+}
+
+impl Ecliptic {
+    pub const fn from_index(index: usize) -> Self {
+        Self { index: index % ECLIPTIC_NAMES.len() }
+    }
+
+    pub fn from_name(name: &str) -> Option<Self> {
+        ECLIPTIC_NAMES.iter().position(|value| *value == name).map(Self::from_index)
+    }
+
+    pub const fn index(&self) -> usize {
+        self.index
+    }
+
+    pub fn name(&self) -> &'static str {
+        ECLIPTIC_NAMES[self.index % ECLIPTIC_NAMES.len()]
+    }
+
+    pub const fn luck(&self) -> GodLuck {
+        GodLuck::from_index(self.index)
+    }
+}
+
+impl fmt::Display for Ecliptic {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.name())
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct TwelveStar {
+    index: usize,
+}
+
+impl TwelveStar {
+    pub const fn from_index(index: usize) -> Self {
+        Self { index: index % TWELVE_STAR_NAMES.len() }
+    }
+
+    pub fn from_name(name: &str) -> Option<Self> {
+        TWELVE_STAR_NAMES.iter().position(|value| *value == name).map(Self::from_index)
+    }
+
+    pub const fn index(&self) -> usize {
+        self.index
+    }
+
+    pub fn name(&self) -> &'static str {
+        TWELVE_STAR_NAMES[self.index % TWELVE_STAR_NAMES.len()]
+    }
+
+    pub const fn ecliptic(&self) -> Ecliptic {
+        Ecliptic::from_index(TWELVE_STAR_ECLIPTIC_INDICES[self.index])
+    }
+}
+
+impl fmt::Display for TwelveStar {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.name())
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct TenStar {
+    index: usize,
+}
+
+impl TenStar {
+    pub const fn from_index(index: usize) -> Self {
+        Self { index: index % TEN_STAR_NAMES.len() }
+    }
+
+    pub fn from_name(name: &str) -> Option<Self> {
+        TEN_STAR_NAMES.iter().position(|value| *value == name).map(Self::from_index)
+    }
+
+    pub const fn index(&self) -> usize {
+        self.index
+    }
+
+    pub fn name(&self) -> &'static str {
+        TEN_STAR_NAMES[self.index % TEN_STAR_NAMES.len()]
+    }
+}
+
+impl fmt::Display for TenStar {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.name())
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct KitchenGodSteed {
     first_day_heaven_stem_index: usize,
     first_day_earth_branch_index: usize,
@@ -2262,6 +2427,11 @@ impl_named_culture!(
     LiuYao,
     YuanCycle,
     YunCycle,
+    SixStar,
+    SevenStar,
+    Ecliptic,
+    TwelveStar,
+    TenStar,
     DogDay,
     PlumRainDay,
 );
@@ -2403,6 +2573,76 @@ impl CycleItem for TabooKind {
 
     fn size() -> usize {
         2
+    }
+}
+
+impl CycleItem for SixStar {
+    fn from_cycle_index(index: usize) -> Self {
+        Self::from_index(index % Self::size())
+    }
+
+    fn index(&self) -> usize {
+        self.index()
+    }
+
+    fn size() -> usize {
+        SIX_STAR_NAMES.len()
+    }
+}
+
+impl CycleItem for SevenStar {
+    fn from_cycle_index(index: usize) -> Self {
+        Self::from_index(index % Self::size())
+    }
+
+    fn index(&self) -> usize {
+        self.index()
+    }
+
+    fn size() -> usize {
+        SEVEN_STAR_NAMES.len()
+    }
+}
+
+impl CycleItem for Ecliptic {
+    fn from_cycle_index(index: usize) -> Self {
+        Self::from_index(index % Self::size())
+    }
+
+    fn index(&self) -> usize {
+        self.index()
+    }
+
+    fn size() -> usize {
+        ECLIPTIC_NAMES.len()
+    }
+}
+
+impl CycleItem for TwelveStar {
+    fn from_cycle_index(index: usize) -> Self {
+        Self::from_index(index % Self::size())
+    }
+
+    fn index(&self) -> usize {
+        self.index()
+    }
+
+    fn size() -> usize {
+        TWELVE_STAR_NAMES.len()
+    }
+}
+
+impl CycleItem for TenStar {
+    fn from_cycle_index(index: usize) -> Self {
+        Self::from_index(index % Self::size())
+    }
+
+    fn index(&self) -> usize {
+        self.index()
+    }
+
+    fn size() -> usize {
+        TEN_STAR_NAMES.len()
     }
 }
 
