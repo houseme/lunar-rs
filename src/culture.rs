@@ -21,6 +21,7 @@ const XIU_ANIMAL_NAMES: [&str; 28] = [
     "猴", "猿", "犴", "羊", "獐", "马", "鹿", "蛇", "蚓",
 ];
 const BEAST_NAMES: [&str; 4] = ["青龙", "玄武", "白虎", "朱雀"];
+const ZONE_NAMES: [&str; 4] = ["东", "北", "西", "南"];
 const TERRAIN_NAMES: [&str; 12] = ["长生", "沐浴", "冠带", "临官", "帝旺", "衰", "病", "死", "墓", "绝", "胎", "养"];
 
 pub trait NamedCulture {
@@ -873,6 +874,44 @@ pub type Beast = Shou;
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct Zone {
+    index: usize,
+}
+
+impl Zone {
+    pub const fn from_index(index: usize) -> Self {
+        Self { index }
+    }
+
+    pub fn from_name(name: &str) -> Option<Self> {
+        ZONE_NAMES.iter().position(|value| *value == name).map(Self::from_index)
+    }
+
+    pub const fn index(&self) -> usize {
+        self.index
+    }
+
+    pub fn name(&self) -> &'static str {
+        ZONE_NAMES[self.index % ZONE_NAMES.len()]
+    }
+
+    pub fn direction(&self) -> Direction {
+        Direction::new(self.name())
+    }
+
+    pub fn beast(&self) -> Beast {
+        Beast::from_index(self.index)
+    }
+}
+
+impl fmt::Display for Zone {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.name())
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Terrain {
     index: usize,
 }
@@ -974,6 +1013,10 @@ impl Xiu {
 
     pub const fn gong(&self) -> Direction {
         self.gong
+    }
+
+    pub fn zone(&self) -> Zone {
+        Zone::from_name(self.gong.name()).unwrap_or_else(|| Zone::from_index(0))
     }
 
     pub const fn shou(&self) -> Shou {
@@ -1814,6 +1857,7 @@ impl_named_culture!(
     TianShen,
     XiuAnimal,
     Shou,
+    Zone,
     Terrain,
     Week,
     Xiu,
@@ -1964,6 +2008,20 @@ impl CycleItem for Shou {
 
     fn size() -> usize {
         BEAST_NAMES.len()
+    }
+}
+
+impl CycleItem for Zone {
+    fn from_cycle_index(index: usize) -> Self {
+        Self::from_index(index % Self::size())
+    }
+
+    fn index(&self) -> usize {
+        self.index()
+    }
+
+    fn size() -> usize {
+        ZONE_NAMES.len()
     }
 }
 

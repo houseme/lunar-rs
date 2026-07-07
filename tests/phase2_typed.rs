@@ -275,6 +275,10 @@ fn typed_tian_shen_xiu_lu_and_chong_sha_match_legacy_getters() {
     assert_eq!(xiu.animal().name(), lunar.animal());
     assert_eq!(xiu.animal().next(1).steps_back_to(xiu.animal().index()), -1);
     assert_eq!(xiu.gong().name(), lunar.gong());
+    assert_eq!(xiu.zone().name(), lunar.gong());
+    assert_eq!(xiu.zone().direction().name(), lunar.gong());
+    assert_eq!(xiu.zone().beast().name(), lunar.shou());
+    assert_eq!(xiu.zone().next(1).steps_back_to(xiu.zone().index()), -1);
     assert_eq!(xiu.shou().name(), lunar.shou());
     assert_eq!(xiu.shou().next(1).steps_back_to(xiu.shou().index()), -1);
 

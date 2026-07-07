@@ -133,7 +133,7 @@ pub use culture::{
     PengZuHeavenStem, Phase, PhaseDay, Phenology, PhenologyDay, PlumRainDay, PlumRainKind, Season, Shou, SixtyCycle,
     SixtyCycleDay, SixtyCycleHour, SixtyCycleMonth, SixtyCycleYear, SolarTermDay, Taboo, TabooKind, TaiPosition,
     TaiSuiPosition, Terrain, ThreePillars, TianShen, TianShenType, Week, Xiu, XiuAnimal, Xun, XunKong, YearFortune,
-    YearFortuneKind, YuanCycle, YunCycle, Zodiac,
+    YearFortuneKind, YuanCycle, YunCycle, Zodiac, Zone,
 };
 pub use dangi::{Dangi, DangiMonth, DangiYear};
 pub use eight_char::{
