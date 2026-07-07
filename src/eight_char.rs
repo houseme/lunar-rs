@@ -374,20 +374,20 @@ impl<'a> EightChar<'a> {
     }
 
     // ---- 运 ----
-    pub fn yun(&self, gender: Gender) -> Yun<'_> {
+    pub fn yun(&self, gender: impl Into<Gender>) -> Yun<'_> {
         self.yun_by_sect(gender, 1)
     }
-    pub fn yun_by_sect(&self, gender: Gender, sect: u8) -> Yun<'_> {
-        Yun::new(self.lunar, gender, sect)
+    pub fn yun_by_sect(&self, gender: impl Into<Gender>, sect: u8) -> Yun<'_> {
+        Yun::new(self.lunar, gender.into(), sect)
     }
-    pub fn child_limit(&self, gender: Gender) -> ChildLimit<'_> {
+    pub fn child_limit(&self, gender: impl Into<Gender>) -> ChildLimit<'_> {
         self.child_limit_with_provider(gender, &DefaultChildLimitProvider::new())
     }
-    pub fn child_limit_with_provider<P>(&self, gender: Gender, provider: &P) -> ChildLimit<'_>
+    pub fn child_limit_with_provider<P>(&self, gender: impl Into<Gender>, provider: &P) -> ChildLimit<'_>
     where
         P: ChildLimitProvider + ?Sized,
     {
-        provider.child_limit(self.lunar, gender)
+        provider.child_limit(self.lunar, gender.into())
     }
 
     // ---- 旬 / 空亡 ----

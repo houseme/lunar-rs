@@ -354,7 +354,7 @@ impl ChildLimitProvider for LunarSect2ChildLimitProvider {
 
 fn is_forward(lunar: &Lunar, gender: Gender) -> bool {
     let yang = lunar.year_gan_index_exact() % 2 == 0;
-    let man = gender == 1;
+    let man = gender.is_man();
     (yang && man) || (!yang && !man)
 }
 

@@ -131,13 +131,13 @@ pub use byzantine::{Byzantine, ByzantineMonth, ByzantineYear};
 pub use coptic::{Coptic, CopticMonth, CopticYear};
 pub use culture::{
     Beast, ChongSha, Constellation, CultureDay, CycleItem, Dipper, Direction, DogDay, Duty, EarthBranch, Ecliptic,
-    Element, FetusDay, FetusEarthBranch, FetusHeavenStem, FetusMonth, God, GodLuck, HeavenStem, HideHeavenStem,
+    Element, FetusDay, FetusEarthBranch, FetusHeavenStem, FetusMonth, Gender, God, GodLuck, HeavenStem, HideHeavenStem,
     HideHeavenStemDay, HideHeavenStemType, KitchenGodSteed, Land, LiuYao, Lu, MinorRen, MoonPhase, MoonPhaseDay,
     NamedCulture, Nayin, Nine, NineDay, PengZu, PengZuEarthBranch, PengZuHeavenStem, Phase, PhaseDay, Phenology,
-    PhenologyDay, PlumRainDay, PlumRainKind, Season, SevenStar, Shou, SixStar, SixtyCycle, SixtyCycleDay,
+    PhenologyDay, PlumRainDay, PlumRainKind, Season, SevenStar, Shou, Side, SixStar, SixtyCycle, SixtyCycleDay,
     SixtyCycleHour, SixtyCycleMonth, SixtyCycleYear, SolarTermDay, Taboo, TabooKind, TaiPosition, TaiSuiPosition,
     TenStar, Terrain, ThreePillars, TianShen, TianShenType, TwelveStar, Week, Xiu, XiuAnimal, Xun, XunKong,
-    YearFortune, YearFortuneKind, YuanCycle, YunCycle, Zodiac, Zone,
+    YearFortune, YearFortuneKind, YinYang, YuanCycle, YunCycle, Zodiac, Zone,
 };
 
 pub type Animal = XiuAnimal;
@@ -214,9 +214,6 @@ pub type LunarHour<'a> = LunarTime<'a>;
 pub type SolarDay = Solar;
 pub type SolarTerm = JieQi;
 pub type SolarTime = Solar;
-
-/// 性别：`1` 男，`0` 女（与参考实现 lunar-go 一致）。
-pub type Gender = u8;
 
 /// 起算约定：`1` 正月初一，`2` 立春当日（默认），`3` 立春时刻。
 pub type Sect = u8;

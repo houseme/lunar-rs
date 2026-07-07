@@ -118,6 +118,230 @@ pub trait CultureDay: NamedCulture {
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum Gender {
+    Woman,
+    Man,
+}
+
+impl Gender {
+    pub const WOMAN: Self = Self::Woman;
+    pub const MAN: Self = Self::Man;
+
+    pub const fn from_code(code: usize) -> Option<Self> {
+        match code {
+            0 => Some(Self::Woman),
+            1 => Some(Self::Man),
+            _ => None,
+        }
+    }
+
+    pub fn from_name(name: &str) -> Option<Self> {
+        match name {
+            "女" => Some(Self::Woman),
+            "男" => Some(Self::Man),
+            _ => None,
+        }
+    }
+
+    pub const fn code(&self) -> usize {
+        match self {
+            Self::Woman => 0,
+            Self::Man => 1,
+        }
+    }
+
+    pub const fn get_code(&self) -> usize {
+        self.code()
+    }
+
+    pub const fn name(&self) -> &'static str {
+        match self {
+            Self::Woman => "女",
+            Self::Man => "男",
+        }
+    }
+
+    pub fn get_name(&self) -> String {
+        self.name().to_string()
+    }
+
+    pub const fn is_man(&self) -> bool {
+        matches!(self, Self::Man)
+    }
+
+    pub const fn is_woman(&self) -> bool {
+        matches!(self, Self::Woman)
+    }
+}
+
+impl From<bool> for Gender {
+    fn from(value: bool) -> Self {
+        if value { Self::Man } else { Self::Woman }
+    }
+}
+
+impl From<u8> for Gender {
+    fn from(value: u8) -> Self {
+        if value == 0 { Self::Woman } else { Self::Man }
+    }
+}
+
+impl From<usize> for Gender {
+    fn from(value: usize) -> Self {
+        if value == 0 { Self::Woman } else { Self::Man }
+    }
+}
+
+impl From<i32> for Gender {
+    fn from(value: i32) -> Self {
+        if value == 0 { Self::Woman } else { Self::Man }
+    }
+}
+
+impl PartialEq<u8> for Gender {
+    fn eq(&self, other: &u8) -> bool {
+        self.code() == usize::from(*other)
+    }
+}
+
+impl PartialEq<Gender> for u8 {
+    fn eq(&self, other: &Gender) -> bool {
+        other == self
+    }
+}
+
+impl PartialEq<i32> for Gender {
+    fn eq(&self, other: &i32) -> bool {
+        *other >= 0 && self.code() == *other as usize
+    }
+}
+
+impl PartialEq<Gender> for i32 {
+    fn eq(&self, other: &Gender) -> bool {
+        other == self
+    }
+}
+
+impl fmt::Display for Gender {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.name())
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum Side {
+    In,
+    Out,
+}
+
+impl Side {
+    pub const IN: Self = Self::In;
+    pub const OUT: Self = Self::Out;
+
+    pub const fn from_code(code: usize) -> Option<Self> {
+        match code {
+            0 => Some(Self::In),
+            1 => Some(Self::Out),
+            _ => None,
+        }
+    }
+
+    pub fn from_name(name: &str) -> Option<Self> {
+        match name {
+            "内" => Some(Self::In),
+            "外" => Some(Self::Out),
+            _ => None,
+        }
+    }
+
+    pub const fn code(&self) -> usize {
+        match self {
+            Self::In => 0,
+            Self::Out => 1,
+        }
+    }
+
+    pub const fn get_code(&self) -> usize {
+        self.code()
+    }
+
+    pub const fn name(&self) -> &'static str {
+        match self {
+            Self::In => "内",
+            Self::Out => "外",
+        }
+    }
+
+    pub fn get_name(&self) -> String {
+        self.name().to_string()
+    }
+}
+
+impl fmt::Display for Side {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.name())
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum YinYang {
+    Yin,
+    Yang,
+}
+
+impl YinYang {
+    pub const YIN: Self = Self::Yin;
+    pub const YANG: Self = Self::Yang;
+
+    pub const fn from_code(code: usize) -> Option<Self> {
+        match code {
+            0 => Some(Self::Yin),
+            1 => Some(Self::Yang),
+            _ => None,
+        }
+    }
+
+    pub fn from_name(name: &str) -> Option<Self> {
+        match name {
+            "阴" => Some(Self::Yin),
+            "阳" => Some(Self::Yang),
+            _ => None,
+        }
+    }
+
+    pub const fn code(&self) -> usize {
+        match self {
+            Self::Yin => 0,
+            Self::Yang => 1,
+        }
+    }
+
+    pub const fn get_code(&self) -> usize {
+        self.code()
+    }
+
+    pub const fn name(&self) -> &'static str {
+        match self {
+            Self::Yin => "阴",
+            Self::Yang => "阳",
+        }
+    }
+
+    pub fn get_name(&self) -> String {
+        self.name().to_string()
+    }
+}
+
+impl fmt::Display for YinYang {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.name())
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Direction {
     name: &'static str,
 }
@@ -579,6 +803,10 @@ impl HeavenStem {
         Element::new(STEM_ELEMENTS[self.index])
     }
 
+    pub const fn yin_yang(&self) -> YinYang {
+        if self.index % 2 == 0 { YinYang::Yang } else { YinYang::Yin }
+    }
+
     #[cfg(feature = "i18n")]
     pub fn name_in_lang(&self, language: crate::i18n::Language) -> &'static str {
         crate::i18n::gan(self.name(), language)
@@ -617,6 +845,10 @@ impl EarthBranch {
 
     pub fn element(&self) -> Element {
         Element::new(BRANCH_ELEMENTS[self.index])
+    }
+
+    pub const fn yin_yang(&self) -> YinYang {
+        if self.index % 2 == 0 { YinYang::Yang } else { YinYang::Yin }
     }
 
     #[cfg(feature = "i18n")]
@@ -2535,6 +2767,9 @@ macro_rules! impl_named_culture {
 }
 
 impl_named_culture!(
+    Gender,
+    Side,
+    YinYang,
     Direction,
     Element,
     Zodiac,

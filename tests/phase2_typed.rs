@@ -1,9 +1,9 @@
 use lunar_rs::{
-    Animal, Constellation, CultureDay, CycleItem, DayUnit, Dipper, Direction, Duty, EarthBranch, Element, God, GodLuck,
-    HeavenStem, HideHeavenStemType, Holiday, JulianDay, Land, LegalHoliday, Luck, Lunar, LunarDay, LunarMonth,
+    Animal, Constellation, CultureDay, CycleItem, DayUnit, Dipper, Direction, Duty, EarthBranch, Element, Gender, God,
+    GodLuck, HeavenStem, HideHeavenStemType, Holiday, JulianDay, Land, LegalHoliday, Luck, Lunar, LunarDay, LunarMonth,
     LunarWeek, LunarYear, MinorRen, MonthUnit, MoonPhase, NamedCulture, Nayin, NineStar, Phase, PlumRainKind,
-    SecondUnit, SevenStar, SixStar, Sixty, SixtyCycle, Solar, SolarDay, SolarTerm, SolarTime, Sound, Taboo, TabooKind,
-    Ten, TenStar, TwelveStar, Twenty, WeekUnit, Xun, YearUnit, YuanCycle, YunCycle, Zodiac,
+    SecondUnit, SevenStar, Side, SixStar, Sixty, SixtyCycle, Solar, SolarDay, SolarTerm, SolarTime, Sound, Taboo,
+    TabooKind, Ten, TenStar, TwelveStar, Twenty, WeekUnit, Xun, YearUnit, YinYang, YuanCycle, YunCycle, Zodiac,
 };
 
 #[test]
@@ -13,12 +13,26 @@ fn typed_primitives_map_names_and_relationships() {
     assert_eq!(jia.name(), "甲");
     assert_eq!(jia.element().name(), "木");
     assert_eq!(jia.element().direction().name(), "东");
+    assert_eq!(jia.yin_yang(), YinYang::YANG);
 
     let chen = EarthBranch::from_name("辰").unwrap();
     assert_eq!(chen.index(), 4);
     assert_eq!(chen.name(), "辰");
     assert_eq!(chen.zodiac().name(), "龙");
     assert_eq!(chen.element().name(), "土");
+    assert_eq!(chen.yin_yang(), YinYang::YANG);
+
+    assert_eq!(Gender::from_code(1), Some(Gender::MAN));
+    assert_eq!(Gender::from_name("女"), Some(Gender::WOMAN));
+    assert_eq!(Gender::MAN.get_name(), "男");
+    assert_eq!(Gender::from(1_u8), Gender::MAN);
+    assert_eq!(Gender::MAN, 1);
+    assert_eq!(Side::from_code(0), Some(Side::IN));
+    assert_eq!(Side::from_name("外"), Some(Side::OUT));
+    assert_eq!(Side::OUT.to_string(), "外");
+    assert_eq!(YinYang::from_code(0), Some(YinYang::YIN));
+    assert_eq!(YinYang::from_name("阳"), Some(YinYang::YANG));
+    assert_eq!(YinYang::YIN.get_code(), 0);
 
     let dragon = Zodiac::from_name("龙").unwrap();
     assert_eq!(dragon.index(), 4);

@@ -246,5 +246,6 @@
 | `P3` | `Task 90` | tyme4rs 公开类型名兼容补强 | `已完成` | [docs/tasks/90-phase-next-tyme-public-type-compatibility.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/90-phase-next-tyme-public-type-compatibility.md) |
 | `P2` | `Task 91` | 核心日时与儒略日命名兼容 | `已完成` | [docs/tasks/91-phase-next-core-day-time-compatibility.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/91-phase-next-core-day-time-compatibility.md) |
 | `P2` | `Task 92` | EventBuilder 规则构造器兼容 | `已完成` | [docs/tasks/92-phase-next-event-builder-compatibility.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/92-phase-next-event-builder-compatibility.md) |
+| `P2` | `Task 93` | tyme4rs 基础枚举兼容 | `已完成` | [docs/tasks/93-phase-next-basic-enums-compatibility.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/93-phase-next-basic-enums-compatibility.md) |
 
-后续建议继续按新对标文档和本索引中的 `Task 59` - `Task 92` 推进，不再把已经完成的 Phase 4 多历法工作重复列为待办。
+后续建议继续按新对标文档和本索引中的 `Task 59` - `Task 93` 推进，不再把已经完成的 Phase 4 多历法工作重复列为待办。

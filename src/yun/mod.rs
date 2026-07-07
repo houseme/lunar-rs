@@ -36,7 +36,7 @@ pub struct Yun<'a> {
 impl<'a> Yun<'a> {
     pub(crate) fn new(lunar: &'a Lunar, gender: Gender, sect: u8) -> Self {
         let yang = lunar.year_gan_index_exact() % 2 == 0;
-        let man = gender == 1;
+        let man = gender.is_man();
         let forward = (yang && man) || (!yang && !man);
         let mut yun = Self { gender, start_year: 0, start_month: 0, start_day: 0, start_hour: 0, forward, lunar };
         yun.compute_start(sect);
