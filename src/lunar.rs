@@ -341,8 +341,7 @@ impl Lunar {
         let mut day_zhi_exact = self.day_zhi_index;
         self.day_gan_index_exact2 = day_gan_exact;
         self.day_zhi_index_exact2 = day_zhi_exact;
-        let hm = format!("{:02}:{:02}", self.hour, self.minute);
-        if hm.as_str() >= "23:00" && hm.as_str() <= "23:59" {
+        if self.hour == 23 {
             day_gan_exact += 1;
             if day_gan_exact >= 10 {
                 day_gan_exact -= 10;
@@ -357,8 +356,7 @@ impl Lunar {
     }
 
     fn compute_time(&mut self) {
-        let hm = format!("{:02}:{:02}", self.hour, self.minute);
-        self.time_zhi_index = lunar_util::get_time_zhi_index(&hm);
+        self.time_zhi_index = lunar_util::time_zhi_index_from_hour(self.hour);
         self.time_gan_index = (self.day_gan_index_exact % 5 * 2 + self.time_zhi_index) % 10;
     }
 
@@ -914,9 +912,8 @@ impl Lunar {
     // ---- 节日 ----
     pub fn festivals(&self) -> Vec<&'static str> {
         let mut l = Vec::new();
-        let key = format!("{}-{}", self.month, self.day);
-        if let Some(f) = lunar_util::maps::FESTIVAL.get(key.as_str()) {
-            l.push(*f);
+        if let Some(festival) = lunar_util::festival(self.month, self.day) {
+            l.push(festival);
         }
         let m = self.month.abs();
         if m == 12 && self.day >= 29 && self.year != self.next(1).year {
@@ -925,11 +922,7 @@ impl Lunar {
         l
     }
     pub fn other_festivals(&self) -> Vec<&'static str> {
-        let mut l = Vec::new();
-        let key = format!("{}-{}", self.month, self.day);
-        if let Some(f) = lunar_util::maps::OTHER_FESTIVAL.get(key.as_str()) {
-            l.extend(f.iter().copied());
-        }
+        let mut l = lunar_util::other_festivals(self.month, self.day).to_vec();
         let solar_ymd = self.solar.to_ymd();
         let qing_ming = self.jq("清明");
         if solar_ymd == qing_ming.next_day(-1).to_ymd() {

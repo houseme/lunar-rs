@@ -14,11 +14,21 @@
 //! - `solar_full`
 //! - `lunar`
 //! - `lunar_full`
+//! - `solar_festival`
+//! - `solar_festival_index`
+//! - `lunar_festival`
+//! - `lunar_festival_index`
 //! - `jieqi`
 //! - `year_ganzhi`
 //! - `month_ganzhi`
 //! - `day_ganzhi`
 //! - `time_ganzhi`
+//! - `lunar_year_month_count`
+//! - `lunar_year_leap_month`
+//! - `lunar_month`
+//! - `lunar_month_with_leap`
+//! - `lunar_month_day_count`
+//! - `lunar_month_index_in_year`
 
 use std::collections::HashMap;
 use std::env;
@@ -26,8 +36,8 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-use lunar_rs::Solar;
 use lunar_rs::differential_support::{PROTOCOL_VERSION, SOLAR_SNAPSHOT_KEYS};
+use lunar_rs::{LunarYear, Solar};
 
 use crate::common::norm;
 
@@ -131,6 +141,8 @@ fn diff_reference_sample_matrix() {
     for (year, month, day, hour, minute, second) in cases {
         let solar = Solar::from_ymd_hms(year, month, day, hour, minute, second).unwrap();
         let lunar = solar.lunar();
+        let lunar_year = LunarYear::from_year(lunar.get_year());
+        let lunar_month = lunar.get_lunar_month();
         let reference = run_reference(&reference_bin, year, month, day, hour, minute, second);
         assert_protocol_shape(&reference);
 
@@ -148,6 +160,26 @@ fn diff_reference_sample_matrix() {
             reference.get("lunar").map(String::as_str),
             Some(lunar.to_string().as_str()),
             "lunar mismatch for {year}-{month}-{day}"
+        );
+        assert_eq!(
+            reference.get("solar_festival").map(String::as_str),
+            Some(solar.get_festival().map_or_else(String::new, |festival| festival.get_name()).as_str()),
+            "solar festival mismatch for {year}-{month}-{day}"
+        );
+        assert_eq!(
+            reference.get("solar_festival_index").map(String::as_str),
+            Some(solar.get_festival().map_or_else(String::new, |festival| festival.get_index().to_string()).as_str()),
+            "solar festival index mismatch for {year}-{month}-{day}"
+        );
+        assert_eq!(
+            reference.get("lunar_festival").map(String::as_str),
+            Some(lunar.get_festival().map_or_else(String::new, |festival| festival.get_name()).as_str()),
+            "lunar festival mismatch for {year}-{month}-{day}"
+        );
+        assert_eq!(
+            reference.get("lunar_festival_index").map(String::as_str),
+            Some(lunar.get_festival().map_or_else(String::new, |festival| festival.get_index().to_string()).as_str()),
+            "lunar festival index mismatch for {year}-{month}-{day}"
         );
         assert_eq!(
             reference.get("jieqi").map(String::as_str),
@@ -175,6 +207,36 @@ fn diff_reference_sample_matrix() {
             "time ganzhi mismatch for {year}-{month}-{day}"
         );
         assert_eq!(
+            reference.get("lunar_year_month_count").map(String::as_str),
+            Some(lunar_year.get_month_count().to_string().as_str()),
+            "lunar year month count mismatch for {year}-{month}-{day}"
+        );
+        assert_eq!(
+            reference.get("lunar_year_leap_month").map(String::as_str),
+            Some(lunar_year.get_leap_month().to_string().as_str()),
+            "lunar year leap month mismatch for {year}-{month}-{day}"
+        );
+        assert_eq!(
+            reference.get("lunar_month").map(String::as_str),
+            Some(lunar_month.map_or_else(String::new, |month| month.get_month().to_string()).as_str()),
+            "lunar month mismatch for {year}-{month}-{day}"
+        );
+        assert_eq!(
+            reference.get("lunar_month_with_leap").map(String::as_str),
+            Some(lunar_month.map_or_else(String::new, |month| month.get_month_with_leap().to_string()).as_str()),
+            "lunar month with leap mismatch for {year}-{month}-{day}"
+        );
+        assert_eq!(
+            reference.get("lunar_month_day_count").map(String::as_str),
+            Some(lunar_month.map_or_else(String::new, |month| month.get_day_count().to_string()).as_str()),
+            "lunar month day count mismatch for {year}-{month}-{day}"
+        );
+        assert_eq!(
+            reference.get("lunar_month_index_in_year").map(String::as_str),
+            Some(lunar_month.map_or_else(String::new, |month| month.get_index_in_year().to_string()).as_str()),
+            "lunar month index in year mismatch for {year}-{month}-{day}"
+        );
+        assert_eq!(
             reference.get("lunar_full").map(|value| norm(value)),
             Some(norm(&lunar.to_full_string())),
             "full string mismatch for {year}-{month}-{day}"
@@ -185,8 +247,13 @@ fn diff_reference_sample_matrix() {
 #[test]
 fn parses_default_case_matrix() {
     let cases = load_cases(Path::new(DEFAULT_CASES_PATH));
-    assert!(cases.len() >= 10);
+    assert!(cases.len() >= 16);
     assert_eq!(cases[0], (2019, 5, 1, 0, 0, 0));
     assert!(cases.contains(&(1582, 10, 15, 0, 0, 0)));
     assert!(cases.contains(&(2024, 4, 22, 23, 30, 0)));
+    assert!(cases.contains(&(2019, 2, 5, 0, 0, 0)));
+    assert!(cases.contains(&(2020, 1, 24, 0, 0, 0)));
+    assert!(cases.contains(&(2020, 5, 23, 0, 0, 0)));
+    assert!(cases.contains(&(2024, 4, 4, 12, 0, 0)));
+    assert!(cases.contains(&(2024, 9, 17, 0, 0, 0)));
 }

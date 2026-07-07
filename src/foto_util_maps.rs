@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-use std::sync::LazyLock;
 pub static FESTIVAL: LazyLock<HashMap<&'static str, Vec<Vec<&'static str>>>> = LazyLock::new(|| {
     let mut m: HashMap<&'static str, Vec<Vec<&'static str>>> = HashMap::new();
     m.insert("1-1", vec![vec!["天腊，玉帝校世人神气禄命"]]);

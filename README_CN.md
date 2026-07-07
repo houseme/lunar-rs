@@ -147,6 +147,34 @@ println!("佛历：{}", foto.to_string_cn());
 println!("道历：{}", tao.to_string_cn());
 ```
 
+## tyme4rs 迁移示例
+
+当前 `lunar-rs` 已补出一批常用的 `tyme4rs` 风格迁移入口，常见写法可以直接这样落：
+
+```rust
+use lunar_rs::{LunarHour, SolarDay, SolarFestival, SolarTime, SolarTerm};
+
+let solar_time: SolarTime = SolarTime::from_ymd_hms(2024, 2, 10, 8, 30, 0).unwrap();
+let lunar_hour: LunarHour<'static> = solar_time.get_lunar_hour();
+
+assert_eq!(lunar_hour.get_solar_time().to_ymd_hms(), "2024-02-10 08:30:00");
+assert_eq!(lunar_hour.get_minor_ren().name(), solar_time.lunar().time_minor_ren().name());
+
+let solar_day: SolarDay = SolarDay::from_ymd(2024, 10, 1).unwrap();
+let festival: SolarFestival = solar_day.get_festival().unwrap();
+assert_eq!(festival.get_name(), "国庆节");
+
+let term: SolarTerm = SolarTerm::from_name(2023, "大雪").unwrap();
+assert_eq!(term.get_solar_day().to_ymd(), "2023-12-07");
+```
+
+迁移时建议特别注意两点：
+
+- 本地部分 companion 构造和 getter 会返回 `Option` / `Result`，而 `tyme4rs`
+  某些入口更偏 panic 式构造。
+- `Foto` / `Tao` 是本地扩展 wrapper，不是 `tyme4rs v1.5` 的直接模块；
+  但现在已经支持 owned wrapper 使用方式，并补齐了常用 `get_*` 命名。
+
 ## 验证
 
 ```bash

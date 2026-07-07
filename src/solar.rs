@@ -772,20 +772,17 @@ impl Solar {
     /// 节日（几月几日 + 第 N 个星期几）。
     pub fn festivals(&self) -> Vec<&'static str> {
         let mut l = Vec::new();
-        let key = format!("{}-{}", self.month, self.day);
-        if let Some(f) = solar_util::FESTIVAL.get(key.as_str()) {
-            l.push(*f);
+        if let Some(festival) = solar_util::festival(self.month, self.day) {
+            l.push(festival);
         }
         let weeks = (f64::from(self.day) / 7.0).ceil() as i32;
         let week = self.week();
-        let key2 = format!("{}-{}-{}", self.month, weeks, week);
-        if let Some(f) = solar_util::WEEK_FESTIVAL.get(key2.as_str()) {
-            l.push(*f);
+        if let Some(festival) = solar_util::week_festival(self.month, weeks, week) {
+            l.push(festival);
         }
         if self.day + 7 > solar_util::days_of_month(self.year, self.month) {
-            let key3 = format!("{}-0-{}", self.month, week);
-            if let Some(f) = solar_util::WEEK_FESTIVAL.get(key3.as_str()) {
-                l.push(*f);
+            if let Some(festival) = solar_util::week_festival(self.month, 0, week) {
+                l.push(festival);
             }
         }
         l
@@ -793,8 +790,7 @@ impl Solar {
 
     /// 其它节日。
     pub fn other_festivals(&self) -> Vec<&'static str> {
-        let key = format!("{}-{}", self.month, self.day);
-        solar_util::OTHER_FESTIVAL.get(key.as_str()).cloned().unwrap_or_default()
+        solar_util::other_festivals(self.month, self.day).to_vec()
     }
 
     pub fn nine_day(&self) -> Option<NineDay> {

@@ -23,8 +23,7 @@ pub struct LunarTime<'a> {
 
 impl<'a> LunarTime<'a> {
     pub(crate) fn from_lunar(lunar: &'a Lunar) -> Self {
-        let hm = format!("{:02}:{:02}", lunar.hour(), lunar.minute());
-        let zhi_index = lunar_util::get_time_zhi_index(&hm);
+        let zhi_index = lunar_util::time_zhi_index_from_hour(lunar.hour());
         let gan_index = (lunar.day_gan_index_exact() % 5 * 2 + zhi_index) % 10;
         Self { gan_index, zhi_index, lunar: lunar.clone(), marker: PhantomData }
     }
@@ -38,8 +37,7 @@ impl<'a> LunarTime<'a> {
         second: i32,
     ) -> Result<LunarTime<'static>, crate::LunarError> {
         let lunar = Lunar::from_ymd_hms(year, month, day, hour, minute, second)?;
-        let hm = format!("{:02}:{:02}", lunar.hour(), lunar.minute());
-        let zhi_index = lunar_util::get_time_zhi_index(&hm);
+        let zhi_index = lunar_util::time_zhi_index_from_hour(lunar.hour());
         let gan_index = (lunar.day_gan_index_exact() % 5 * 2 + zhi_index) % 10;
         Ok(LunarTime { gan_index, zhi_index, lunar, marker: PhantomData })
     }

@@ -59,16 +59,10 @@ impl<'a> Yun<'a> {
             minutes -= day * 12;
             (year, month, day, minutes * 2)
         } else {
-            let end_time_zhi_index = if end.hour() == 23 {
-                11
-            } else {
-                lunar_util::get_time_zhi_index(&format!("{:02}:{:02}", end.hour(), end.minute()))
-            };
-            let start_time_zhi_index = if start.hour() == 23 {
-                11
-            } else {
-                lunar_util::get_time_zhi_index(&format!("{:02}:{:02}", start.hour(), start.minute()))
-            };
+            let end_time_zhi_index =
+                if end.hour() == 23 { 11 } else { lunar_util::time_zhi_index_from_hour(end.hour()) };
+            let start_time_zhi_index =
+                if start.hour() == 23 { 11 } else { lunar_util::time_zhi_index_from_hour(start.hour()) };
             let mut hour_diff = end_time_zhi_index - start_time_zhi_index;
             let mut day_diff = end.subtract(&start);
             if hour_diff < 0 {

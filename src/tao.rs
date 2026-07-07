@@ -319,13 +319,10 @@ impl<'a> Tao<'a> {
     }
 
     pub fn festivals(&self) -> Vec<TaoFestival> {
-        let key = format!("{}-{}", self.month(), self.day());
         let mut out = Vec::new();
-        if let Some(fs) = tao_util::FESTIVAL.get(key.as_str()) {
-            for o in fs {
-                let remark = o.get(1).copied().unwrap_or("");
-                out.push(TaoFestival::new(o.first().copied().unwrap_or(""), remark));
-            }
+        for festival in tao_util::festivals(self.month(), self.day()) {
+            let remark = festival.get(1).copied().unwrap_or("");
+            out.push(TaoFestival::new(festival.first().copied().unwrap_or(""), remark));
         }
         let jq = self.lunar.jie_qi();
         if jq == "冬至" {
@@ -355,24 +352,20 @@ impl<'a> Tao<'a> {
         filter_events(&self.events(), query)
     }
 
-    fn is_day_in(&self, days: &[&str]) -> bool {
-        let k = format!("{}-{}", self.month(), self.day());
-        days.iter().any(|x| *x == k)
-    }
     pub fn is_day_san_hui(&self) -> bool {
-        self.is_day_in(tao_util::SAN_HUI)
+        tao_util::is_day_san_hui(self.month(), self.day())
     }
     pub fn get_is_day_san_hui(&self) -> bool {
         self.is_day_san_hui()
     }
     pub fn is_day_san_yuan(&self) -> bool {
-        self.is_day_in(tao_util::SAN_YUAN)
+        tao_util::is_day_san_yuan(self.month(), self.day())
     }
     pub fn get_is_day_san_yuan(&self) -> bool {
         self.is_day_san_yuan()
     }
     pub fn is_day_wu_la(&self) -> bool {
-        self.is_day_in(tao_util::WU_LA)
+        tao_util::is_day_wu_la(self.month(), self.day())
     }
     pub fn get_is_day_wu_la(&self) -> bool {
         self.is_day_wu_la()

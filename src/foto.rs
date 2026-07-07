@@ -336,12 +336,9 @@ impl<'a> Foto<'a> {
 
     pub fn festivals(&self) -> Vec<FotoFestival> {
         let m = self.month().abs();
-        let key = format!("{m}-{}", self.day());
         let mut out = Vec::new();
-        if let Some(fs) = foto_util::FESTIVAL.get(key.as_str()) {
-            for o in fs {
-                out.push(FotoFestival::from_record(o));
-            }
+        for festival in foto_util::festivals(m, self.day()) {
+            out.push(FotoFestival::from_record(festival));
         }
         out
     }
@@ -349,8 +346,7 @@ impl<'a> Foto<'a> {
         self.festivals()
     }
     pub fn other_festivals(&self) -> Vec<&'static str> {
-        let key = format!("{}-{}", self.month(), self.day());
-        foto_util::OTHER_FESTIVAL.get(key.as_str()).cloned().unwrap_or_default()
+        foto_util::other_festivals(self.month(), self.day()).to_vec()
     }
     pub fn get_other_festivals(&self) -> Vec<&'static str> {
         self.other_festivals()
@@ -425,7 +421,7 @@ impl<'a> Foto<'a> {
         self.is_day_zhai_ten()
     }
     pub fn is_day_zhai_guan_yin(&self) -> bool {
-        foto_util::is_day_zhai_guan_yin(&format!("{}-{}", self.month(), self.day()))
+        foto_util::is_day_zhai_guan_yin(self.month(), self.day())
     }
     pub fn get_is_day_zhai_guan_yin(&self) -> bool {
         self.is_day_zhai_guan_yin()

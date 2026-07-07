@@ -2,6 +2,11 @@
 //!
 //! 对应 lunar-go `LunarUtil/LunarUtil.go`。切片表（`tables`）与 map（`maps`）由脚本自动抽取。
 
+use std::collections::HashMap;
+use std::sync::LazyLock;
+
+use crate::key_index::{month_day_key, parse_month_day_key};
+
 pub mod maps;
 pub mod tables;
 
@@ -25,12 +30,13 @@ pub fn get_time_zhi_index(hm: &str) -> i64 {
         (b'0'..=b'2', b'0'..=b'9') => i64::from((bytes[0] - b'0') * 10 + (bytes[1] - b'0')),
         _ => return 0,
     };
-    if !(0..=23).contains(&hour) {
-        return 0;
-    }
+    time_zhi_index_from_hour(hour as i32)
+}
 
+pub(crate) const fn time_zhi_index_from_hour(hour: i32) -> i64 {
     match hour {
-        1..=22 => (hour + 1) / 2,
+        1..=22 => ((hour + 1) / 2) as i64,
+        0 | 23 => 0,
         _ => 0,
     }
 }
@@ -38,6 +44,25 @@ pub fn get_time_zhi_index(hm: &str) -> i64 {
 /// `"HH:MM"` → 地支名。
 pub fn convert_time(hm: &str) -> &'static str {
     tables::ZHI[get_time_zhi_index(hm) as usize + 1]
+}
+
+static FESTIVAL_INDEX: LazyLock<HashMap<i32, &'static str>> = LazyLock::new(|| {
+    maps::FESTIVAL.iter().filter_map(|(key, value)| parse_month_day_key(key).map(|parsed| (parsed, *value))).collect()
+});
+
+static OTHER_FESTIVAL_INDEX: LazyLock<HashMap<i32, Vec<&'static str>>> = LazyLock::new(|| {
+    maps::OTHER_FESTIVAL
+        .iter()
+        .filter_map(|(key, value)| parse_month_day_key(key).map(|parsed| (parsed, value.clone())))
+        .collect()
+});
+
+pub fn festival(month: i32, day: i32) -> Option<&'static str> {
+    FESTIVAL_INDEX.get(&month_day_key(month, day)).copied()
+}
+
+pub fn other_festivals(month: i32, day: i32) -> &'static [&'static str] {
+    OTHER_FESTIVAL_INDEX.get(&month_day_key(month, day)).map(Vec::as_slice).unwrap_or(&[])
 }
 
 /// 六十甲子序号（0..59），未找到返回 -1。

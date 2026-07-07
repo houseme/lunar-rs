@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-use std::sync::LazyLock;
 pub static BA_HUI: LazyLock<HashMap<&'static str, &'static str>> = LazyLock::new(|| { let mut m = HashMap::new();
     m.insert("丙午", "天会");
     m.insert("壬午", "地会");

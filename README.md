@@ -156,6 +156,36 @@ println!("Buddhist calendar: {}", foto.to_string_cn());
 println!("Taoist calendar: {}", tao.to_string_cn());
 ```
 
+## tyme4rs Migration Notes
+
+`lunar-rs` now exposes a compatibility layer for many common `tyme4rs`-style
+entry points. A few practical patterns:
+
+```rust
+use lunar_rs::{LunarHour, SolarDay, SolarFestival, SolarTime, SolarTerm};
+
+let solar_time: SolarTime = SolarTime::from_ymd_hms(2024, 2, 10, 8, 30, 0).unwrap();
+let lunar_hour: LunarHour<'static> = solar_time.get_lunar_hour();
+
+assert_eq!(lunar_hour.get_solar_time().to_ymd_hms(), "2024-02-10 08:30:00");
+assert_eq!(lunar_hour.get_minor_ren().name(), solar_time.lunar().time_minor_ren().name());
+
+let solar_day: SolarDay = SolarDay::from_ymd(2024, 10, 1).unwrap();
+let festival: SolarFestival = solar_day.get_festival().unwrap();
+assert_eq!(festival.get_name(), "国庆节");
+
+let term: SolarTerm = SolarTerm::from_name(2023, "大雪").unwrap();
+assert_eq!(term.get_solar_day().to_ymd(), "2023-12-07");
+```
+
+For migrated code, keep two semantic differences in mind:
+
+- Some local constructors and companion getters return `Option`/`Result` where
+  `tyme4rs` may choose panic-style constructors.
+- `Foto` and `Tao` wrappers are local extensions rather than direct
+  `tyme4rs v1.5` modules, but they now support owned wrapper usage and common
+  `get_*` naming.
+
 ## Validation
 
 ```bash

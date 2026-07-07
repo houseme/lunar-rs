@@ -2,6 +2,8 @@
 //!
 //! 对应 lunar-go `SolarUtil/SolarUtil.go`。
 
+use crate::key_index::{month_day_key, month_weekday_key, parse_month_day_key, parse_month_weekday_key};
+
 /// 星期：日、一、二、三、四、五、六。
 pub const WEEK: [&str; 7] = ["日", "一", "二", "三", "四", "五", "六"];
 
@@ -197,6 +199,36 @@ pub static OTHER_FESTIVAL: LazyLock<HashMap<&'static str, Vec<&'static str>>> = 
     }
     m
 });
+
+static FESTIVAL_INDEX: LazyLock<HashMap<i32, &'static str>> = LazyLock::new(|| {
+    FESTIVAL.iter().filter_map(|(key, value)| parse_month_day_key(key).map(|parsed| (parsed, *value))).collect()
+});
+
+static WEEK_FESTIVAL_INDEX: LazyLock<HashMap<i32, &'static str>> = LazyLock::new(|| {
+    WEEK_FESTIVAL
+        .iter()
+        .filter_map(|(key, value)| parse_month_weekday_key(key).map(|parsed| (parsed, *value)))
+        .collect()
+});
+
+static OTHER_FESTIVAL_INDEX: LazyLock<HashMap<i32, Vec<&'static str>>> = LazyLock::new(|| {
+    OTHER_FESTIVAL
+        .iter()
+        .filter_map(|(key, value)| parse_month_day_key(key).map(|parsed| (parsed, value.clone())))
+        .collect()
+});
+
+pub fn festival(month: i32, day: i32) -> Option<&'static str> {
+    FESTIVAL_INDEX.get(&month_day_key(month, day)).copied()
+}
+
+pub fn week_festival(month: i32, week_index: i32, week: i32) -> Option<&'static str> {
+    WEEK_FESTIVAL_INDEX.get(&month_weekday_key(month, week_index, week)).copied()
+}
+
+pub fn other_festivals(month: i32, day: i32) -> &'static [&'static str] {
+    OTHER_FESTIVAL_INDEX.get(&month_day_key(month, day)).map(Vec::as_slice).unwrap_or(&[])
+}
 
 /// 是否公历闰年（1600 年前用儒略历规则）。
 #[inline]
