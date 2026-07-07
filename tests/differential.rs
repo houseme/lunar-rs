@@ -37,10 +37,17 @@
 //! - `time_ganzhi`
 //! - `lunar_year_month_count`
 //! - `lunar_year_leap_month`
+//! - `lunar_year_twenty`
+//! - `lunar_year_nine_star`
 //! - `lunar_month`
 //! - `lunar_month_with_leap`
 //! - `lunar_month_day_count`
 //! - `lunar_month_index_in_year`
+//! - `lunar_month_minor_ren`
+//! - `lunar_month_nine_star`
+//! - `lunar_hour_name`
+//! - `lunar_hour_index_in_day`
+//! - `lunar_hour_minor_ren`
 //! - `lunar_six_star`
 //! - `lunar_minor_ren`
 //! - `lunar_twelve_star`
@@ -339,6 +346,16 @@ fn diff_reference_sample_matrix() {
             "lunar year leap month mismatch for {year}-{month}-{day}"
         );
         assert_eq!(
+            reference.get("lunar_year_twenty").map(String::as_str),
+            Some(lunar_year.get_twenty().name()),
+            "lunar year twenty mismatch for {year}-{month}-{day}"
+        );
+        assert_eq!(
+            reference.get("lunar_year_nine_star").map(String::as_str),
+            Some(local_nine_star_name(lunar_year.get_nine_star()).as_str()),
+            "lunar year nine star mismatch for {year}-{month}-{day}"
+        );
+        assert_eq!(
             reference.get("lunar_month").map(String::as_str),
             Some(lunar_month.map_or_else(String::new, |month| month.get_month().to_string()).as_str()),
             "lunar month mismatch for {year}-{month}-{day}"
@@ -358,6 +375,34 @@ fn diff_reference_sample_matrix() {
             Some(lunar_month.map_or_else(String::new, |month| month.get_index_in_year().to_string()).as_str()),
             "lunar month index in year mismatch for {year}-{month}-{day}"
         );
+        assert_eq!(
+            reference.get("lunar_month_minor_ren").map(String::as_str),
+            Some(lunar_month.map_or_else(String::new, |month| month.get_minor_ren().name().to_string()).as_str()),
+            "lunar month minor ren mismatch for {year}-{month}-{day}"
+        );
+        assert_eq!(
+            reference.get("lunar_month_nine_star").map(String::as_str),
+            Some(lunar_month.map_or_else(String::new, |month| local_nine_star_name(month.get_nine_star())).as_str()),
+            "lunar month nine star mismatch for {year}-{month}-{day}"
+        );
+        if reference_flavor == ReferenceFlavor::Local {
+            let lunar_hour = solar.get_lunar_hour();
+            assert_eq!(
+                reference.get("lunar_hour_name").map(String::as_str),
+                Some(lunar_hour.get_name().as_str()),
+                "lunar hour name mismatch for {year}-{month}-{day}"
+            );
+            assert_eq!(
+                reference.get("lunar_hour_index_in_day").map(String::as_str),
+                Some(lunar_hour.get_index_in_day().to_string().as_str()),
+                "lunar hour index in day mismatch for {year}-{month}-{day}"
+            );
+            assert_eq!(
+                reference.get("lunar_hour_minor_ren").map(String::as_str),
+                Some(lunar_hour.get_minor_ren().name()),
+                "lunar hour minor ren mismatch for {year}-{month}-{day}"
+            );
+        }
         if reference_flavor == ReferenceFlavor::Local {
             assert_eq!(
                 reference.get("lunar_six_star").map(String::as_str),
@@ -398,7 +443,7 @@ fn diff_reference_sample_matrix() {
 #[test]
 fn parses_default_case_matrix() {
     let cases = load_cases(Path::new(DEFAULT_CASES_PATH));
-    assert!(cases.len() >= 23);
+    assert!(cases.len() >= 24);
     assert_eq!(cases[0], (2019, 5, 1, 0, 0, 0));
     assert!(cases.contains(&(1582, 10, 15, 0, 0, 0)));
     assert!(cases.contains(&(2024, 4, 22, 23, 30, 0)));
@@ -413,4 +458,5 @@ fn parses_default_case_matrix() {
     assert!(cases.contains(&(2012, 7, 18, 0, 0, 0)));
     assert!(cases.contains(&(2024, 6, 11, 0, 0, 0)));
     assert!(cases.contains(&(2024, 12, 4, 0, 0, 0)));
+    assert!(cases.contains(&(2023, 11, 14, 23, 0, 0)));
 }

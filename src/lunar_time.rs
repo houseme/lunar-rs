@@ -96,6 +96,12 @@ impl<'a> LunarTime<'a> {
     pub fn gan_zhi(&self) -> String {
         format!("{}{}", self.gan(), self.zhi())
     }
+    pub fn name(&self) -> String {
+        format!("{}时", self.zhi())
+    }
+    pub fn get_name(&self) -> String {
+        self.name()
+    }
     pub fn sixty_cycle(&self) -> SixtyCycle {
         SixtyCycle::from_name(&self.gan_zhi()).expect("time ganzhi must map to sixty-cycle")
     }

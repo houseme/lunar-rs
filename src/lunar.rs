@@ -6,10 +6,9 @@ use std::sync::OnceLock;
 
 use crate::LunarError;
 use crate::culture::{
-    ChongSha, CycleItem, Direction, DogDay, Duty, EarthBranch, FetusDay, FetusMonth, God, GodLuck, HeavenStem,
-    LiuYao, Lu,
-    MinorRen, MoonPhase, MoonPhaseDay, Nayin, PengZu, Phase, PhaseDay, Phenology, PhenologyDay, PlumRainDay, Season,
-    SixStar, SixtyCycle, SixtyCycleDay, SixtyCycleHour, SixtyCycleMonth, SixtyCycleYear, SolarTermDay, Taboo,
+    ChongSha, CycleItem, Direction, DogDay, Duty, EarthBranch, FetusDay, FetusMonth, God, GodLuck, HeavenStem, LiuYao,
+    Lu, MinorRen, MoonPhase, MoonPhaseDay, Nayin, PengZu, Phase, PhaseDay, Phenology, PhenologyDay, PlumRainDay,
+    Season, SixStar, SixtyCycle, SixtyCycleDay, SixtyCycleHour, SixtyCycleMonth, SixtyCycleYear, SolarTermDay, Taboo,
     TabooKind, TaiPosition, TaiSuiPosition, ThreePillars, TianShen, TwelveStar, Week, Xiu, Xun, Zodiac,
 };
 use crate::eight_char::{EightChar, EightCharProvider};
@@ -1881,8 +1880,10 @@ impl Lunar {
         let summer_solstice = JieQi::from_index(year, 12).solar_day();
         let next_winter_solstice = JieQi::from_index(year + 1, 0).solar_day();
 
-        let winter_anchor = winter_solstice.next_day(winter_solstice.lunar().get_sixty_cycle().steps_close_to(0) as i32);
-        let summer_anchor = summer_solstice.next_day(summer_solstice.lunar().get_sixty_cycle().steps_close_to(0) as i32);
+        let winter_anchor =
+            winter_solstice.next_day(winter_solstice.lunar().get_sixty_cycle().steps_close_to(0) as i32);
+        let summer_anchor =
+            summer_solstice.next_day(summer_solstice.lunar().get_sixty_cycle().steps_close_to(0) as i32);
         let next_winter_anchor =
             next_winter_solstice.next_day(next_winter_solstice.lunar().get_sixty_cycle().steps_close_to(0) as i32);
 

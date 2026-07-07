@@ -10,7 +10,7 @@ fn render_nine_star(star: crate::NineStar) -> String {
 }
 
 /// Snapshot protocol version for differential-testing tooling.
-pub const PROTOCOL_VERSION: &str = "5";
+pub const PROTOCOL_VERSION: &str = "7";
 
 /// Stable newline key names emitted by the sample reference driver.
 pub const SOLAR_SNAPSHOT_KEYS: &[&str] = &[
@@ -43,10 +43,17 @@ pub const SOLAR_SNAPSHOT_KEYS: &[&str] = &[
     "time_ganzhi",
     "lunar_year_month_count",
     "lunar_year_leap_month",
+    "lunar_year_twenty",
+    "lunar_year_nine_star",
     "lunar_month",
     "lunar_month_with_leap",
     "lunar_month_day_count",
     "lunar_month_index_in_year",
+    "lunar_month_minor_ren",
+    "lunar_month_nine_star",
+    "lunar_hour_name",
+    "lunar_hour_index_in_day",
+    "lunar_hour_minor_ren",
     "lunar_six_star",
     "lunar_minor_ren",
     "lunar_twelve_star",
@@ -66,6 +73,7 @@ pub fn solar_snapshot(solar: Solar) -> Vec<(&'static str, String)> {
     let legal_holiday = solar.get_legal_holiday();
     let lunar_year = crate::LunarYear::from_year(lunar.get_year());
     let lunar_month = lunar.get_lunar_month();
+    let lunar_hour = solar.get_lunar_hour();
 
     vec![
         ("protocol_version", PROTOCOL_VERSION.to_string()),
@@ -100,6 +108,8 @@ pub fn solar_snapshot(solar: Solar) -> Vec<(&'static str, String)> {
         ("time_ganzhi", lunar.time_in_gan_zhi()),
         ("lunar_year_month_count", lunar_year.get_month_count().to_string()),
         ("lunar_year_leap_month", lunar_year.get_leap_month().to_string()),
+        ("lunar_year_twenty", lunar_year.get_twenty().name().to_string()),
+        ("lunar_year_nine_star", render_nine_star(lunar_year.get_nine_star())),
         ("lunar_month", lunar_month.map_or_else(String::new, |month| month.get_month().to_string())),
         (
             "lunar_month_with_leap",
@@ -110,6 +120,17 @@ pub fn solar_snapshot(solar: Solar) -> Vec<(&'static str, String)> {
             "lunar_month_index_in_year",
             lunar_month.map_or_else(String::new, |month| month.get_index_in_year().to_string()),
         ),
+        (
+            "lunar_month_minor_ren",
+            lunar_month.map_or_else(String::new, |month| month.get_minor_ren().name().to_string()),
+        ),
+        (
+            "lunar_month_nine_star",
+            lunar_month.map_or_else(String::new, |month| render_nine_star(month.get_nine_star())),
+        ),
+        ("lunar_hour_name", lunar_hour.get_name()),
+        ("lunar_hour_index_in_day", lunar_hour.get_index_in_day().to_string()),
+        ("lunar_hour_minor_ren", lunar_hour.get_minor_ren().name().to_string()),
         ("lunar_six_star", lunar.get_six_star().name().to_string()),
         ("lunar_minor_ren", lunar.get_minor_ren().name().to_string()),
         ("lunar_twelve_star", lunar.get_twelve_star().name().to_string()),

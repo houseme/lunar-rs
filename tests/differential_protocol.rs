@@ -39,8 +39,15 @@ fn solar_snapshot_protocol_is_stable() {
     assert_eq!(values.get("lunar_festival").map(String::as_str), Some(""));
     assert_eq!(values.get("lunar_year_month_count").map(String::as_str), Some("12"));
     assert_eq!(values.get("lunar_year_leap_month").map(String::as_str), Some("0"));
+    assert_eq!(values.get("lunar_year_twenty").map(String::as_str), Some("九运"));
+    assert_eq!(values.get("lunar_year_nine_star").map(String::as_str), Some("三碧木"));
     assert_eq!(values.get("lunar_month").map(String::as_str), Some("3"));
     assert_eq!(values.get("lunar_month_with_leap").map(String::as_str), Some("3"));
+    assert_eq!(values.get("lunar_month_minor_ren").map(String::as_str), Some("速喜"));
+    assert_eq!(values.get("lunar_month_nine_star").map(String::as_str), Some("三碧木"));
+    assert_eq!(values.get("lunar_hour_name").map(String::as_str), Some("子时"));
+    assert_eq!(values.get("lunar_hour_index_in_day").map(String::as_str), Some("12"));
+    assert_eq!(values.get("lunar_hour_minor_ren").map(String::as_str), Some("赤口"));
     assert_eq!(values.get("lunar_six_star").map(String::as_str), Some("佛灭"));
     assert_eq!(values.get("lunar_minor_ren").map(String::as_str), Some("赤口"));
     assert_eq!(values.get("lunar_twelve_star").map(String::as_str), Some("青龙"));
@@ -71,6 +78,10 @@ fn solar_snapshot_covers_festival_and_leap_month_cases() {
     assert_eq!(leap_month.get("lunar_month").map(String::as_str), Some("4"));
     assert_eq!(leap_month.get("lunar_month_with_leap").map(String::as_str), Some("-4"));
     assert_eq!(leap_month.get("lunar_month_day_count").map(String::as_str), Some("29"));
+    assert_eq!(leap_month.get("lunar_year_twenty").map(String::as_str), Some("八运"));
+    assert_eq!(leap_month.get("lunar_year_nine_star").map(String::as_str), Some("七赤金"));
+    assert_eq!(leap_month.get("lunar_month_minor_ren").map(String::as_str), Some("赤口"));
+    assert_eq!(leap_month.get("lunar_month_nine_star").map(String::as_str), Some("五黄土"));
 
     let holiday = solar_snapshot(Solar::from_ymd_hms(2024, 10, 1, 0, 0, 0).unwrap())
         .into_iter()
@@ -104,4 +115,11 @@ fn solar_snapshot_covers_festival_and_leap_month_cases() {
         .into_iter()
         .collect::<std::collections::HashMap<_, _>>();
     assert_eq!(phenology.get("phenology_day").map(String::as_str), Some("蚯蚓结第1天"));
+
+    let lunar_hour = solar_snapshot(Solar::from_ymd_hms(2023, 11, 14, 23, 0, 0).unwrap())
+        .into_iter()
+        .collect::<std::collections::HashMap<_, _>>();
+    assert_eq!(lunar_hour.get("lunar_hour_name").map(String::as_str), Some("子时"));
+    assert_eq!(lunar_hour.get("lunar_hour_index_in_day").map(String::as_str), Some("12"));
+    assert_eq!(lunar_hour.get("lunar_hour_minor_ren").map(String::as_str), Some("小吉"));
 }
