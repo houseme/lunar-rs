@@ -6,8 +6,8 @@ use std::collections::HashMap;
 use std::sync::{Arc, LazyLock, RwLock};
 
 use crate::culture::{
-    Direction, EarthBranch, HeavenStem, Nayin, SixtyCycle, TaiSuiPosition, Xun, YearFortune, YearFortuneKind,
-    YuanCycle, YunCycle,
+    Direction, EarthBranch, HeavenStem, KitchenGodSteed, Nayin, SixtyCycle, TaiSuiPosition, Xun, YearFortune,
+    YearFortuneKind, YuanCycle, YunCycle,
 };
 use crate::lunar_month::LunarMonth;
 use crate::lunar_util;
@@ -484,18 +484,20 @@ impl LunarYear {
         YearFortune::new(YearFortuneKind::DeJin, self.de_jin())
     }
     pub fn ren_bing(&self) -> String {
-        let inner = self.zao_by_zhi(2, "几人几丙");
-        self.zao_by_gan(2, &inner)
+        self.kitchen_god_steed().people_cakes()
     }
     pub fn ren_bing_info(&self) -> YearFortune {
         YearFortune::new(YearFortuneKind::RenBing, self.ren_bing())
     }
     pub fn ren_chu(&self) -> String {
-        let inner = self.zao_by_zhi(2, "几人几锄");
-        self.zao_by_gan(3, &inner)
+        self.kitchen_god_steed().people_hoes()
     }
     pub fn ren_chu_info(&self) -> YearFortune {
         YearFortune::new(YearFortuneKind::RenChu, self.ren_chu())
+    }
+
+    pub fn kitchen_god_steed(&self) -> KitchenGodSteed {
+        KitchenGodSteed::new(self.first_day_gan_index() as usize, self.first_day_zhi_index() as usize)
     }
 
     pub fn year_fortunes(&self) -> Vec<YearFortune> {

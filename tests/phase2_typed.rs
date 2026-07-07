@@ -492,6 +492,7 @@ fn typed_year_month_and_time_layers_reuse_domain_objects() {
 fn typed_year_fortunes_wrap_miscellaneous_predictions() {
     let year = LunarYear::from_year(2020);
     let fortunes = year.year_fortunes();
+    let steed = year.kitchen_god_steed();
 
     assert_eq!(fortunes.len(), 14);
     assert_eq!(fortunes[0].kind().label(), "鼠偷粮");
@@ -502,6 +503,23 @@ fn typed_year_fortunes_wrap_miscellaneous_predictions() {
     assert_eq!(fortunes[4].text(), year.zhi_shui());
     assert_eq!(fortunes[13].kind().label(), "人几锄");
     assert_eq!(fortunes[13].text(), year.ren_chu());
+
+    assert_eq!(steed.name(), "灶马头");
+    assert_eq!(steed.mouse(), year.tou_liang());
+    assert_eq!(steed.grass(), year.cao_zi());
+    assert_eq!(steed.cattle(), year.geng_tian());
+    assert_eq!(steed.flower(), year.hua_shou());
+    assert_eq!(steed.dragon(), year.zhi_shui());
+    assert_eq!(steed.horse(), year.tuo_gu());
+    assert_eq!(steed.chicken(), year.qiang_mi());
+    assert_eq!(steed.silkworm(), year.kan_can());
+    assert_eq!(steed.pig(), year.gong_zhu());
+    assert_eq!(steed.field(), year.jia_tian());
+    assert_eq!(steed.cake(), year.fen_bing());
+    assert_eq!(steed.gold(), year.de_jin());
+    assert_eq!(steed.people_cakes(), year.ren_bing());
+    assert_eq!(steed.people_hoes(), year.ren_chu());
+    assert_eq!(steed.to_string(), "灶马头");
 }
 
 #[test]

@@ -28,6 +28,8 @@ const TERRAIN_NAMES: [&str; 12] = ["长生", "沐浴", "冠带", "临官", "帝�
 const LAND_NAMES: [&str; 9] = ["玄天", "朱天", "苍天", "阳天", "钧天", "幽天", "颢天", "变天", "炎天"];
 const YUAN_CYCLE_NAMES: [&str; 3] = ["上元", "中元", "下元"];
 const YUN_CYCLE_NAMES: [&str; 9] = ["一运", "二运", "三运", "四运", "五运", "六运", "七运", "八运", "九运"];
+const KITCHEN_GOD_STEED_NUMBERS: [&str; 12] =
+    ["一", "二", "三", "四", "五", "六", "七", "八", "九", "十", "十一", "十二"];
 const NAYIN_NAMES: [&str; 30] = [
     "海中金",
     "炉中火",
@@ -1907,6 +1909,108 @@ impl fmt::Display for YunCycle {
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct KitchenGodSteed {
+    first_day_heaven_stem_index: usize,
+    first_day_earth_branch_index: usize,
+}
+
+impl KitchenGodSteed {
+    pub const fn new(first_day_heaven_stem_index: usize, first_day_earth_branch_index: usize) -> Self {
+        Self {
+            first_day_heaven_stem_index: first_day_heaven_stem_index % 10,
+            first_day_earth_branch_index: first_day_earth_branch_index % 12,
+        }
+    }
+
+    pub const fn from_first_day(heaven_stem: HeavenStem, earth_branch: EarthBranch) -> Self {
+        Self::new(heaven_stem.index(), earth_branch.index())
+    }
+
+    pub const fn name(&self) -> &'static str {
+        "灶马头"
+    }
+
+    pub const fn first_day_heaven_stem_index(&self) -> usize {
+        self.first_day_heaven_stem_index
+    }
+
+    pub const fn first_day_earth_branch_index(&self) -> usize {
+        self.first_day_earth_branch_index
+    }
+
+    fn by_heaven_stem(&self, target_index: usize) -> &'static str {
+        KITCHEN_GOD_STEED_NUMBERS[(target_index + 10 - self.first_day_heaven_stem_index) % 10]
+    }
+
+    fn by_earth_branch(&self, target_index: usize) -> &'static str {
+        KITCHEN_GOD_STEED_NUMBERS[(target_index + 12 - self.first_day_earth_branch_index) % 12]
+    }
+
+    pub fn mouse(&self) -> String {
+        format!("{}鼠偷粮", self.by_earth_branch(0))
+    }
+
+    pub fn grass(&self) -> String {
+        format!("草子{}分", self.by_earth_branch(0))
+    }
+
+    pub fn cattle(&self) -> String {
+        format!("{}牛耕田", self.by_earth_branch(1))
+    }
+
+    pub fn flower(&self) -> String {
+        format!("花收{}分", self.by_earth_branch(3))
+    }
+
+    pub fn dragon(&self) -> String {
+        format!("{}龙治水", self.by_earth_branch(4))
+    }
+
+    pub fn horse(&self) -> String {
+        format!("{}马驮谷", self.by_earth_branch(6))
+    }
+
+    pub fn chicken(&self) -> String {
+        format!("{}鸡抢米", self.by_earth_branch(9))
+    }
+
+    pub fn silkworm(&self) -> String {
+        format!("{}姑看蚕", self.by_earth_branch(9))
+    }
+
+    pub fn pig(&self) -> String {
+        format!("{}屠共猪", self.by_earth_branch(11))
+    }
+
+    pub fn field(&self) -> String {
+        format!("甲田{}分", self.by_heaven_stem(0))
+    }
+
+    pub fn cake(&self) -> String {
+        format!("{}人分饼", self.by_heaven_stem(2))
+    }
+
+    pub fn gold(&self) -> String {
+        format!("{}日得金", self.by_heaven_stem(7))
+    }
+
+    pub fn people_cakes(&self) -> String {
+        format!("{}人{}丙", self.by_earth_branch(2), self.by_heaven_stem(2))
+    }
+
+    pub fn people_hoes(&self) -> String {
+        format!("{}人{}锄", self.by_earth_branch(2), self.by_heaven_stem(3))
+    }
+}
+
+impl fmt::Display for KitchenGodSteed {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.name())
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum YearFortuneKind {
     TouLiang,
     CaoZi,
@@ -2088,6 +2192,7 @@ impl_named_culture!(
     Terrain,
     Land,
     Week,
+    KitchenGodSteed,
     Xiu,
     XunKong,
     Xun,

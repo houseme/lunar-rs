@@ -236,5 +236,6 @@
 | `P3` | `Task 80` | GodLuck 吉凶循环对象补强 | `已完成` | [docs/tasks/80-phase-next-god-luck-cycle-api.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/80-phase-next-god-luck-cycle-api.md) |
 | `P3` | `Task 81` | Zodiac 生肖循环对象补强 | `已完成` | [docs/tasks/81-phase-next-zodiac-cycle-api.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/81-phase-next-zodiac-cycle-api.md) |
 | `P3` | `Task 82` | TabooKind 宜忌类型循环对象补强 | `已完成` | [docs/tasks/82-phase-next-taboo-kind-cycle-api.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/82-phase-next-taboo-kind-cycle-api.md) |
+| `P2` | `Task 83` | KitchenGodSteed 灶马头 typed 聚合对象 | `已完成` | [docs/tasks/83-phase-next-kitchen-god-steed.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/83-phase-next-kitchen-god-steed.md) |
 
-后续建议继续按新对标文档和本索引中的 `Task 59` - `Task 82` 推进，不再把已经完成的 Phase 4 多历法工作重复列为待办。
+后续建议继续按新对标文档和本索引中的 `Task 59` - `Task 83` 推进，不再把已经完成的 Phase 4 多历法工作重复列为待办。
