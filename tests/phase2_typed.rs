@@ -39,6 +39,11 @@ fn typed_primitives_map_names_and_relationships() {
 
     let phase = Phase::new("望");
     assert_eq!(phase.name(), "望");
+
+    let luck = GodLuck::from_name("凶").unwrap();
+    assert_eq!(luck.index(), 1);
+    assert_eq!(luck.name(), "凶");
+    assert_eq!(luck.next(1), GodLuck::Auspicious);
 }
 
 #[test]
@@ -67,12 +72,14 @@ fn common_culture_traits_unify_names_cycles_and_day_indices() {
 
     assert_eq!(culture_name(&Element::new("火")), "火");
     assert_eq!(culture_name(&Duty::new("建")), "建");
+    assert_eq!(culture_name(&GodLuck::Auspicious), "吉");
     assert_eq!(next_name(HeavenStem::from_name("癸").unwrap(), 1), "甲");
     assert_eq!(next_name(EarthBranch::from_name("亥").unwrap(), 1), "子");
     assert_eq!(next_name(SixtyCycle::from_name("癸亥").unwrap(), 1), "甲子");
     assert_eq!(next_name(Zodiac::new("猪"), 1), "鼠");
     assert_eq!(next_name(Element::from_name("水").unwrap(), 1), "木");
     assert_eq!(next_name(Duty::from_name("闭").unwrap(), 1), "建");
+    assert_eq!(next_name(GodLuck::Inauspicious, 1), "吉");
     assert_eq!(next_name(MinorRen::from_name("空亡").unwrap(), 1), "大安");
     assert_eq!(Constellation::from_name("白羊").unwrap().steps_to(1), 1);
     assert_eq!(Constellation::from_name("白羊").unwrap().steps_back_to(11), -1);
@@ -107,6 +114,7 @@ fn typed_minor_ren_matches_tyme_cycle_examples() {
     let lunar_day = Lunar::from_ymd(2024, 3, 5).unwrap();
     assert_eq!(lunar_day.minor_ren().name(), "大安");
     assert_eq!(lunar_day.day_minor_ren().luck(), GodLuck::Auspicious);
+    assert_eq!(GodLuck::from_name(lunar_day.day_minor_ren().luck().name()).unwrap(), lunar_day.day_minor_ren().luck());
     assert_eq!(lunar_day.day_minor_ren().element().name(), "木");
 
     let lunar_hour = Lunar::from_ymd_hms(2024, 9, 7, 10, 0, 0).unwrap();

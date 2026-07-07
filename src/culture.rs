@@ -622,11 +622,34 @@ pub enum GodLuck {
 }
 
 impl GodLuck {
+    pub const fn from_index(index: usize) -> Self {
+        if index % 2 == 0 { Self::Auspicious } else { Self::Inauspicious }
+    }
+
+    pub fn from_name(name: &str) -> Option<Self> {
+        match name {
+            "吉" => Some(Self::Auspicious),
+            "凶" => Some(Self::Inauspicious),
+            _ => None,
+        }
+    }
+
+    pub const fn index(&self) -> usize {
+        match self {
+            Self::Auspicious => 0,
+            Self::Inauspicious => 1,
+        }
+    }
+
     pub const fn label(&self) -> &'static str {
         match self {
             Self::Auspicious => "吉",
             Self::Inauspicious => "凶",
         }
+    }
+
+    pub const fn name(&self) -> &'static str {
+        self.label()
     }
 }
 
@@ -2014,6 +2037,7 @@ impl_named_culture!(
     HeavenStem,
     EarthBranch,
     SixtyCycle,
+    GodLuck,
     God,
     Taboo,
     PengZuHeavenStem,
@@ -2159,6 +2183,20 @@ impl CycleItem for SixtyCycle {
 
     fn size() -> usize {
         60
+    }
+}
+
+impl CycleItem for GodLuck {
+    fn from_cycle_index(index: usize) -> Self {
+        Self::from_index(index % Self::size())
+    }
+
+    fn index(&self) -> usize {
+        self.index()
+    }
+
+    fn size() -> usize {
+        2
     }
 }
 
