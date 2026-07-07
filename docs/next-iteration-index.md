@@ -219,5 +219,7 @@
 | `P2` | `Task 63` | 文化日对象统一 | `已完成` | [docs/tasks/63-phase-next-culture-day-objects.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/63-phase-next-culture-day-objects.md) |
 | `P3` | `Task 64` | EventManager 规则模型 | `已完成` | [docs/tasks/64-phase-next-event-manager-rule-model.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/64-phase-next-event-manager-rule-model.md) |
 | `P3` | `Task 65` | EightChar provider 化 | `已完成` | [docs/tasks/65-phase-next-eight-char-provider.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/65-phase-next-eight-char-provider.md) |
+| `P3` | `Task 66` | EventRule 节气后天干 / 地支规则 | `已完成` | [docs/tasks/66-phase-next-event-term-stem-branch-rules.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/66-phase-next-event-term-stem-branch-rules.md) |
+| `P2` | `Task 67` | NineDay / HideHeavenStemDay 文化日对象 | `已完成` | [docs/tasks/67-phase-next-nine-hide-heaven-stem-days.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/67-phase-next-nine-hide-heaven-stem-days.md) |
 
-后续建议继续按新对标文档中的 `Task 59` - `Task 65` 推进，不再把已经完成的 Phase 4 多历法工作重复列为待办。
+后续建议继续按新对标文档和本索引中的 `Task 59` - `Task 67` 推进，不再把已经完成的 Phase 4 多历法工作重复列为待办。

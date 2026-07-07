@@ -1,6 +1,7 @@
 use lunar_rs::{
-    Constellation, CultureDay, CycleItem, Direction, Duty, EarthBranch, Element, GodLuck, HeavenStem, Lunar,
-    LunarMonth, LunarYear, MinorRen, NamedCulture, NineStar, Phase, PlumRainKind, SixtyCycle, Solar, TabooKind, Zodiac,
+    Constellation, CultureDay, CycleItem, Direction, Duty, EarthBranch, Element, GodLuck, HeavenStem,
+    HideHeavenStemType, Lunar, LunarMonth, LunarYear, MinorRen, NamedCulture, NineStar, Phase, PlumRainKind,
+    SixtyCycle, Solar, TabooKind, Zodiac,
 };
 
 #[test]
@@ -94,6 +95,27 @@ fn typed_minor_ren_matches_tyme_cycle_examples() {
     let lunar_month = LunarMonth::from_ym(1991, 3).unwrap();
     assert_eq!(lunar_month.minor_ren().name(), "速喜");
     assert_eq!(lunar_month.minor_ren().element().name(), "火");
+}
+
+#[test]
+fn typed_nine_day_and_hide_heaven_stem_day_match_reference_examples() {
+    let first = Solar::from_ymd(2020, 12, 21).unwrap().nine_day().unwrap();
+    assert_eq!(first.name(), "一九");
+    assert_eq!(first.nine().name(), "一九");
+    assert_eq!(first.day_index(), Some(1));
+    assert_eq!(first.to_string(), "一九第1天");
+
+    let third = Solar::from_ymd(2021, 1, 8).unwrap().nine_day().unwrap();
+    assert_eq!(third.name(), "三九");
+    assert_eq!(third.day_index(), Some(1));
+    assert!(Solar::from_ymd(2021, 7, 5).unwrap().nine_day().is_none());
+
+    let hide = Solar::from_ymd(2024, 12, 4).unwrap().hide_heaven_stem_day().unwrap();
+    assert_eq!(hide.hide_heaven_stem().kind(), HideHeavenStemType::Main);
+    assert_eq!(hide.hide_heaven_stem().name(), "壬");
+    assert_eq!(hide.name(), "壬水");
+    assert_eq!(hide.day_index(), Some(16));
+    assert_eq!(hide.to_string(), "壬水第16天");
 }
 
 #[test]

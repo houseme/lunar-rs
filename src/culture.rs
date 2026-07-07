@@ -15,6 +15,7 @@ const FETUS_HEAVEN_STEM_NAMES: [&str; 5] = ["门", "碓磨", "厨灶", "仓库",
 const FETUS_EARTH_BRANCH_NAMES: [&str; 6] = ["碓", "厕", "炉", "门", "栖", "床"];
 const MINOR_REN_NAMES: [&str; 6] = ["大安", "留连", "速喜", "赤口", "小吉", "空亡"];
 const MINOR_REN_ELEMENTS: [&str; 6] = ["木", "水", "火", "金", "木", "土"];
+const NINE_NAMES: [&str; 9] = ["一九", "二九", "三九", "四九", "五九", "六九", "七九", "八九", "九九"];
 
 pub trait NamedCulture {
     fn name(&self) -> &str;
@@ -1146,6 +1147,193 @@ impl fmt::Display for MinorRen {
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct Nine {
+    index: usize,
+}
+
+impl Nine {
+    pub const fn from_index(index: usize) -> Self {
+        Self { index }
+    }
+
+    pub fn from_name(name: &str) -> Option<Self> {
+        NINE_NAMES.iter().position(|value| *value == name).map(Self::from_index)
+    }
+
+    pub const fn index(&self) -> usize {
+        self.index
+    }
+
+    pub fn name(&self) -> &'static str {
+        NINE_NAMES[self.index % NINE_NAMES.len()]
+    }
+}
+
+impl fmt::Display for Nine {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.name())
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct NineDay {
+    nine: Nine,
+    day_index: i32,
+}
+
+impl NineDay {
+    pub const fn new(nine: Nine, day_index: i32) -> Self {
+        Self { nine, day_index }
+    }
+
+    pub const fn nine(&self) -> Nine {
+        self.nine
+    }
+
+    pub const fn day_index_value(&self) -> i32 {
+        self.day_index
+    }
+
+    pub fn name(&self) -> &'static str {
+        self.nine.name()
+    }
+}
+
+impl fmt::Display for NineDay {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}第{}天", self.name(), self.day_index)
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum HideHeavenStemType {
+    Residual,
+    Middle,
+    Main,
+}
+
+impl HideHeavenStemType {
+    pub const fn from_index(index: usize) -> Option<Self> {
+        match index {
+            0 => Some(Self::Residual),
+            1 => Some(Self::Middle),
+            2 => Some(Self::Main),
+            _ => None,
+        }
+    }
+
+    pub fn from_name(name: &str) -> Option<Self> {
+        match name {
+            "余气" => Some(Self::Residual),
+            "中气" => Some(Self::Middle),
+            "本气" => Some(Self::Main),
+            _ => None,
+        }
+    }
+
+    pub const fn index(&self) -> usize {
+        match self {
+            Self::Residual => 0,
+            Self::Middle => 1,
+            Self::Main => 2,
+        }
+    }
+
+    pub const fn name(&self) -> &'static str {
+        match self {
+            Self::Residual => "余气",
+            Self::Middle => "中气",
+            Self::Main => "本气",
+        }
+    }
+}
+
+impl fmt::Display for HideHeavenStemType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.name())
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct HideHeavenStem {
+    heaven_stem: HeavenStem,
+    kind: HideHeavenStemType,
+}
+
+impl HideHeavenStem {
+    pub const fn new(heaven_stem: HeavenStem, kind: HideHeavenStemType) -> Self {
+        Self { heaven_stem, kind }
+    }
+
+    pub fn from_index(heaven_stem_index: usize, kind: HideHeavenStemType) -> Self {
+        Self::new(HeavenStem::from_index(heaven_stem_index % 10), kind)
+    }
+
+    pub fn from_name(heaven_stem_name: &str, kind: HideHeavenStemType) -> Option<Self> {
+        HeavenStem::from_name(heaven_stem_name).map(|heaven_stem| Self::new(heaven_stem, kind))
+    }
+
+    pub const fn heaven_stem(&self) -> HeavenStem {
+        self.heaven_stem
+    }
+
+    pub const fn kind(&self) -> HideHeavenStemType {
+        self.kind
+    }
+
+    pub fn element(&self) -> Element {
+        self.heaven_stem.element()
+    }
+
+    pub fn name(&self) -> &'static str {
+        self.heaven_stem.name()
+    }
+}
+
+impl fmt::Display for HideHeavenStem {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.name())
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub struct HideHeavenStemDay {
+    hide_heaven_stem: HideHeavenStem,
+    day_index: i32,
+    name: String,
+}
+
+impl HideHeavenStemDay {
+    pub fn new(hide_heaven_stem: HideHeavenStem, day_index: i32) -> Self {
+        let name = format!("{}{}", hide_heaven_stem.name(), hide_heaven_stem.element().name());
+        Self { hide_heaven_stem, day_index, name }
+    }
+
+    pub const fn hide_heaven_stem(&self) -> HideHeavenStem {
+        self.hide_heaven_stem
+    }
+
+    pub const fn day_index_value(&self) -> i32 {
+        self.day_index
+    }
+
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+}
+
+impl fmt::Display for HideHeavenStemDay {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}第{}天", self.name(), self.day_index)
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Nayin {
     name: &'static str,
 }
@@ -1449,6 +1637,10 @@ impl_named_culture!(
     FetusDay,
     FetusMonth,
     MinorRen,
+    Nine,
+    NineDay,
+    HideHeavenStem,
+    HideHeavenStemDay,
     Nayin,
     Season,
     SolarTermDay,
@@ -1573,6 +1765,20 @@ impl CycleItem for MinorRen {
     }
 }
 
+impl CycleItem for Nine {
+    fn from_cycle_index(index: usize) -> Self {
+        Self::from_index(index % Self::size())
+    }
+
+    fn index(&self) -> usize {
+        self.index()
+    }
+
+    fn size() -> usize {
+        NINE_NAMES.len()
+    }
+}
+
 impl CultureDay for DogDay {
     fn day_index(&self) -> Option<i32> {
         Some(self.day_index())
@@ -1598,6 +1804,18 @@ impl CultureDay for PhenologyDay {
 }
 
 impl CultureDay for PhaseDay {
+    fn day_index(&self) -> Option<i32> {
+        Some(self.day_index_value())
+    }
+}
+
+impl CultureDay for NineDay {
+    fn day_index(&self) -> Option<i32> {
+        Some(self.day_index_value())
+    }
+}
+
+impl CultureDay for HideHeavenStemDay {
     fn day_index(&self) -> Option<i32> {
         Some(self.day_index_value())
     }

@@ -1,6 +1,6 @@
 use lunar_rs::{
-    CalendarKind, Event, EventKind, EventManager, EventQuery, EventRangeKind, EventRule, EventSource,
-    EventSourceFamily, Lunar, Solar, SolarMonth, SolarWeek, group_event_days_by_week, group_events_by_day,
+    CalendarKind, EarthBranch, Event, EventKind, EventManager, EventQuery, EventRangeKind, EventRule, EventSource,
+    EventSourceFamily, HeavenStem, Lunar, Solar, SolarMonth, SolarWeek, group_event_days_by_week, group_events_by_day,
     holiday_util, scan_event_days_in_range, scan_event_weeks_in_range, scan_events_in_range,
     scan_events_in_range_filtered,
 };
@@ -279,6 +279,20 @@ fn event_manager_resolves_typed_rules_and_joins_day_events() {
 
     let term_event = EventRule::solar_term_offset("清明", -1).to_event("规则寒食节", 2024).unwrap();
     assert_eq!(term_event.solar().to_ymd(), "2024-04-03");
+
+    let first_geng_after_xiazhi =
+        EventRule::solar_term_heaven_stem("夏至", HeavenStem::from_name("庚").unwrap().index(), 20)
+            .to_event("规则入伏", 2024)
+            .unwrap();
+    assert_eq!(first_geng_after_xiazhi.solar().to_ymd(), "2024-07-15");
+    assert_eq!(first_geng_after_xiazhi.solar().lunar().day_heaven_stem().name(), "庚");
+
+    let first_wei_after_xiaoshu =
+        EventRule::solar_term_earth_branch("小暑", EarthBranch::from_name("未").unwrap().index(), 0)
+            .to_event("规则出梅", 2024)
+            .unwrap();
+    assert_eq!(first_wei_after_xiaoshu.solar().to_ymd(), "2024-07-06");
+    assert_eq!(first_wei_after_xiaoshu.solar().lunar().day_earth_branch().name(), "未");
 
     EventManager::update("规则儿童节", solar_rule);
     let events = Solar::from_ymd(2098, 6, 1).unwrap().find_events(&EventQuery::new().with_tag("event_manager"));

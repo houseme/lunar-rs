@@ -9,6 +9,7 @@ use crate::auc::Auc;
 use crate::bengali::Bengali;
 use crate::byzantine::Byzantine;
 use crate::coptic::Coptic;
+use crate::culture::{HideHeavenStem, HideHeavenStemDay, HideHeavenStemType, Nine, NineDay};
 use crate::dangi::Dangi;
 use crate::ethiopian::Ethiopian;
 use crate::event::{
@@ -25,6 +26,7 @@ use crate::juche::Juche;
 use crate::julian::Julian;
 use crate::koki::Koki;
 use crate::lunar::Lunar;
+use crate::lunar_year::JIE_QI;
 use crate::minguo::Minguo;
 use crate::multi_calendar::CalendarDay;
 use crate::nanakshahi::Nanakshahi;
@@ -38,6 +40,9 @@ use crate::thai_buddhist::ThaiBuddhist;
 use crate::thai_solar::ThaiSolar;
 use crate::venetian::Venetian;
 use crate::{Constellation, LunarError};
+
+const HIDE_HEAVEN_STEM_DAY_DATA: &str = "93705542220504xx1513904541632524533533105544806564xx7573304542018584xx95";
+const HIDE_HEAVEN_STEM_DAY_COUNTS: [usize; 6] = [3, 5, 7, 9, 10, 30];
 
 /// 阳历日期时间。
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -676,6 +681,48 @@ impl Solar {
     pub fn other_festivals(&self) -> Vec<&'static str> {
         let key = format!("{}-{}", self.month, self.day);
         solar_util::OTHER_FESTIVAL.get(key.as_str()).cloned().unwrap_or_default()
+    }
+
+    pub fn nine_day(&self) -> Option<NineDay> {
+        let shu_jiu = self.lunar().shu_jiu()?;
+        let nine = Nine::from_name(shu_jiu.name())?;
+        Some(NineDay::new(nine, shu_jiu.day_index()))
+    }
+
+    pub fn hide_heaven_stem_day(&self) -> Option<HideHeavenStemDay> {
+        let lunar = self.lunar();
+        let current_jie = lunar.jie();
+        let term = if current_jie.is_empty() { lunar.prev_jie_by_whole_day(true)? } else { lunar.current_jie_qi()? };
+        let term_index = JIE_QI.iter().position(|name| *name == term.name())?;
+        let start_index = term_index.checked_sub(1)? * 3;
+        let data = HIDE_HEAVEN_STEM_DAY_DATA.get(start_index..start_index + 6)?;
+        let term_solar = term.solar();
+        let term_day = Solar::from_ymd(term_solar.year(), term_solar.month(), term_solar.day()).ok()?;
+        let current_day = Solar::from_ymd(self.year, self.month, self.day).ok()?;
+        let mut day_index = current_day.subtract(&term_day) as usize;
+        let mut days = 0_usize;
+        let mut heaven_stem_index = 0_usize;
+        let mut kind_index = 0_usize;
+
+        while kind_index < 3 {
+            let index = kind_index * 2;
+            let marker = data.get(index..index + 1)?;
+            let mut count = 0_usize;
+            if marker != "x" {
+                heaven_stem_index = marker.parse().ok()?;
+                let count_index: usize = data.get(index + 1..index + 2)?.parse().ok()?;
+                count = HIDE_HEAVEN_STEM_DAY_COUNTS[count_index];
+                days += count;
+            }
+            if day_index <= days {
+                day_index -= days - count;
+                break;
+            }
+            kind_index += 1;
+        }
+
+        let kind = HideHeavenStemType::from_index(kind_index)?;
+        Some(HideHeavenStemDay::new(HideHeavenStem::from_index(heaven_stem_index, kind), day_index as i32 + 1))
     }
 
     /// Unified events for the current solar date.

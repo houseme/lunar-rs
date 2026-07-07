@@ -6,6 +6,7 @@
 use std::collections::{BTreeMap, HashMap};
 use std::sync::{Arc, LazyLock, RwLock};
 
+use crate::culture::{CycleItem, EarthBranch, HeavenStem};
 use crate::{Holiday, JieQi, Solar, foto::FotoFestival, tao::TaoFestival};
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -832,10 +833,44 @@ pub(crate) fn find_events_for_day(solar: Solar, query: &EventQuery<'_>) -> Vec<E
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum EventRule {
-    SolarDay { month: i32, day: i32, offset_days: i32, start_year: i32 },
-    LunarDay { month: i32, day: i32, offset_days: i32, start_year: i32 },
-    SolarWeek { month: i32, week_index: i32, week: i32, offset_days: i32, start_year: i32 },
-    SolarTermOffset { term: String, offset_days: i32, start_year: i32 },
+    SolarDay {
+        month: i32,
+        day: i32,
+        offset_days: i32,
+        start_year: i32,
+    },
+    LunarDay {
+        month: i32,
+        day: i32,
+        offset_days: i32,
+        start_year: i32,
+    },
+    SolarWeek {
+        month: i32,
+        week_index: i32,
+        week: i32,
+        offset_days: i32,
+        start_year: i32,
+    },
+    SolarTermOffset {
+        term: String,
+        offset_days: i32,
+        start_year: i32,
+    },
+    SolarTermHeavenStem {
+        term: String,
+        heaven_stem_index: usize,
+        search_start_offset_days: i32,
+        offset_days: i32,
+        start_year: i32,
+    },
+    SolarTermEarthBranch {
+        term: String,
+        earth_branch_index: usize,
+        search_start_offset_days: i32,
+        offset_days: i32,
+        start_year: i32,
+    },
 }
 
 impl EventRule {
@@ -855,6 +890,34 @@ impl EventRule {
         Self::SolarTermOffset { term: term.into(), offset_days, start_year: 0 }
     }
 
+    pub fn solar_term_heaven_stem(
+        term: impl Into<String>,
+        heaven_stem_index: usize,
+        search_start_offset_days: i32,
+    ) -> Self {
+        Self::SolarTermHeavenStem {
+            term: term.into(),
+            heaven_stem_index,
+            search_start_offset_days,
+            offset_days: 0,
+            start_year: 0,
+        }
+    }
+
+    pub fn solar_term_earth_branch(
+        term: impl Into<String>,
+        earth_branch_index: usize,
+        search_start_offset_days: i32,
+    ) -> Self {
+        Self::SolarTermEarthBranch {
+            term: term.into(),
+            earth_branch_index,
+            search_start_offset_days,
+            offset_days: 0,
+            start_year: 0,
+        }
+    }
+
     pub fn with_offset_days(self, offset_days: i32) -> Self {
         match self {
             Self::SolarDay { month, day, start_year, .. } => Self::SolarDay { month, day, offset_days, start_year },
@@ -863,6 +926,18 @@ impl EventRule {
                 Self::SolarWeek { month, week_index, week, offset_days, start_year }
             }
             Self::SolarTermOffset { term, start_year, .. } => Self::SolarTermOffset { term, offset_days, start_year },
+            Self::SolarTermHeavenStem { term, heaven_stem_index, search_start_offset_days, start_year, .. } => {
+                Self::SolarTermHeavenStem { term, heaven_stem_index, search_start_offset_days, offset_days, start_year }
+            }
+            Self::SolarTermEarthBranch { term, earth_branch_index, search_start_offset_days, start_year, .. } => {
+                Self::SolarTermEarthBranch {
+                    term,
+                    earth_branch_index,
+                    search_start_offset_days,
+                    offset_days,
+                    start_year,
+                }
+            }
         }
     }
 
@@ -874,6 +949,18 @@ impl EventRule {
                 Self::SolarWeek { month, week_index, week, offset_days, start_year }
             }
             Self::SolarTermOffset { term, offset_days, .. } => Self::SolarTermOffset { term, offset_days, start_year },
+            Self::SolarTermHeavenStem { term, heaven_stem_index, search_start_offset_days, offset_days, .. } => {
+                Self::SolarTermHeavenStem { term, heaven_stem_index, search_start_offset_days, offset_days, start_year }
+            }
+            Self::SolarTermEarthBranch { term, earth_branch_index, search_start_offset_days, offset_days, .. } => {
+                Self::SolarTermEarthBranch {
+                    term,
+                    earth_branch_index,
+                    search_start_offset_days,
+                    offset_days,
+                    start_year,
+                }
+            }
         }
     }
 
@@ -889,6 +976,12 @@ impl EventRule {
             }
             Self::SolarWeek { month, week_index, week, .. } => resolve_solar_week(year, *month, *week_index, *week),
             Self::SolarTermOffset { term, .. } => resolve_solar_term(year, term),
+            Self::SolarTermHeavenStem { term, heaven_stem_index, search_start_offset_days, .. } => {
+                resolve_solar_term_heaven_stem(year, term, *heaven_stem_index, *search_start_offset_days)
+            }
+            Self::SolarTermEarthBranch { term, earth_branch_index, search_start_offset_days, .. } => {
+                resolve_solar_term_earth_branch(year, term, *earth_branch_index, *search_start_offset_days)
+            }
         }?;
 
         Some(solar.next_day(self.offset_days()))
@@ -905,7 +998,9 @@ impl EventRule {
             Self::SolarDay { offset_days, .. }
             | Self::LunarDay { offset_days, .. }
             | Self::SolarWeek { offset_days, .. }
-            | Self::SolarTermOffset { offset_days, .. } => *offset_days,
+            | Self::SolarTermOffset { offset_days, .. }
+            | Self::SolarTermHeavenStem { offset_days, .. }
+            | Self::SolarTermEarthBranch { offset_days, .. } => *offset_days,
         }
     }
 
@@ -914,7 +1009,9 @@ impl EventRule {
             Self::SolarDay { start_year, .. }
             | Self::LunarDay { start_year, .. }
             | Self::SolarWeek { start_year, .. }
-            | Self::SolarTermOffset { start_year, .. } => *start_year,
+            | Self::SolarTermOffset { start_year, .. }
+            | Self::SolarTermHeavenStem { start_year, .. }
+            | Self::SolarTermEarthBranch { start_year, .. } => *start_year,
         }
     }
 
@@ -924,6 +1021,8 @@ impl EventRule {
             Self::LunarDay { .. } => "lunar_day",
             Self::SolarWeek { .. } => "solar_week",
             Self::SolarTermOffset { .. } => "solar_term_offset",
+            Self::SolarTermHeavenStem { .. } => "solar_term_heaven_stem",
+            Self::SolarTermEarthBranch { .. } => "solar_term_earth_branch",
         }
     }
 }
@@ -950,6 +1049,30 @@ fn resolve_solar_week(year: i32, month: i32, week_index: i32, week: i32) -> Opti
 fn resolve_solar_term(year: i32, term: &str) -> Option<Solar> {
     let anchor = Solar::from_ymd(year, 7, 1).ok()?.lunar();
     anchor.jie_qi_table().get(term).copied()
+}
+
+fn resolve_solar_term_heaven_stem(
+    year: i32,
+    term: &str,
+    heaven_stem_index: usize,
+    search_start_offset_days: i32,
+) -> Option<Solar> {
+    let start = resolve_solar_term(year, term)?.next_day(search_start_offset_days);
+    let current = start.lunar().day_sixty_cycle().heaven_stem();
+    let offset = current.steps_to(HeavenStem::from_index(heaven_stem_index % HeavenStem::size()).index());
+    Some(start.next_day(offset as i32))
+}
+
+fn resolve_solar_term_earth_branch(
+    year: i32,
+    term: &str,
+    earth_branch_index: usize,
+    search_start_offset_days: i32,
+) -> Option<Solar> {
+    let start = resolve_solar_term(year, term)?.next_day(search_start_offset_days);
+    let current = start.lunar().day_sixty_cycle().earth_branch();
+    let offset = current.steps_to(EarthBranch::from_index(earth_branch_index % EarthBranch::size()).index());
+    Some(start.next_day(offset as i32))
 }
 
 fn rule_event(name: String, solar: Solar, rule: &EventRule) -> Event {
