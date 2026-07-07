@@ -31,6 +31,7 @@
 | `P2` | `Task 91` | 核心日时与儒略日命名兼容 | `已完成` | 新增 `JulianDay`，并提供 `SolarDay/SolarTime/LunarDay/LunarHour/SolarTerm/LegalHoliday` 兼容别名。 |
 | `P2` | `Task 92` | EventBuilder 规则构造器兼容 | `已完成` | 新增 `EventBuilder` 与 `Event::builder()`，覆盖上游事件规则 builder 入口。 |
 | `P2` | `Task 93` | tyme4rs 基础枚举兼容 | `已完成` | 新增 `Gender/Side/YinYang` typed API，并把 `YinYang` 挂接到天干地支。 |
+| `P2` | `Task 94` | SolarTerm 对象入口兼容 | `已完成` | 为 `SolarTerm` 别名补齐 `from_index/from_name/next/is_jie/is_qi` 等对象 API。 |
 
 ## 实施顺序
 
@@ -40,7 +41,7 @@
 
 ## 当前建议
 
-`Task 86`、`Task 87`、`Task 88`、`Task 89`、`Task 90`、`Task 91`、`Task 92` 与 `Task 93` 已完成。本地继续保留 `phase()` 的旧含义，并通过 `moon_phase()` / `moon_phase_day()` 暴露对标 `tyme4rs::Phase` 的 8 相天文月相；年月周差异已补 `Unit` 对象族与 `LunarWeek`；事件规则侧已补 `EventType` 与 `EventBuilder` 兼容层；公开类型名迁移侧已补 `Dipper` 和轻量 type alias；核心日时入口侧已补 `JulianDay` 与 `SolarDay/SolarTime/LunarDay/LunarHour/SolarTerm/LegalHoliday` 兼容别名；基础枚举侧已补 `Gender/Side/YinYang`，并保留旧整数性别入口。后续如继续推进，应进入更细的严格方法名兼容、README/API 文档和外部差分测试矩阵。
+`Task 86`、`Task 87`、`Task 88`、`Task 89`、`Task 90`、`Task 91`、`Task 92`、`Task 93` 与 `Task 94` 已完成。本地继续保留 `phase()` 的旧含义，并通过 `moon_phase()` / `moon_phase_day()` 暴露对标 `tyme4rs::Phase` 的 8 相天文月相；年月周差异已补 `Unit` 对象族与 `LunarWeek`；事件规则侧已补 `EventType` 与 `EventBuilder` 兼容层；公开类型名迁移侧已补 `Dipper` 和轻量 type alias；核心日时入口侧已补 `JulianDay` 与 `SolarDay/SolarTime/LunarDay/LunarHour/SolarTerm/LegalHoliday` 兼容别名，且 `SolarTerm` 已补对象构造与步进 API；基础枚举侧已补 `Gender/Side/YinYang`，并保留旧整数性别入口。后续如继续推进，应进入更细的严格方法名兼容、README/API 文档和外部差分测试矩阵。
 
 ## 2026-07-07 重新拉取复核
 

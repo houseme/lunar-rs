@@ -787,7 +787,7 @@ impl Lunar {
     }
     pub fn current_jie_qi(&self) -> Option<JieQi> {
         let name = self.jie_qi();
-        if name.is_empty() { None } else { Some(JieQi::new(name, self.solar)) }
+        if name.is_empty() { None } else { Some(JieQi::from_solar(name, self.solar)) }
     }
 
     fn near_jie_qi(&self, forward: bool, conditions: Option<&[&'static str]>, whole_day: bool) -> Option<JieQi> {
@@ -827,7 +827,7 @@ impl Lunar {
                 };
             }
         }
-        near.map(|(name, solar)| JieQi::new(name, solar))
+        near.map(|(name, solar)| JieQi::from_solar(name, solar))
     }
 
     pub fn next_jie(&self) -> Option<JieQi> {

@@ -180,6 +180,26 @@ fn tyme_core_day_time_and_term_names_are_available() {
 
     let term: SolarTerm = Solar::from_ymd(2024, 2, 4).unwrap().lunar().current_jie_qi().unwrap();
     assert_eq!(term.name(), "立春");
+    assert_eq!(term.index(), 3);
+    assert!(term.is_jie());
+    assert_eq!(term.next(1).name(), "雨水");
+
+    let dong_zhi = SolarTerm::from_index(2023, 0);
+    assert_eq!(dong_zhi.name(), "冬至");
+    assert_eq!(dong_zhi.year(), 2023);
+    assert_eq!(dong_zhi.get_index(), 0);
+    assert!(dong_zhi.is_qi());
+    assert_eq!(dong_zhi.get_solar_day().to_ymd(), "2022-12-22");
+    assert_eq!(dong_zhi.get_julian_day().solar_day().to_ymd(), "2022-12-22");
+
+    let da_xue = dong_zhi.next(23);
+    assert_eq!(da_xue.name(), "大雪");
+    assert_eq!(da_xue.year(), 2023);
+    assert_eq!(da_xue.get_solar_day().to_ymd(), "2023-12-07");
+    assert_eq!(da_xue.next(1).name(), "冬至");
+    assert_eq!(da_xue.next(1).get_solar_day().to_ymd(), "2023-12-22");
+    assert_eq!(SolarTerm::from_name(2023, "大雪").unwrap().get_solar_day().to_ymd(), "2023-12-07");
+    assert_eq!(SolarTerm::new(2024, "未知"), None);
 }
 
 #[test]
