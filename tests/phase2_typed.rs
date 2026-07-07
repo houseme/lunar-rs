@@ -1,8 +1,8 @@
 use lunar_rs::{
-    Constellation, CultureDay, CycleItem, Direction, Duty, EarthBranch, Element, God, GodLuck, HeavenStem,
-    HideHeavenStemType, Land, Lunar, LunarMonth, LunarYear, MinorRen, MoonPhase, NamedCulture, Nayin, NineStar, Phase,
-    PlumRainKind, SevenStar, SixStar, SixtyCycle, Solar, Taboo, TabooKind, TenStar, TwelveStar, Xun, YuanCycle,
-    YunCycle, Zodiac,
+    Constellation, CultureDay, CycleItem, DayUnit, Direction, Duty, EarthBranch, Element, God, GodLuck, HeavenStem,
+    HideHeavenStemType, Land, Lunar, LunarMonth, LunarWeek, LunarYear, MinorRen, MonthUnit, MoonPhase, NamedCulture,
+    Nayin, NineStar, Phase, PlumRainKind, SecondUnit, SevenStar, SixStar, SixtyCycle, Solar, Taboo, TabooKind, TenStar,
+    TwelveStar, WeekUnit, Xun, YearUnit, YuanCycle, YunCycle, Zodiac,
 };
 
 #[test]
@@ -129,6 +129,27 @@ fn common_culture_traits_unify_names_cycles_and_day_indices() {
     let plum = Solar::from_ymd(2024, 7, 6).unwrap().lunar().plum_rain_day().unwrap();
     assert_eq!(CultureDay::day_index(&plum), None);
     assert!(plum.is_boundary());
+}
+
+#[test]
+fn unit_objects_and_lunar_week_match_tyme_shapes() {
+    assert_eq!(YearUnit::new(2024).compare_index(), 20_240_000);
+    assert_eq!(MonthUnit::new(2024, -2).compare_index(), 20_240_500);
+    assert_eq!(DayUnit::new(2024, -2, 3).compare_index(), 20_240_503);
+
+    let second = SecondUnit::from_ymd_hms(2024, 2, 3, 4, 5, 6).unwrap();
+    assert_eq!(second.seconds_in_day(), 14_706);
+    assert!(SecondUnit::from_ymd_hms(2024, 2, 3, 24, 0, 0).is_none());
+
+    let week_unit = WeekUnit::from_ym(2023, 8, 1, 0).unwrap();
+    assert_eq!(week_unit.name(), "第二周");
+    assert!(WeekUnit::from_ym(2023, 8, 6, 0).is_none());
+
+    let week = LunarWeek::from_ym(2023, 8, 1, 0).unwrap();
+    assert_eq!(week.name(), "第二周");
+    assert_eq!(week.first_day().unwrap().solar().to_ymd(), "2023-09-17");
+    assert_eq!(week.days().unwrap().len(), 7);
+    assert_eq!(week.next(1).unwrap().name(), "第三周");
 }
 
 #[test]

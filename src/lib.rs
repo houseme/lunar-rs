@@ -96,6 +96,7 @@ mod koki;
 mod lunar;
 mod lunar_month;
 mod lunar_time;
+mod lunar_week;
 mod lunar_year;
 mod minguo;
 mod multi_calendar;
@@ -116,6 +117,7 @@ mod solar_year;
 mod tao;
 mod thai_buddhist;
 mod thai_solar;
+mod unit;
 mod venetian;
 mod yun;
 
@@ -166,6 +168,7 @@ pub use koki::{Koki, KokiMonth, KokiYear};
 pub use lunar::Lunar;
 pub use lunar_month::LunarMonth;
 pub use lunar_time::LunarTime;
+pub use lunar_week::LunarWeek;
 pub use lunar_year::LunarYear;
 pub use minguo::{Minguo, MinguoMonth, MinguoYear};
 pub use multi_calendar::{CalendarDay, CalendarSpan};
@@ -186,6 +189,7 @@ pub use solar_year::SolarYear;
 pub use tao::{Tao, TaoMonth, TaoYear};
 pub use thai_buddhist::{ThaiBuddhist, ThaiBuddhistMonth, ThaiBuddhistYear};
 pub use thai_solar::{ThaiSolar, ThaiSolarMonth, ThaiSolarYear};
+pub use unit::{DayUnit, MonthUnit, SecondUnit, WeekUnit, YearUnit};
 pub use venetian::{Venetian, VenetianMonth, VenetianYear};
 pub use yun::{
     ChildLimit, ChildLimitInfo, ChildLimitProvider, China95ChildLimitProvider, DecadeFortune,

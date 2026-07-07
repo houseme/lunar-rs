@@ -241,5 +241,6 @@
 | `P3` | `Task 85` | Taboo 宜忌事项大表反查与步进 API | `已完成` | [docs/tasks/85-phase-next-taboo-table-api.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/85-phase-next-taboo-table-api.md) |
 | `P2` | `Task 86` | 星曜循环对象一次性补齐 | `已完成` | [docs/tasks/86-phase-next-star-cycle-objects.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/86-phase-next-star-cycle-objects.md) |
 | `P2` | `Task 87` | 8 相天文月相对象设计与实现 | `已完成` | [docs/tasks/87-phase-next-moon-phase-astronomical-api.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/87-phase-next-moon-phase-astronomical-api.md) |
+| `P3` | `Task 88` | 年月周单位对象 API 差异补齐 | `已完成` | [docs/tasks/88-phase-next-unit-and-lunar-week-api.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/88-phase-next-unit-and-lunar-week-api.md) |
 
-后续建议继续按新对标文档和本索引中的 `Task 59` - `Task 87` 推进，不再把已经完成的 Phase 4 多历法工作重复列为待办。
+后续建议继续按新对标文档和本索引中的 `Task 59` - `Task 88` 推进，不再把已经完成的 Phase 4 多历法工作重复列为待办。
