@@ -19,6 +19,11 @@
 //! - `lunar_festival`
 //! - `lunar_festival_index`
 //! - `jieqi`
+//! - `week_name`
+//! - `week_index`
+//! - `constellation`
+//! - `legal_holiday`
+//! - `legal_holiday_work`
 //! - `year_ganzhi`
 //! - `month_ganzhi`
 //! - `day_ganzhi`
@@ -216,6 +221,31 @@ fn diff_reference_sample_matrix() {
             "jieqi mismatch for {year}-{month}-{day}"
         );
         assert_eq!(
+            reference.get("week_name").map(String::as_str),
+            Some(solar.get_week().name()),
+            "week name mismatch for {year}-{month}-{day}"
+        );
+        assert_eq!(
+            reference.get("week_index").map(String::as_str),
+            Some(solar.get_week().index().to_string().as_str()),
+            "week index mismatch for {year}-{month}-{day}"
+        );
+        assert_eq!(
+            reference.get("constellation").map(String::as_str),
+            Some(solar.get_constellation().name()),
+            "constellation mismatch for {year}-{month}-{day}"
+        );
+        assert_eq!(
+            reference.get("legal_holiday").map(String::as_str),
+            Some(solar.get_legal_holiday().map_or_else(String::new, |holiday| holiday.get_name()).as_str()),
+            "legal holiday mismatch for {year}-{month}-{day}"
+        );
+        assert_eq!(
+            reference.get("legal_holiday_work").map(String::as_str),
+            Some(solar.get_legal_holiday().map_or_else(String::new, |holiday| holiday.is_work().to_string()).as_str()),
+            "legal holiday work flag mismatch for {year}-{month}-{day}"
+        );
+        assert_eq!(
             reference.get("year_ganzhi").map(String::as_str),
             Some(lunar.year_in_gan_zhi().as_str()),
             "year ganzhi mismatch for {year}-{month}-{day}"
@@ -278,7 +308,7 @@ fn diff_reference_sample_matrix() {
 #[test]
 fn parses_default_case_matrix() {
     let cases = load_cases(Path::new(DEFAULT_CASES_PATH));
-    assert!(cases.len() >= 16);
+    assert!(cases.len() >= 19);
     assert_eq!(cases[0], (2019, 5, 1, 0, 0, 0));
     assert!(cases.contains(&(1582, 10, 15, 0, 0, 0)));
     assert!(cases.contains(&(2024, 4, 22, 23, 30, 0)));
@@ -287,4 +317,6 @@ fn parses_default_case_matrix() {
     assert!(cases.contains(&(2020, 5, 23, 0, 0, 0)));
     assert!(cases.contains(&(2024, 4, 4, 12, 0, 0)));
     assert!(cases.contains(&(2024, 9, 17, 0, 0, 0)));
+    assert!(cases.contains(&(2024, 10, 1, 0, 0, 0)));
+    assert!(cases.contains(&(2024, 2, 18, 0, 0, 0)));
 }

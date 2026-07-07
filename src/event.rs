@@ -529,14 +529,14 @@ impl HolidayEvent {
 
 #[derive(Clone, Debug)]
 pub struct HolidayPeriodEvent {
-    name: String,
+    name: Box<str>,
     start: Solar,
     end: Solar,
-    target: String,
+    target: Box<str>,
 }
 
 impl HolidayPeriodEvent {
-    pub fn new(name: impl Into<String>, start: Solar, end: Solar, target: impl Into<String>) -> Self {
+    pub fn new(name: impl Into<Box<str>>, start: Solar, end: Solar, target: impl Into<Box<str>>) -> Self {
         Self { name: name.into(), start, end, target: target.into() }
     }
 
@@ -551,11 +551,7 @@ impl HolidayPeriodEvent {
             EventSource::HolidayData,
             self.name.clone(),
             anchor,
-            Some(EventDetail::HolidayPeriod {
-                target: self.target.clone().into_boxed_str().into(),
-                start: self.start,
-                end: self.end,
-            }),
+            Some(EventDetail::HolidayPeriod { target: self.target.clone().into(), start: self.start, end: self.end }),
             15,
             Some(EventSourceId::HolidayPeriod { start: self.start, end: self.end }),
             true,
@@ -1088,7 +1084,7 @@ impl EventIndex {
 
 static EVENT_INDEX_CACHE: LazyLock<RwLock<HashMap<Solar, Arc<EventIndex>>>> =
     LazyLock::new(|| RwLock::new(HashMap::new()));
-static EVENT_MANAGER_RULES: LazyLock<RwLock<BTreeMap<String, EventRule>>> =
+static EVENT_MANAGER_RULES: LazyLock<RwLock<BTreeMap<Box<str>, EventRule>>> =
     LazyLock::new(|| RwLock::new(BTreeMap::new()));
 
 pub(crate) fn clear_event_index_cache() {
@@ -1118,12 +1114,12 @@ pub(crate) fn holiday_period_events_for_day(solar: Solar) -> Vec<Event> {
         records.extend(crate::holiday_util::get_holidays_by_year(year));
     }
 
-    let mut by_key: BTreeMap<(String, String), Vec<Holiday>> = BTreeMap::new();
+    let mut by_key: BTreeMap<(Box<str>, Box<str>), Vec<Holiday>> = BTreeMap::new();
     for holiday in records {
         if holiday.is_work() {
             continue;
         }
-        by_key.entry((holiday.name().to_string(), holiday.target().to_string())).or_default().push(holiday);
+        by_key.entry((holiday.name().into(), holiday.target().into())).or_default().push(holiday);
     }
 
     let mut events = Vec::new();
@@ -1197,19 +1193,19 @@ pub enum EventRule {
         start_year: i32,
     },
     SolarTermOffset {
-        term: String,
+        term: Box<str>,
         offset_days: i32,
         start_year: i32,
     },
     SolarTermHeavenStem {
-        term: String,
+        term: Box<str>,
         heaven_stem_index: usize,
         search_start_offset_days: i32,
         offset_days: i32,
         start_year: i32,
     },
     SolarTermEarthBranch {
-        term: String,
+        term: Box<str>,
         earth_branch_index: usize,
         search_start_offset_days: i32,
         offset_days: i32,
@@ -1230,12 +1226,12 @@ impl EventRule {
         Self::SolarWeek { month, week_index, week, offset_days: 0, start_year: 0 }
     }
 
-    pub fn solar_term_offset(term: impl Into<String>, offset_days: i32) -> Self {
+    pub fn solar_term_offset(term: impl Into<Box<str>>, offset_days: i32) -> Self {
         Self::SolarTermOffset { term: term.into(), offset_days, start_year: 0 }
     }
 
     pub fn solar_term_heaven_stem(
-        term: impl Into<String>,
+        term: impl Into<Box<str>>,
         heaven_stem_index: usize,
         search_start_offset_days: i32,
     ) -> Self {
@@ -1249,7 +1245,7 @@ impl EventRule {
     }
 
     pub fn solar_term_earth_branch(
-        term: impl Into<String>,
+        term: impl Into<Box<str>>,
         earth_branch_index: usize,
         search_start_offset_days: i32,
     ) -> Self {
@@ -1385,18 +1381,18 @@ impl EventRule {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct EventBuilder {
-    name: String,
+    name: Box<str>,
     rule: Option<EventRule>,
     start_year: i32,
     offset_days: Option<i32>,
 }
 
 impl EventBuilder {
-    pub const fn new() -> Self {
-        Self { name: String::new(), rule: None, start_year: 0, offset_days: None }
+    pub fn new() -> Self {
+        Self { name: Box::from(""), rule: None, start_year: 0, offset_days: None }
     }
 
-    pub fn name(mut self, name: impl Into<String>) -> Self {
+    pub fn name(mut self, name: impl Into<Box<str>>) -> Self {
         self.name = name.into();
         self
     }
@@ -1417,7 +1413,7 @@ impl EventBuilder {
         self.term_day_name(term_name_from_index(term_index), delay_days)
     }
 
-    pub fn term_day_name(self, term: impl Into<String>, delay_days: i32) -> Self {
+    pub fn term_day_name(self, term: impl Into<Box<str>>, delay_days: i32) -> Self {
         self.with_rule(EventRule::solar_term_offset(term, delay_days))
     }
 
@@ -1425,7 +1421,7 @@ impl EventBuilder {
         self.term_heaven_stem_name(term_name_from_index(term_index), heaven_stem_index, delay_days)
     }
 
-    pub fn term_heaven_stem_name(self, term: impl Into<String>, heaven_stem_index: usize, delay_days: i32) -> Self {
+    pub fn term_heaven_stem_name(self, term: impl Into<Box<str>>, heaven_stem_index: usize, delay_days: i32) -> Self {
         self.with_rule(EventRule::solar_term_heaven_stem(term, heaven_stem_index, delay_days))
     }
 
@@ -1433,7 +1429,7 @@ impl EventBuilder {
         self.term_earth_branch_name(term_name_from_index(term_index), earth_branch_index, delay_days)
     }
 
-    pub fn term_earth_branch_name(self, term: impl Into<String>, earth_branch_index: usize, delay_days: i32) -> Self {
+    pub fn term_earth_branch_name(self, term: impl Into<Box<str>>, earth_branch_index: usize, delay_days: i32) -> Self {
         self.with_rule(EventRule::solar_term_earth_branch(term, earth_branch_index, delay_days))
     }
 
@@ -1458,7 +1454,7 @@ impl EventBuilder {
     }
 
     pub fn to_event(&self, year: i32) -> Option<Event> {
-        self.rule.as_ref()?.to_event(self.name.clone(), year)
+        self.rule.as_ref()?.to_event(self.name.to_string(), year)
     }
 
     pub fn build(self, year: i32) -> Option<Event> {
@@ -1551,7 +1547,7 @@ fn rule_event(name: String, solar: Solar, rule: &EventRule) -> Event {
 pub struct EventManager;
 
 impl EventManager {
-    pub fn update(name: impl Into<String>, rule: EventRule) {
+    pub fn update(name: impl Into<Box<str>>, rule: EventRule) {
         EVENT_MANAGER_RULES.write().unwrap().insert(name.into(), rule);
         clear_event_index_cache();
     }
@@ -1570,7 +1566,7 @@ impl EventManager {
     }
 
     pub fn rules() -> Vec<(String, EventRule)> {
-        EVENT_MANAGER_RULES.read().unwrap().iter().map(|(name, rule)| (name.clone(), rule.clone())).collect()
+        EVENT_MANAGER_RULES.read().unwrap().iter().map(|(name, rule)| (name.to_string(), rule.clone())).collect()
     }
 
     pub fn event_for_year(name: &str, year: i32) -> Option<Event> {

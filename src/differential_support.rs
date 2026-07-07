@@ -6,7 +6,7 @@
 use crate::Solar;
 
 /// Snapshot protocol version for differential-testing tooling.
-pub const PROTOCOL_VERSION: &str = "2";
+pub const PROTOCOL_VERSION: &str = "3";
 
 /// Stable newline key names emitted by the sample reference driver.
 pub const SOLAR_SNAPSHOT_KEYS: &[&str] = &[
@@ -21,6 +21,11 @@ pub const SOLAR_SNAPSHOT_KEYS: &[&str] = &[
     "lunar_festival",
     "lunar_festival_index",
     "jieqi",
+    "week_name",
+    "week_index",
+    "constellation",
+    "legal_holiday",
+    "legal_holiday_work",
     "year_ganzhi",
     "month_ganzhi",
     "day_ganzhi",
@@ -42,6 +47,7 @@ pub fn solar_snapshot(solar: Solar) -> Vec<(&'static str, String)> {
     let lunar_festival = lunar.get_festival().map_or_else(String::new, |festival| festival.get_name());
     let lunar_festival_index =
         lunar.get_festival().map_or_else(String::new, |festival| festival.get_index().to_string());
+    let legal_holiday = solar.get_legal_holiday();
     let lunar_year = crate::LunarYear::from_year(lunar.get_year());
     let lunar_month = lunar.get_lunar_month();
 
@@ -57,6 +63,14 @@ pub fn solar_snapshot(solar: Solar) -> Vec<(&'static str, String)> {
         ("lunar_festival", lunar_festival),
         ("lunar_festival_index", lunar_festival_index),
         ("jieqi", lunar.jie_qi().to_string()),
+        ("week_name", solar.get_week().name().to_string()),
+        ("week_index", solar.get_week().index().to_string()),
+        ("constellation", solar.get_constellation().name().to_string()),
+        ("legal_holiday", legal_holiday.as_ref().map_or_else(String::new, |holiday| holiday.get_name())),
+        (
+            "legal_holiday_work",
+            legal_holiday.as_ref().map_or_else(String::new, |holiday| holiday.is_work().to_string()),
+        ),
         ("year_ganzhi", lunar.year_in_gan_zhi()),
         ("month_ganzhi", lunar.month_in_gan_zhi()),
         ("day_ganzhi", lunar.day_in_gan_zhi()),

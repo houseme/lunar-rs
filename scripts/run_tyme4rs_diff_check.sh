@@ -36,7 +36,7 @@ use tyme4rs::tyme::festival::{LunarFestival, SolarFestival};
 use tyme4rs::tyme::lunar::{LunarDay, LunarHour, LunarMonth, LunarYear};
 use tyme4rs::tyme::solar::{SolarDay, SolarTime};
 
-const PROTOCOL_VERSION: &str = "2";
+const PROTOCOL_VERSION: &str = "3";
 const DIGITS: [&str; 10] = ["〇", "一", "二", "三", "四", "五", "六", "七", "八", "九"];
 
 fn usage(program: &str) -> String {
@@ -139,6 +139,17 @@ fn snapshot(solar_time: SolarTime) -> Vec<(&'static str, String)> {
         ("lunar_festival", festival_name(lunar_festival.clone())),
         ("lunar_festival_index", lunar_festival_index(lunar_festival)),
         ("jieqi", current_term_name(solar_day)),
+        ("week_name", solar_day.get_week().get_name()),
+        ("week_index", solar_day.get_week().get_index().to_string()),
+        ("constellation", solar_day.get_constellation().get_name()),
+        (
+            "legal_holiday",
+            solar_day.get_legal_holiday().map_or_else(String::new, |holiday| holiday.get_name()),
+        ),
+        (
+            "legal_holiday_work",
+            solar_day.get_legal_holiday().map_or_else(String::new, |holiday| holiday.is_work().to_string()),
+        ),
         ("year_ganzhi", lunar_day.get_year_sixty_cycle().get_name()),
         ("month_ganzhi", lunar_day.get_month_sixty_cycle().get_name()),
         ("day_ganzhi", lunar_day.get_sixty_cycle().get_name()),

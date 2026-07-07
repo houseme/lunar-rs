@@ -2,6 +2,7 @@
 
 use std::collections::HashMap;
 use std::fmt;
+use std::sync::OnceLock;
 
 use crate::LunarError;
 use crate::culture::{
@@ -26,6 +27,8 @@ use crate::nine_star::NineStar;
 use crate::shu_jiu::ShuJiu;
 use crate::solar::Solar;
 use crate::solar_util;
+
+const JIE_QI_COUNT: usize = 31;
 
 /// 农历日期时间。
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -56,7 +59,9 @@ pub struct Lunar {
     time_gan_index: i64,
     time_zhi_index: i64,
     week_index: i32,
-    jie_qi: HashMap<String, Solar>,
+    jie_qi_values: [Solar; JIE_QI_COUNT],
+    #[cfg_attr(feature = "serde", serde(skip, default))]
+    jie_qi_table: OnceLock<HashMap<String, Solar>>,
     solar: Solar,
 }
 
@@ -125,6 +130,10 @@ fn is_after_mode(a: Solar, b: Solar, whole_day: bool) -> bool {
     if whole_day { day_after(a, b) } else { a.is_after(&b) }
 }
 
+fn jie_qi_index(key: &str) -> Option<usize> {
+    JIE_QI_IN_USE.iter().position(|name| *name == key)
+}
+
 impl Lunar {
     /// 由农历年月日时分秒构造。
     pub fn from_ymd_hms(
@@ -173,7 +182,8 @@ impl Lunar {
             time_gan_index: 0,
             time_zhi_index: 0,
             week_index: 0,
-            jie_qi: HashMap::new(),
+            jie_qi_values: [solar; JIE_QI_COUNT],
+            jie_qi_table: OnceLock::new(),
             solar,
         };
         lunar.compute(&lunar_year);
@@ -227,7 +237,8 @@ impl Lunar {
             time_gan_index: 0,
             time_zhi_index: 0,
             week_index: 0,
-            jie_qi: HashMap::new(),
+            jie_qi_values: [solar; JIE_QI_COUNT],
+            jie_qi_table: OnceLock::new(),
             solar,
         };
         lunar.compute(&ly);
@@ -237,9 +248,8 @@ impl Lunar {
     fn compute_jie_qi(&mut self, lunar_year: &LunarYear) {
         let julian_days = lunar_year.jie_qi_julian_days();
         let size = JIE_QI_IN_USE.len();
-        for i in 0..size {
-            let name = JIE_QI_IN_USE[i];
-            self.jie_qi.insert(name.to_string(), Solar::from_julian_day(julian_days[i]));
+        for (i, julian_day) in julian_days.iter().take(size).enumerate() {
+            self.jie_qi_values[i] = Solar::from_julian_day(*julian_day);
         }
     }
 
@@ -401,7 +411,9 @@ impl Lunar {
     }
 
     fn jq(&self, key: &str) -> Solar {
-        self.jie_qi.get(key).copied().unwrap_or_else(|| Solar::from_ymd(2000, 1, 1).unwrap())
+        jie_qi_index(key)
+            .and_then(|index| self.jie_qi_values.get(index).copied())
+            .unwrap_or_else(|| Solar::from_ymd(2000, 1, 1).unwrap())
     }
 
     // ---- 字段访问 ----
@@ -812,8 +824,14 @@ impl Lunar {
     pub fn jie_qi(&self) -> &'static str {
         self.current_jie_qi_name(JieQiFilter::All).unwrap_or("")
     }
-    pub const fn jie_qi_table(&self) -> &HashMap<String, Solar> {
-        &self.jie_qi
+    pub fn jie_qi_table(&self) -> &HashMap<String, Solar> {
+        self.jie_qi_table.get_or_init(|| {
+            JIE_QI_IN_USE
+                .iter()
+                .enumerate()
+                .map(|(index, name)| ((*name).to_string(), self.jie_qi_values[index]))
+                .collect()
+        })
     }
     pub fn jie_qi_list(&self) -> Vec<&'static str> {
         JIE_QI_IN_USE.to_vec()

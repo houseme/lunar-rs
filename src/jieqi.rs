@@ -13,7 +13,7 @@ use crate::{CalendarKind, Event, EventKind, EventSource};
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Debug)]
 pub struct JieQi {
-    name: String,
+    name: &'static str,
     solar: Solar,
     year: i32,
     index: usize,
@@ -21,9 +21,8 @@ pub struct JieQi {
 }
 
 impl JieQi {
-    pub(crate) fn from_solar(name: impl Into<String>, solar: Solar) -> Self {
-        let name = name.into();
-        let index = term_index(&name);
+    pub(crate) fn from_solar(name: &'static str, solar: Solar) -> Self {
+        let index = term_index(name);
         let year = term_year_from_solar(solar, index);
         Self { name, solar, year, index, cursory_julian_day: cursory_julian_day(year, index) }
     }
@@ -42,7 +41,7 @@ impl JieQi {
         let index = index.rem_euclid(size) as usize;
         let cursory_julian_day = cursory_julian_day(year, index);
         let solar = Solar::from_julian_day(accurate_julian_day_from_cursory(cursory_julian_day));
-        Self { name: JIE_QI[index].to_string(), solar, year, index, cursory_julian_day }
+        Self { name: JIE_QI[index], solar, year, index, cursory_julian_day }
     }
 
     #[inline]
@@ -51,7 +50,7 @@ impl JieQi {
     }
 
     pub fn get_name(&self) -> String {
-        self.name.clone()
+        self.name.to_string()
     }
 
     #[inline]
@@ -126,7 +125,7 @@ impl JieQi {
             EventKind::JieQi,
             calendar_kind,
             EventSource::JieQi,
-            self.name().to_string(),
+            self.name,
             self.solar,
             Some(EventDetail::JieQi { at: self.solar }),
             10,
