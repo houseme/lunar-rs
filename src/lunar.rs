@@ -7,8 +7,8 @@ use crate::LunarError;
 use crate::culture::{
     ChongSha, Direction, DogDay, Duty, EarthBranch, FetusDay, FetusMonth, God, GodLuck, HeavenStem, LiuYao, Lu,
     MinorRen, MoonPhase, MoonPhaseDay, Nayin, PengZu, Phase, PhaseDay, Phenology, PhenologyDay, PlumRainDay, Season,
-    SixtyCycle, SixtyCycleDay, SixtyCycleHour, SixtyCycleMonth, SixtyCycleYear, SolarTermDay, Taboo, TabooKind,
-    TaiPosition, TaiSuiPosition, TianShen, Xiu, Xun, Zodiac,
+    SixStar, SixtyCycle, SixtyCycleDay, SixtyCycleHour, SixtyCycleMonth, SixtyCycleYear, SolarTermDay, Taboo,
+    TabooKind, TaiPosition, TaiSuiPosition, ThreePillars, TianShen, TwelveStar, Week, Xiu, Xun, Zodiac,
 };
 use crate::eight_char::{EightChar, EightCharProvider};
 use crate::event::{
@@ -29,6 +29,7 @@ use crate::solar_util;
 
 /// 农历日期时间。
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone)]
 pub struct Lunar {
     year: i32,
     month: i32,
@@ -379,13 +380,22 @@ impl Lunar {
     pub const fn year(&self) -> i32 {
         self.year
     }
+    pub const fn get_year(&self) -> i32 {
+        self.year()
+    }
     #[inline]
     pub const fn month(&self) -> i32 {
         self.month
     }
+    pub const fn get_month(&self) -> i32 {
+        self.month()
+    }
     #[inline]
     pub const fn day(&self) -> i32 {
         self.day
+    }
+    pub const fn get_day(&self) -> i32 {
+        self.day()
     }
     #[inline]
     pub const fn hour(&self) -> i32 {
@@ -403,9 +413,21 @@ impl Lunar {
     pub const fn solar(&self) -> Solar {
         self.solar
     }
+    pub const fn get_solar_day(&self) -> Solar {
+        self.solar()
+    }
+    pub fn get_lunar_month(&self) -> Option<LunarMonth> {
+        LunarMonth::from_ym(self.year, self.month)
+    }
     /// 往后 / 往前推 n 天。
     pub fn next(&self, days: i32) -> Self {
         self.solar.next_day(days).lunar()
+    }
+    pub fn is_before(&self, target: &Self) -> bool {
+        self.solar.is_before(&target.solar)
+    }
+    pub fn is_after(&self, target: &Self) -> bool {
+        self.solar.is_after(&target.solar)
     }
 
     // ---- 索引 ----
@@ -495,6 +517,9 @@ impl Lunar {
     pub fn year_sixty_cycle(&self) -> SixtyCycle {
         SixtyCycle::from_name(&self.year_in_gan_zhi()).expect("year ganzhi must map to sixty-cycle")
     }
+    pub fn get_year_sixty_cycle(&self) -> SixtyCycle {
+        self.year_sixty_cycle()
+    }
     pub fn sixty_cycle_year(&self) -> SixtyCycleYear {
         SixtyCycleYear::new(self.year_sixty_cycle())
     }
@@ -532,6 +557,9 @@ impl Lunar {
     }
     pub fn month_sixty_cycle(&self) -> SixtyCycle {
         SixtyCycle::from_name(&self.month_in_gan_zhi()).expect("month ganzhi must map to sixty-cycle")
+    }
+    pub fn get_month_sixty_cycle(&self) -> SixtyCycle {
+        self.month_sixty_cycle()
     }
     pub fn sixty_cycle_month(&self) -> SixtyCycleMonth {
         SixtyCycleMonth::new(self.month_sixty_cycle())
@@ -574,8 +602,14 @@ impl Lunar {
     pub fn day_sixty_cycle(&self) -> SixtyCycle {
         SixtyCycle::from_name(&self.day_in_gan_zhi()).expect("day ganzhi must map to sixty-cycle")
     }
+    pub fn get_sixty_cycle(&self) -> SixtyCycle {
+        self.day_sixty_cycle()
+    }
     pub fn sixty_cycle_day(&self) -> SixtyCycleDay {
         SixtyCycleDay::new(self.day_sixty_cycle())
+    }
+    pub fn get_sixty_cycle_day(&self) -> SixtyCycleDay {
+        self.sixty_cycle_day()
     }
     #[cfg(feature = "i18n")]
     pub fn day_in_gan_zhi_in_lang(&self, language: crate::i18n::Language) -> String {
@@ -606,8 +640,14 @@ impl Lunar {
     pub fn time_sixty_cycle(&self) -> SixtyCycle {
         SixtyCycle::from_name(&self.time_in_gan_zhi()).expect("time ganzhi must map to sixty-cycle")
     }
+    pub fn get_time_sixty_cycle(&self) -> SixtyCycle {
+        self.time_sixty_cycle()
+    }
     pub fn sixty_cycle_hour(&self) -> SixtyCycleHour {
         SixtyCycleHour::new(self.time_sixty_cycle())
+    }
+    pub fn get_sixty_cycle_hour(&self) -> SixtyCycleHour {
+        self.sixty_cycle_hour()
     }
     #[cfg(feature = "i18n")]
     pub fn time_in_gan_zhi_in_lang(&self, language: crate::i18n::Language) -> String {
@@ -914,6 +954,10 @@ impl Lunar {
         l
     }
 
+    pub fn get_festival(&self) -> Option<crate::LunarFestival> {
+        crate::LunarFestival::from_ymd(self.year, self.month, self.day)
+    }
+
     /// Unified events for the current lunar date.
     pub fn events(&self) -> Vec<Event> {
         let mut events = Vec::new();
@@ -1143,6 +1187,9 @@ impl Lunar {
     pub fn fetus_day(&self) -> FetusDay {
         FetusDay::new(self.sixty_cycle_day())
     }
+    pub fn get_fetus_day(&self) -> FetusDay {
+        self.fetus_day()
+    }
     pub fn month_position_tai(&self) -> &'static str {
         if self.month < 0 {
             return "";
@@ -1154,6 +1201,9 @@ impl Lunar {
     }
     pub fn fetus_month(&self) -> Option<FetusMonth> {
         FetusMonth::from_month(self.month)
+    }
+    pub fn get_fetus_month(&self) -> Option<FetusMonth> {
+        self.fetus_month()
     }
 
     // ---- 小六壬 ----
@@ -1170,6 +1220,9 @@ impl Lunar {
     }
     pub fn minor_ren(&self) -> MinorRen {
         self.day_minor_ren()
+    }
+    pub fn get_minor_ren(&self) -> MinorRen {
+        self.minor_ren()
     }
 
     // ---- 冲煞 ----
@@ -1244,6 +1297,9 @@ impl Lunar {
     pub fn day_tian_shen_info(&self) -> TianShen {
         TianShen::new(self.day_tian_shen())
     }
+    pub fn get_twelve_star(&self) -> TwelveStar {
+        TwelveStar::from_name(self.day_tian_shen()).unwrap_or_else(|| TwelveStar::from_index(0))
+    }
     pub fn time_tian_shen_info(&self) -> TianShen {
         TianShen::new(self.time_tian_shen())
     }
@@ -1274,6 +1330,9 @@ impl Lunar {
     pub fn duty(&self) -> Duty {
         self.zhi_xing_info()
     }
+    pub fn get_duty(&self) -> Duty {
+        self.duty()
+    }
     pub fn xiu(&self) -> &'static str {
         // 查找键为 `{dayZhi}{week}`（如 "戌3"）；表键可能被 CJK 排版工具写作 "戌 3"，故两种都试。
         let k0 = format!("{}{}", self.day_zhi(), self.week_index);
@@ -1286,6 +1345,9 @@ impl Lunar {
     }
     pub fn xiu_info(&self) -> Xiu {
         Xiu::new(self.xiu())
+    }
+    pub fn get_twenty_eight_star(&self) -> Xiu {
+        self.xiu_info()
     }
     pub fn xiu_luck(&self) -> &'static str {
         lunar_util::xiu_luck(self.xiu())
@@ -1357,11 +1419,20 @@ impl Lunar {
         gods.extend(self.day_xiong_sha().into_iter().map(|name| God::new(name, GodLuck::Inauspicious)));
         gods
     }
+    pub fn get_gods(&self) -> Vec<God> {
+        self.gods()
+    }
     pub fn day_recommends(&self) -> Vec<Taboo> {
         self.day_yi().into_iter().map(|name| Taboo::new(name, TabooKind::Recommend)).collect()
     }
+    pub fn get_recommends(&self) -> Vec<Taboo> {
+        self.day_recommends()
+    }
     pub fn day_avoids(&self) -> Vec<Taboo> {
         self.day_ji().into_iter().map(|name| Taboo::new(name, TabooKind::Avoid)).collect()
+    }
+    pub fn get_avoids(&self) -> Vec<Taboo> {
+        self.day_avoids()
     }
     pub fn time_yi(&self) -> Vec<&'static str> {
         lunar_util::get_time_yi(&self.day_in_gan_zhi_exact(), &self.time_in_gan_zhi())
@@ -1383,8 +1454,14 @@ impl Lunar {
     pub fn phase(&self) -> Phase {
         Phase::new(self.yue_xiang())
     }
+    pub fn get_phase(&self) -> Phase {
+        self.phase()
+    }
     pub fn phase_day(&self) -> PhaseDay {
         PhaseDay::new(self.phase(), self.day)
+    }
+    pub fn get_phase_day(&self) -> PhaseDay {
+        self.phase_day()
     }
     pub fn moon_phase(&self) -> Option<MoonPhase> {
         self.moon_phase_day().map(|phase_day| phase_day.phase())
@@ -1415,8 +1492,14 @@ impl Lunar {
     pub fn liu_yao_info(&self) -> LiuYao {
         LiuYao::new(self.liu_yao())
     }
+    pub fn get_six_star(&self) -> SixStar {
+        SixStar::from_name(self.liu_yao()).unwrap_or_else(|| SixStar::from_index(0))
+    }
     pub const fn week(&self) -> i32 {
         self.week_index
+    }
+    pub fn get_week(&self) -> Week {
+        Week::from_index(self.week_index as usize)
     }
     pub const fn week_in_chinese(&self) -> &'static str {
         solar_util::WEEK[self.week_index as usize]
@@ -1806,6 +1889,22 @@ impl Lunar {
         };
         NineStar::from_index(i64::from(offset))
     }
+    pub fn get_nine_star(&self) -> NineStar {
+        self.day_nine_star()
+    }
+
+    pub fn get_hours(&self) -> Vec<LunarTime<'static>> {
+        let mut hours = Vec::with_capacity(13);
+        if let Ok(hour) = LunarTime::from_ymd_hms(self.year, self.month, self.day, 0, 0, 0) {
+            hours.push(hour);
+        }
+        for hour in (0..24).step_by(2) {
+            if let Ok(lunar_time) = LunarTime::from_ymd_hms(self.year, self.month, self.day, hour + 1, 0, 0) {
+                hours.push(lunar_time);
+            }
+        }
+        hours
+    }
     pub fn time_nine_star(&self) -> NineStar {
         let solar_ymd = self.solar.to_ymd();
         let asc = (solar_ymd >= self.jq("冬至").to_ymd() && solar_ymd < self.jq("夏至").to_ymd())
@@ -1824,6 +1923,12 @@ impl Lunar {
     // ---- 包装类型 ----
     pub const fn eight_char(&self) -> EightChar<'_> {
         EightChar::from_lunar(self)
+    }
+    pub const fn get_eight_char(&self) -> EightChar<'_> {
+        self.eight_char()
+    }
+    pub fn get_three_pillars(&self) -> ThreePillars {
+        self.eight_char().three_pillars()
     }
     pub fn eight_char_with_provider<P>(&self, provider: &P) -> EightChar<'_>
     where

@@ -329,6 +329,18 @@ impl Solar {
         self.lunar()
     }
 
+    pub fn get_lunar_hour(&self) -> crate::LunarHour<'static> {
+        crate::LunarTime::from_ymd_hms(
+            self.lunar().year(),
+            self.lunar().month(),
+            self.lunar().day(),
+            self.hour,
+            self.minute,
+            self.second,
+        )
+        .expect("solar-derived lunar hour must be valid")
+    }
+
     pub fn get_term(&self) -> JieQi {
         let lunar = self.lunar();
         let mut term =
@@ -851,12 +863,24 @@ impl Solar {
         self.lunar().sixty_cycle_day()
     }
 
+    pub fn get_phase_day(&self) -> crate::PhaseDay {
+        self.lunar().phase_day()
+    }
+
+    pub fn get_phase(&self) -> crate::Phase {
+        self.lunar().phase()
+    }
+
     pub fn get_nine_star(&self) -> crate::NineStar {
         self.lunar().day_nine_star()
     }
 
     pub fn get_rab_byung_day(&self) -> Result<RabByungDay, LunarError> {
         self.rab_byung_day()
+    }
+
+    pub fn get_festival(&self) -> Option<crate::SolarFestival> {
+        crate::SolarFestival::from_ymd(self.year, self.month, self.day)
     }
 
     /// Unified events for the current solar date.

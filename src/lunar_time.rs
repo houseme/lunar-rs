@@ -1,17 +1,24 @@
 //! 时辰（两小时为一时辰）。对应 lunar-go `calendar/LunarTime.go`。
 
+use std::marker::PhantomData;
+
 use crate::culture::{
-    ChongSha, Direction, EarthBranch, HeavenStem, MinorRen, Nayin, SixtyCycle, SixtyCycleHour, TianShen, Xun, Zodiac,
+    ChongSha, Direction, EarthBranch, HeavenStem, MinorRen, Nayin, SixtyCycle, SixtyCycleDay, SixtyCycleHour,
+    SixtyCycleMonth, SixtyCycleYear, Taboo, TabooKind, TianShen, TwelveStar, Xun, Zodiac,
 };
+use crate::eight_char::EightChar;
 use crate::lunar::Lunar;
 use crate::lunar_util;
 use crate::nine_star::NineStar;
+use crate::solar::Solar;
 
-/// 时辰。借用其所属的 [`Lunar`]。
+/// 时辰。内部持有一个 [`Lunar`] 快照，兼容对外的 lifetime 形状。
+#[derive(Clone)]
 pub struct LunarTime<'a> {
     gan_index: i64,
     zhi_index: i64,
-    lunar: &'a Lunar,
+    lunar: Lunar,
+    marker: PhantomData<&'a Lunar>,
 }
 
 impl<'a> LunarTime<'a> {
@@ -19,7 +26,22 @@ impl<'a> LunarTime<'a> {
         let hm = format!("{:02}:{:02}", lunar.hour(), lunar.minute());
         let zhi_index = lunar_util::get_time_zhi_index(&hm);
         let gan_index = (lunar.day_gan_index_exact() % 5 * 2 + zhi_index) % 10;
-        Self { gan_index, zhi_index, lunar }
+        Self { gan_index, zhi_index, lunar: lunar.clone(), marker: PhantomData }
+    }
+
+    pub fn from_ymd_hms(
+        year: i32,
+        month: i32,
+        day: i32,
+        hour: i32,
+        minute: i32,
+        second: i32,
+    ) -> Result<LunarTime<'static>, crate::LunarError> {
+        let lunar = Lunar::from_ymd_hms(year, month, day, hour, minute, second)?;
+        let hm = format!("{:02}:{:02}", lunar.hour(), lunar.minute());
+        let zhi_index = lunar_util::get_time_zhi_index(&hm);
+        let gan_index = (lunar.day_gan_index_exact() % 5 * 2 + zhi_index) % 10;
+        Ok(LunarTime { gan_index, zhi_index, lunar, marker: PhantomData })
     }
 
     pub const fn gan_index(&self) -> i64 {
@@ -27,6 +49,38 @@ impl<'a> LunarTime<'a> {
     }
     pub const fn zhi_index(&self) -> i64 {
         self.zhi_index
+    }
+
+    pub fn get_lunar_day(&self) -> Lunar {
+        self.lunar.clone()
+    }
+
+    pub const fn get_year(&self) -> i32 {
+        self.lunar.year()
+    }
+
+    pub const fn get_month(&self) -> i32 {
+        self.lunar.month()
+    }
+
+    pub const fn get_day(&self) -> i32 {
+        self.lunar.day()
+    }
+
+    pub const fn get_hour(&self) -> i32 {
+        self.lunar.hour()
+    }
+
+    pub const fn get_minute(&self) -> i32 {
+        self.lunar.minute()
+    }
+
+    pub const fn get_second(&self) -> i32 {
+        self.lunar.second()
+    }
+
+    pub const fn get_index_in_day(&self) -> usize {
+        ((self.get_hour() + 1) / 2) as usize
     }
 
     pub fn gan(&self) -> &'static str {
@@ -47,12 +101,39 @@ impl<'a> LunarTime<'a> {
     pub fn sixty_cycle(&self) -> SixtyCycle {
         SixtyCycle::from_name(&self.gan_zhi()).expect("time ganzhi must map to sixty-cycle")
     }
+    pub fn get_sixty_cycle(&self) -> SixtyCycle {
+        self.sixty_cycle()
+    }
     pub fn sixty_cycle_hour(&self) -> SixtyCycleHour {
         SixtyCycleHour::new(self.sixty_cycle())
+    }
+    pub fn get_sixty_cycle_hour(&self) -> SixtyCycleHour {
+        self.sixty_cycle_hour()
+    }
+    pub fn get_year_sixty_cycle(&self) -> SixtyCycle {
+        self.lunar.year_sixty_cycle()
+    }
+    pub fn get_month_sixty_cycle(&self) -> SixtyCycle {
+        self.lunar.month_sixty_cycle()
+    }
+    pub fn get_day_sixty_cycle(&self) -> SixtyCycle {
+        self.lunar.day_sixty_cycle()
+    }
+    pub fn get_sixty_cycle_year(&self) -> SixtyCycleYear {
+        self.lunar.sixty_cycle_year()
+    }
+    pub fn get_sixty_cycle_month(&self) -> SixtyCycleMonth {
+        self.lunar.sixty_cycle_month()
+    }
+    pub fn get_sixty_cycle_day(&self) -> SixtyCycleDay {
+        self.lunar.sixty_cycle_day()
     }
     pub fn minor_ren(&self) -> MinorRen {
         let index = self.lunar.day_minor_ren().index() as i64 + self.zhi_index;
         MinorRen::from_index(index.rem_euclid(6) as usize)
+    }
+    pub fn get_minor_ren(&self) -> MinorRen {
+        self.minor_ren()
     }
     pub fn sheng_xiao(&self) -> &'static str {
         lunar_util::tables::SHENG_XIAO[(self.zhi_index + 1) as usize]
@@ -123,6 +204,9 @@ impl<'a> LunarTime<'a> {
     pub fn tian_shen_info(&self) -> TianShen {
         TianShen::new(self.tian_shen())
     }
+    pub fn get_twelve_star(&self) -> TwelveStar {
+        TwelveStar::from_name(self.tian_shen()).unwrap_or_else(|| TwelveStar::from_index(0))
+    }
     pub fn tian_shen_type(&self) -> &'static str {
         lunar_util::tian_shen_type(self.tian_shen())
     }
@@ -164,6 +248,12 @@ impl<'a> LunarTime<'a> {
     pub fn ji(&self) -> Vec<&'static str> {
         lunar_util::get_time_ji(&self.lunar.day_in_gan_zhi_exact(), &self.gan_zhi())
     }
+    pub fn get_recommends(&self) -> Vec<Taboo> {
+        self.yi().into_iter().map(|name| Taboo::new(name, TabooKind::Recommend)).collect()
+    }
+    pub fn get_avoids(&self) -> Vec<Taboo> {
+        self.ji().into_iter().map(|name| Taboo::new(name, TabooKind::Avoid)).collect()
+    }
 
     pub fn nine_star(&self) -> NineStar {
         let solar_ymd = self.lunar.solar().to_ymd();
@@ -187,6 +277,9 @@ impl<'a> LunarTime<'a> {
         }
         NineStar::from_index(index)
     }
+    pub fn get_nine_star(&self) -> NineStar {
+        self.nine_star()
+    }
 
     pub fn xun(&self) -> &'static str {
         lunar_util::get_xun(&self.gan_zhi())
@@ -196,6 +289,22 @@ impl<'a> LunarTime<'a> {
     }
     pub fn xun_info(&self) -> Xun {
         Xun::new(self.xun(), self.xun_kong())
+    }
+
+    pub fn get_solar_time(&self) -> Solar {
+        self.lunar.solar()
+    }
+
+    pub fn get_eight_char(&self) -> EightChar<'_> {
+        self.lunar.eight_char()
+    }
+
+    pub fn is_before(&self, target: &Self) -> bool {
+        self.get_solar_time().is_before(&target.get_solar_time())
+    }
+
+    pub fn is_after(&self, target: &Self) -> bool {
+        self.get_solar_time().is_after(&target.get_solar_time())
     }
 
     /// 当前时辰最早时分。

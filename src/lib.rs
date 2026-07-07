@@ -83,6 +83,7 @@ mod dangi;
 mod eight_char;
 mod ethiopian;
 mod event;
+mod festival;
 mod foto;
 mod fu;
 mod hijri;
@@ -162,6 +163,7 @@ pub use event::{
     sort_events,
 };
 pub use fasli::{Fasli, FasliMonth, FasliYear};
+pub use festival::{LunarFestival, SolarFestival};
 pub use foto::{Foto, FotoMonth, FotoYear};
 pub use fu::Fu;
 pub use hijri::{Hijri, HijriMonth, HijriYear};

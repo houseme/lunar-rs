@@ -1,10 +1,10 @@
 use lunar_rs::{
     Animal, Constellation, CultureDay, CycleItem, DayUnit, Dipper, Direction, Duty, EarthBranch, Element, Gender, God,
     GodLuck, HeavenStem, HideHeavenStemType, HijriDay, Holiday, JulianDay, Land, LegalHoliday, Luck, Lunar, LunarDay,
-    LunarMonth, LunarWeek, LunarYear, MinorRen, MonthUnit, MoonPhase, NamedCulture, Nayin, NineStar, Phase,
-    PlumRainKind, SecondUnit, SevenStar, Side, SixStar, Sixty, SixtyCycle, Solar, SolarDay, SolarHalfYear, SolarMonth,
-    SolarSeason, SolarTerm, SolarTime, SolarWeek, SolarYear, Sound, Taboo, TabooKind, Ten, TenStar, TwelveStar, Twenty,
-    WeekUnit, Xun, YearUnit, YinYang, YuanCycle, YunCycle, Zodiac,
+    LunarFestival, LunarMonth, LunarWeek, LunarYear, MinorRen, MonthUnit, MoonPhase, NamedCulture, Nayin, NineStar,
+    Phase, PlumRainKind, SecondUnit, SevenStar, Side, SixStar, Sixty, SixtyCycle, Solar, SolarDay, SolarFestival,
+    SolarHalfYear, SolarMonth, SolarSeason, SolarTerm, SolarTime, SolarWeek, SolarYear, Sound, Taboo, TabooKind, Ten,
+    TenStar, TwelveStar, Twenty, WeekUnit, Xun, YearUnit, YinYang, YuanCycle, YunCycle, Zodiac,
 };
 
 #[test]
@@ -183,6 +183,11 @@ fn tyme_core_day_time_and_term_names_are_available() {
     assert_eq!(solar_time.get_solar_day().to_ymd_hms(), "2024-02-10 00:00:00");
     assert_eq!(solar_time.get_solar_time(), solar_time);
     assert_eq!(solar_time.get_lunar_day().solar().to_ymd(), "2024-02-10");
+    let solar_lunar_hour = solar_time.get_lunar_hour();
+    assert_eq!(solar_lunar_hour.get_lunar_day().solar().to_ymd(), "2024-02-10");
+    assert_eq!(solar_lunar_hour.get_solar_time().to_ymd_hms(), "2024-02-10 08:30:00");
+    assert_eq!(solar_lunar_hour.get_sixty_cycle_hour().name(), solar_time.lunar().sixty_cycle_hour().name());
+    assert_eq!(solar_lunar_hour.get_minor_ren().name(), solar_time.lunar().time_minor_ren().name());
     assert_eq!(solar_time.get_week().name(), "六");
     assert!(solar_time.is_after(&SolarTime::from_ymd_hms(2024, 2, 10, 8, 29, 59).unwrap()));
     assert!(solar_time.is_before(&SolarTime::from_ymd_hms(2024, 2, 10, 8, 30, 1).unwrap()));
@@ -195,6 +200,8 @@ fn tyme_core_day_time_and_term_names_are_available() {
     assert_eq!(hijri_day.solar().to_ymd(), "2024-02-10");
     assert_eq!(solar_day.get_sixty_cycle_day().name(), solar_day.lunar().sixty_cycle_day().name());
     assert_eq!(solar_time.get_sixty_cycle_hour().name(), solar_time.lunar().sixty_cycle_hour().name());
+    assert_eq!(solar_day.get_phase().name(), solar_day.lunar().phase().name());
+    assert_eq!(solar_day.get_phase_day().name(), solar_day.lunar().phase_day().name());
     assert_eq!(solar_day.get_nine_star().to_string(), solar_day.lunar().day_nine_star().to_string());
     assert_eq!(solar_day.get_rab_byung_day().unwrap().solar().to_ymd(), "2024-02-10");
 
@@ -243,6 +250,75 @@ fn tyme_core_day_time_and_term_names_are_available() {
     let holiday = Solar::from_ymd(2024, 10, 1).unwrap().get_legal_holiday().unwrap();
     assert_eq!(holiday.get_name(), "国庆节");
     assert_eq!(holiday.get_day().to_ymd(), "2024-10-01");
+
+    let festival = Solar::from_ymd(2024, 10, 1).unwrap().get_festival().unwrap();
+    assert_eq!(festival.get_name(), "国庆节");
+    assert_eq!(festival.get_day().to_ymd(), "2024-10-01");
+    assert_eq!(festival.to_event().name(), "国庆节");
+
+    assert_eq!(Solar::from_ymd(2022, 3, 28).unwrap().festivals().first().copied(), Some("全国中小学生安全教育日"));
+    let indexed_festival = SolarFestival::from_index(2024, 3).unwrap();
+    assert_eq!(indexed_festival.next(6).unwrap().get_name(), "国庆节");
+    assert!(SolarFestival::from_ymd(1939, 5, 4).is_none());
+
+    let lunar_festival = Lunar::from_ymd(2024, 1, 1).unwrap().get_festival().unwrap();
+    assert_eq!(lunar_festival.get_name(), "春节");
+    assert_eq!(lunar_festival.get_day().solar().to_ymd(), "2024-02-10");
+    assert_eq!(lunar_festival.to_event().name(), "春节");
+    assert_eq!(LunarFestival::from_index(2021, 12).unwrap().get_name(), "除夕");
+    assert!(LunarFestival::from_index(2024, 4).unwrap().get_solar_term().is_some());
+
+    let lunar_day = solar_day.lunar();
+    assert_eq!(lunar_day.get_year(), lunar_day.year());
+    assert_eq!(lunar_day.get_month(), lunar_day.month());
+    assert_eq!(lunar_day.get_day(), lunar_day.day());
+    assert_eq!(lunar_day.get_solar_day().to_ymd(), "2024-02-10");
+    assert_eq!(lunar_day.get_lunar_month().unwrap().month(), lunar_day.month());
+    assert_eq!(lunar_day.get_week().name(), solar_day.get_week().name());
+    assert_eq!(lunar_day.get_year_sixty_cycle().name(), lunar_day.year_sixty_cycle().name());
+    assert_eq!(lunar_day.get_month_sixty_cycle().name(), lunar_day.month_sixty_cycle().name());
+    assert_eq!(lunar_day.get_sixty_cycle().name(), lunar_day.day_sixty_cycle().name());
+    assert_eq!(lunar_day.get_sixty_cycle_day().name(), lunar_day.sixty_cycle_day().name());
+    assert_eq!(lunar_day.get_phase().name(), lunar_day.phase().name());
+    assert_eq!(lunar_day.get_phase_day().name(), lunar_day.phase_day().name());
+    assert_eq!(lunar_day.get_six_star().name(), lunar_day.liu_yao());
+    assert_eq!(lunar_day.get_twelve_star().name(), lunar_day.day_tian_shen());
+    assert_eq!(lunar_day.get_twenty_eight_star().name(), lunar_day.xiu());
+    assert_eq!(lunar_day.get_fetus_day().to_string(), lunar_day.fetus_day().to_string());
+    assert_eq!(lunar_day.get_nine_star().to_string(), lunar_day.day_nine_star().to_string());
+    assert!(!lunar_day.get_gods().is_empty());
+    assert!(!lunar_day.get_recommends().is_empty());
+    assert!(!lunar_day.get_avoids().is_empty());
+    assert_eq!(lunar_day.get_minor_ren().name(), lunar_day.minor_ren().name());
+    assert_eq!(lunar_day.get_three_pillars().to_string(), lunar_day.eight_char().three_pillars().to_string());
+    assert_eq!(lunar_day.get_hours().len(), 13);
+    assert_eq!(lunar_day.get_hours().first().unwrap().get_solar_time().hour(), 0);
+    assert_eq!(lunar_day.get_hours().last().unwrap().get_solar_time().hour(), 23);
+
+    let lunar_hour = lunar_day.time();
+    assert_eq!(lunar_hour.get_lunar_day().solar().to_ymd(), "2024-02-10");
+    assert_eq!(lunar_hour.get_year(), lunar_day.year());
+    assert_eq!(lunar_hour.get_month(), lunar_day.month());
+    assert_eq!(lunar_hour.get_day(), lunar_day.day());
+    assert_eq!(lunar_hour.get_hour(), lunar_day.hour());
+    assert_eq!(lunar_hour.get_minute(), lunar_day.minute());
+    assert_eq!(lunar_hour.get_second(), lunar_day.second());
+    assert_eq!(lunar_hour.get_index_in_day(), ((lunar_hour.get_hour() + 1) / 2) as usize);
+    assert_eq!(lunar_hour.get_year_sixty_cycle().name(), lunar_day.year_sixty_cycle().name());
+    assert_eq!(lunar_hour.get_month_sixty_cycle().name(), lunar_day.month_sixty_cycle().name());
+    assert_eq!(lunar_hour.get_day_sixty_cycle().name(), lunar_day.day_sixty_cycle().name());
+    assert_eq!(lunar_hour.get_sixty_cycle().name(), lunar_hour.sixty_cycle().name());
+    assert_eq!(lunar_hour.get_sixty_cycle_hour().name(), lunar_hour.sixty_cycle_hour().name());
+    assert_eq!(lunar_hour.get_nine_star().to_string(), lunar_hour.nine_star().to_string());
+    assert_eq!(lunar_hour.get_twelve_star().name(), lunar_hour.tian_shen());
+    assert!(!lunar_hour.get_recommends().is_empty());
+    assert!(!lunar_hour.get_avoids().is_empty());
+    assert_eq!(lunar_hour.get_minor_ren().name(), lunar_hour.minor_ren().name());
+    assert_eq!(lunar_hour.get_solar_time().to_ymd_hms(), solar_day.to_ymd_hms());
+    assert_eq!(
+        lunar_hour.get_eight_char().three_pillars().to_string(),
+        lunar_day.eight_char().three_pillars().to_string()
+    );
 
     let alias_holiday = LegalHoliday::from_ymd(2024, 10, 1).unwrap();
     assert_eq!(alias_holiday.get_target().to_ymd(), "2024-10-01");
@@ -343,6 +419,14 @@ fn typed_minor_ren_matches_tyme_cycle_examples() {
     assert_eq!(lunar_hour.time().minor_ren(), lunar_hour.time_minor_ren());
     assert_eq!(lunar_hour.time_minor_ren().luck(), GodLuck::Inauspicious);
     assert_eq!(lunar_hour.time_minor_ren().element().name(), "水");
+    let hour = lunar_rs::LunarTime::from_ymd_hms(2024, 9, 7, 10, 0, 0).unwrap();
+    assert_eq!(hour.get_lunar_day().solar().to_ymd_hms(), lunar_hour.solar().to_ymd_hms());
+    assert_eq!(hour.get_index_in_day(), 5);
+    assert_eq!(hour.get_minor_ren().name(), "留连");
+    assert_eq!(hour.get_nine_star().to_string(), lunar_hour.time_nine_star().to_string());
+
+    let zi_hour = lunar_rs::LunarTime::from_ymd_hms(2023, 11, 14, 23, 0, 0).unwrap();
+    assert_eq!(zi_hour.get_index_in_day(), 12);
 
     let lunar_month = LunarMonth::from_ym(1991, 3).unwrap();
     assert_eq!(lunar_month.minor_ren().name(), "速喜");
