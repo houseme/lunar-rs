@@ -836,6 +836,42 @@ fn typed_year_fortunes_wrap_miscellaneous_predictions() {
 }
 
 #[test]
+fn lunar_year_and_month_strict_getters_match_tyme_names() {
+    let year = LunarYear::from_year(2020);
+    let months = year.get_months();
+
+    assert_eq!(year.get_year(), 2020);
+    assert_eq!(year.get_day_count(), year.day_count());
+    assert_eq!(year.get_month_count(), 13);
+    assert_eq!(months.len(), 13);
+    assert_eq!(year.months().len(), 15);
+    assert_eq!(year.get_leap_month(), 4);
+    assert_eq!(year.get_sixty_cycle().name(), year.sixty_cycle().name());
+    assert_eq!(year.get_twenty().name(), Twenty::from_index(7).name());
+    assert_eq!(year.get_jupiter_direction().name(), Direction::from_index(0).name());
+    assert_eq!(year.get_nine_star().to_string(), year.nine_star().to_string());
+    assert_eq!(year.get_kitchen_god_steed().to_string(), year.kitchen_god_steed().to_string());
+
+    let leap_month = LunarMonth::from_ym(2020, -4).unwrap();
+    assert_eq!(leap_month.get_lunar_year().get_year(), 2020);
+    assert_eq!(leap_month.get_year(), 2020);
+    assert_eq!(leap_month.get_month(), 4);
+    assert_eq!(leap_month.get_month_with_leap(), -4);
+    assert_eq!(leap_month.get_day_count(), leap_month.day_count());
+    assert_eq!(leap_month.get_index_in_year(), leap_month.index() as usize - 1);
+    assert_eq!(leap_month.get_season().name(), leap_month.season());
+    assert_eq!(leap_month.get_first_julian_day().day(), leap_month.first_julian_day());
+    assert_eq!(leap_month.get_week_count(0), leap_month.get_weeks(0).len());
+    assert_eq!(leap_month.get_days().len(), leap_month.day_count() as usize);
+    assert_eq!(leap_month.get_first_day().unwrap().day(), 1);
+    assert_eq!(leap_month.get_sixty_cycle().name(), leap_month.sixty_cycle().name());
+    assert_eq!(leap_month.get_jupiter_direction().name(), Direction::from_index(3).name());
+    assert_eq!(leap_month.get_nine_star().to_string(), leap_month.nine_star().to_string());
+    assert_eq!(leap_month.get_fetus().unwrap().name(), leap_month.get_fetus().unwrap().position().name());
+    assert_eq!(leap_month.get_minor_ren().name(), leap_month.minor_ren().name());
+}
+
+#[test]
 fn typed_liu_yao_season_and_nayin_companions_reduce_string_parsing() {
     let lunar = Solar::from_ymd(2024, 4, 22).unwrap().lunar();
     assert_eq!(lunar.season_info().name(), lunar.season());

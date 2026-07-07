@@ -2,6 +2,7 @@
 
 use std::fmt;
 use std::fmt::Write as _;
+use std::marker::PhantomData;
 
 use crate::event::{CalendarKind, Event, EventKind, EventQuery, EventSource, FotoFestivalEvent, filter_events};
 use crate::foto_util;
@@ -253,18 +254,23 @@ impl fmt::Display for FotoFestival {
     }
 }
 
-/// 佛历。借用底层 [`Lunar`]。
+/// 佛历。内部持有一个 [`Lunar`] 快照，兼容对外的 lifetime 形状。
+#[derive(Clone)]
 pub struct Foto<'a> {
-    lunar: &'a Lunar,
+    lunar: Lunar,
+    marker: PhantomData<&'a Lunar>,
 }
 
 impl<'a> Foto<'a> {
-    pub(crate) const fn from_lunar(lunar: &'a Lunar) -> Self {
-        Self { lunar }
+    pub(crate) fn from_lunar(lunar: &'a Lunar) -> Foto<'static> {
+        Foto { lunar: lunar.clone(), marker: PhantomData }
     }
 
     pub const fn lunar(&self) -> &Lunar {
-        self.lunar
+        &self.lunar
+    }
+    pub fn get_lunar(&self) -> &Lunar {
+        self.lunar()
     }
     pub const fn year(&self) -> i32 {
         let sy = self.lunar.solar().year();
@@ -274,20 +280,35 @@ impl<'a> Foto<'a> {
         }
         y
     }
+    pub const fn get_year(&self) -> i32 {
+        self.year()
+    }
     pub const fn month(&self) -> i32 {
         self.lunar.month()
     }
+    pub const fn get_month(&self) -> i32 {
+        self.month()
+    }
     pub const fn day(&self) -> i32 {
         self.lunar.day()
+    }
+    pub const fn get_day(&self) -> i32 {
+        self.day()
     }
 
     pub fn foto_year(&self) -> FotoYear {
         FotoYear::from_year(self.year())
     }
+    pub fn get_foto_year(&self) -> FotoYear {
+        self.foto_year()
+    }
 
     pub fn foto_month(&self) -> FotoMonth {
         let month = LunarMonth::from_ym(self.lunar.year(), self.lunar.month()).unwrap();
         FotoMonth::from_lunar_month(month)
+    }
+    pub fn get_foto_month(&self) -> FotoMonth {
+        self.foto_month()
     }
 
     pub fn year_in_chinese(&self) -> String {
@@ -297,11 +318,20 @@ impl<'a> Foto<'a> {
             .map(|c| lunar_util::tables::NUMBER[c.to_digit(10).unwrap_or(0) as usize])
             .collect()
     }
+    pub fn get_year_in_chinese(&self) -> String {
+        self.year_in_chinese()
+    }
     pub fn month_in_chinese(&self) -> String {
         self.lunar.month_in_chinese()
     }
+    pub fn get_month_in_chinese(&self) -> String {
+        self.month_in_chinese()
+    }
     pub fn day_in_chinese(&self) -> &'static str {
         self.lunar.day_in_chinese()
+    }
+    pub fn get_day_in_chinese(&self) -> &'static str {
+        self.day_in_chinese()
     }
 
     pub fn festivals(&self) -> Vec<FotoFestival> {
@@ -315,9 +345,15 @@ impl<'a> Foto<'a> {
         }
         out
     }
+    pub fn get_festivals(&self) -> Vec<FotoFestival> {
+        self.festivals()
+    }
     pub fn other_festivals(&self) -> Vec<&'static str> {
         let key = format!("{}-{}", self.month(), self.day());
         foto_util::OTHER_FESTIVAL.get(key.as_str()).cloned().unwrap_or_default()
+    }
+    pub fn get_other_festivals(&self) -> Vec<&'static str> {
+        self.other_festivals()
     }
 
     /// Unified events for the current Buddhist calendar date.
@@ -350,12 +386,21 @@ impl<'a> Foto<'a> {
         let m = self.month();
         m == 1 || m == 5 || m == 9
     }
+    pub const fn get_is_month_zhai(&self) -> bool {
+        self.is_month_zhai()
+    }
     pub fn is_day_yang_gong(&self) -> bool {
         self.festivals().iter().any(|f| f.name() == "杨公忌")
+    }
+    pub fn get_is_day_yang_gong(&self) -> bool {
+        self.is_day_yang_gong()
     }
     pub const fn is_day_zhai_shuo_wang(&self) -> bool {
         let d = self.day();
         d == 1 || d == 15
+    }
+    pub const fn get_is_day_zhai_shuo_wang(&self) -> bool {
+        self.is_day_zhai_shuo_wang()
     }
     pub fn is_day_zhai_six(&self) -> bool {
         let d = self.day();
@@ -369,34 +414,64 @@ impl<'a> Foto<'a> {
         }
         false
     }
+    pub fn get_is_day_zhai_six(&self) -> bool {
+        self.is_day_zhai_six()
+    }
     pub const fn is_day_zhai_ten(&self) -> bool {
         let d = self.day();
         d == 1 || d == 8 || d == 14 || d == 15 || d == 18 || d == 23 || d == 24 || d == 28 || d == 29 || d == 30
     }
+    pub const fn get_is_day_zhai_ten(&self) -> bool {
+        self.is_day_zhai_ten()
+    }
     pub fn is_day_zhai_guan_yin(&self) -> bool {
         foto_util::is_day_zhai_guan_yin(&format!("{}-{}", self.month(), self.day()))
+    }
+    pub fn get_is_day_zhai_guan_yin(&self) -> bool {
+        self.is_day_zhai_guan_yin()
     }
 
     pub fn xiu(&self) -> &'static str {
         foto_util::get_xiu(self.month(), self.day())
     }
+    pub fn get_xiu(&self) -> &'static str {
+        self.xiu()
+    }
     pub fn xiu_luck(&self) -> &'static str {
         lunar_util::xiu_luck(self.xiu())
+    }
+    pub fn get_xiu_luck(&self) -> &'static str {
+        self.xiu_luck()
     }
     pub fn xiu_song(&self) -> &'static str {
         lunar_util::xiu_song(self.xiu())
     }
+    pub fn get_xiu_song(&self) -> &'static str {
+        self.xiu_song()
+    }
     pub fn zheng(&self) -> &'static str {
         lunar_util::zheng(self.xiu())
+    }
+    pub fn get_zheng(&self) -> &'static str {
+        self.zheng()
     }
     pub fn animal(&self) -> &'static str {
         lunar_util::animal(self.xiu())
     }
+    pub fn get_animal(&self) -> &'static str {
+        self.animal()
+    }
     pub fn gong(&self) -> &'static str {
         lunar_util::gong(self.xiu())
     }
+    pub fn get_gong(&self) -> &'static str {
+        self.gong()
+    }
     pub fn shou(&self) -> &'static str {
         lunar_util::shou(self.gong())
+    }
+    pub fn get_shou(&self) -> &'static str {
+        self.shou()
     }
 
     pub fn to_string_cn(&self) -> String {

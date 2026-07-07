@@ -251,5 +251,8 @@
 | `P3` | `Task 95` | SolarDay/SolarTime 核心 getter 兼容 | `已完成` | [docs/tasks/95-phase-next-solar-getter-compatibility.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/95-phase-next-solar-getter-compatibility.md) |
 | `P3` | `Task 96` | Solar 派生 getter 与公历聚合对象兼容 | `已完成` | [docs/tasks/96-phase-next-solar-derived-getter-compatibility.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/96-phase-next-solar-derived-getter-compatibility.md) |
 | `P2` | `Task 97` | Lunar/LunarTime 严格方法名与节日 wrapper 兼容 | `已完成` | [docs/tasks/97-phase-next-lunar-time-festival-compatibility.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/97-phase-next-lunar-time-festival-compatibility.md) |
+| `P2` | `Task 98` | LunarYear/LunarMonth 严格 getter 兼容 | `已完成` | [docs/tasks/98-phase-next-lunar-year-month-getter-compatibility.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/98-phase-next-lunar-year-month-getter-compatibility.md) |
+| `P3` | `Task 99` | Foto/Tao wrapper 生命周期与 getter 兼容补强 | `已完成` | [docs/tasks/99-phase-next-foto-tao-wrapper-getter-compatibility.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/99-phase-next-foto-tao-wrapper-getter-compatibility.md) |
+| `P3` | `Task 100` | Foto/Tao 布尔规则 get_* 兼容补强 | `已完成` | [docs/tasks/100-phase-next-foto-tao-bool-getter-compatibility.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/100-phase-next-foto-tao-bool-getter-compatibility.md) |
 
-后续建议继续按新对标文档和本索引中的 `Task 59` - `Task 97` 推进，不再把已经完成的 Phase 4 多历法工作重复列为待办。
+后续建议继续按新对标文档和本索引中的 `Task 59` - `Task 100` 推进，不再把已经完成的 Phase 4 多历法工作重复列为待办。

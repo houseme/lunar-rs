@@ -1938,12 +1938,12 @@ impl Lunar {
     }
 
     /// 佛历。
-    pub const fn foto(&self) -> crate::foto::Foto<'_> {
+    pub fn foto(&self) -> crate::foto::Foto<'static> {
         crate::foto::Foto::from_lunar(self)
     }
 
     /// 道历。
-    pub const fn tao(&self) -> crate::tao::Tao<'_> {
+    pub fn tao(&self) -> crate::tao::Tao<'static> {
         crate::tao::Tao::from_lunar(self)
     }
 

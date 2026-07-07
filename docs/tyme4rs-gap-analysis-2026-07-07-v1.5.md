@@ -35,6 +35,9 @@
 | `P3` | `Task 95` | SolarDay/SolarTime 核心 getter 兼容 | `已完成` | 为 `Solar` 补齐 tyme4rs 风格 `get_*` 迁移入口。 |
 | `P3` | `Task 96` | Solar 派生 getter 与公历聚合对象兼容 | `已完成` | 补齐 `Solar` 派生 getter、`LegalHoliday` getter、`HijriDay` 别名、`JulianDay` 差值，以及 `SolarYear/SolarHalfYear/SolarSeason/SolarMonth/SolarWeek` 聚合 getter。 |
 | `P2` | `Task 97` | Lunar/LunarTime 严格方法名与节日 wrapper 兼容 | `已完成` | 新增 `SolarFestival/LunarFestival` wrapper，并补齐 `Lunar/LunarTime` 高频 `get_*` 迁移入口。 |
+| `P2` | `Task 98` | LunarYear/LunarMonth 严格 getter 兼容 | `已完成` | 补齐 `LunarYear/LunarMonth` 高频 `get_*` 迁移入口，并保留本地 15 个月内部窗口语义。 |
+| `P3` | `Task 99` | Foto/Tao wrapper 生命周期与 getter 兼容补强 | `已完成` | 本地扩展项；`tyme4rs v1.5` 无独立佛历/道历模块，本任务补齐本地 wrapper 的 owned 快照与 `get_*` 迁移入口。 |
+| `P3` | `Task 100` | Foto/Tao 布尔规则 get_* 兼容补强 | `已完成` | 为 `Foto/Tao` 仍保留 `is_*` 的布尔规则补齐 `get_*` 兼容别名。 |
 
 ## 实施顺序
 
@@ -44,7 +47,7 @@
 
 ## 当前建议
 
-`Task 86`、`Task 87`、`Task 88`、`Task 89`、`Task 90`、`Task 91`、`Task 92`、`Task 93`、`Task 94`、`Task 95`、`Task 96` 与 `Task 97` 已完成。本地继续保留 `phase()` 的旧含义，并通过 `moon_phase()` / `moon_phase_day()` 暴露对标 `tyme4rs::Phase` 的 8 相天文月相；年月周差异已补 `Unit` 对象族与 `LunarWeek`；事件规则侧已补 `EventType` 与 `EventBuilder` 兼容层；公开类型名迁移侧已补 `Dipper` 和轻量 type alias；核心日时入口侧已补 `JulianDay` 与 `SolarDay/SolarTime/LunarDay/LunarHour/SolarTerm/LegalHoliday/HijriDay` 兼容别名，且 `SolarTerm` 已补对象构造与步进 API，`SolarDay/SolarTime/SolarYear/SolarHalfYear/SolarSeason/SolarMonth/SolarWeek/LunarDay/LunarHour` 已补常用 `get_*` 迁移入口；节日对象侧已补 `SolarFestival/LunarFestival` wrapper；基础枚举侧已补 `Gender/Side/YinYang`，并保留旧整数性别入口。后续如继续推进，应进入 owned `LunarHour`、严格差分测试、README/API 文档和外部差分测试矩阵。
+`Task 86`、`Task 87`、`Task 88`、`Task 89`、`Task 90`、`Task 91`、`Task 92`、`Task 93`、`Task 94`、`Task 95`、`Task 96`、`Task 97`、`Task 98`、`Task 99` 与 `Task 100` 已完成。本地继续保留 `phase()` 的旧含义，并通过 `moon_phase()` / `moon_phase_day()` 暴露对标 `tyme4rs::Phase` 的 8 相天文月相；年月周差异已补 `Unit` 对象族与 `LunarWeek`；事件规则侧已补 `EventType` 与 `EventBuilder` 兼容层；公开类型名迁移侧已补 `Dipper` 和轻量 type alias；核心日时入口侧已补 `JulianDay` 与 `SolarDay/SolarTime/LunarDay/LunarHour/SolarTerm/LegalHoliday/HijriDay` 兼容别名，且 `SolarTerm` 已补对象构造与步进 API，`SolarDay/SolarTime/SolarYear/SolarHalfYear/SolarSeason/SolarMonth/SolarWeek/LunarDay/LunarHour/LunarYear/LunarMonth` 已补常用 `get_*` 迁移入口；节日对象侧已补 `SolarFestival/LunarFestival` wrapper；基础枚举侧已补 `Gender/Side/YinYang`，并保留旧整数性别入口；本地扩展的 `Foto/Tao` wrapper 已改为 owned 快照，并继续补齐 `get_*` 与布尔规则兼容别名。后续如继续推进，应进入严格差分测试、README/API 文档和外部差分测试矩阵。
 
 ## 2026-07-07 重新拉取复核
 

@@ -1,7 +1,14 @@
 //! 农历月。对应 lunar-go `calendar/LunarMonth.go`。
 
-use crate::culture::{Direction, EarthBranch, HeavenStem, MinorRen, Nayin, Season, SixtyCycle, TaiSuiPosition, Xun};
+use std::sync::Arc;
+
+use crate::culture::{
+    Direction, EarthBranch, FetusMonth, HeavenStem, MinorRen, Nayin, Season, SixtyCycle, TaiSuiPosition, Xun,
+};
+use crate::jd::JulianDay;
+use crate::lunar::Lunar;
 use crate::lunar_util;
+use crate::lunar_week::LunarWeek;
 use crate::lunar_year::LunarYear;
 use crate::multi_calendar::CalendarSpan;
 use crate::nine_star::NineStar;
@@ -42,8 +49,20 @@ impl LunarMonth {
         self.year
     }
     #[inline]
+    pub const fn get_year(&self) -> i32 {
+        self.year()
+    }
+    #[inline]
     pub const fn month(&self) -> i32 {
         self.month
+    }
+    #[inline]
+    pub const fn get_month(&self) -> usize {
+        self.month.unsigned_abs() as usize
+    }
+    #[inline]
+    pub const fn get_month_with_leap(&self) -> i32 {
+        self.month()
     }
     #[inline]
     pub const fn is_leap(&self) -> bool {
@@ -54,12 +73,23 @@ impl LunarMonth {
         self.day_count
     }
     #[inline]
+    pub const fn get_day_count(&self) -> i32 {
+        self.day_count()
+    }
+    #[inline]
     pub const fn first_julian_day(&self) -> f64 {
         self.first_julian_day
+    }
+    pub fn get_first_julian_day(&self) -> JulianDay {
+        JulianDay::from_julian_day(self.first_julian_day())
     }
     #[inline]
     pub const fn index(&self) -> i32 {
         self.index
+    }
+    #[inline]
+    pub const fn get_index_in_year(&self) -> usize {
+        self.index.saturating_sub(1) as usize
     }
     #[inline]
     pub const fn zhi_index(&self) -> i64 {
@@ -72,6 +102,28 @@ impl LunarMonth {
 
     pub fn last_solar_day(&self) -> Solar {
         self.first_solar_day().next_day(self.day_count - 1)
+    }
+
+    pub fn get_lunar_year(&self) -> Arc<LunarYear> {
+        LunarYear::from_year(self.year)
+    }
+
+    pub fn get_week_count(&self, start: usize) -> usize {
+        LunarWeek::week_count(self.year, self.month, start).unwrap_or(0)
+    }
+
+    pub fn get_first_day(&self) -> Option<Lunar> {
+        Lunar::from_ymd(self.year, self.month, 1).ok()
+    }
+
+    pub fn get_days(&self) -> Vec<Lunar> {
+        (1..=self.day_count).filter_map(|day| Lunar::from_ymd(self.year, self.month, day).ok()).collect()
+    }
+
+    pub fn get_weeks(&self, start: usize) -> Vec<LunarWeek> {
+        (0..self.get_week_count(start))
+            .filter_map(|index| LunarWeek::from_ym(self.year, self.month, index, start))
+            .collect()
     }
 
     /// 月天干索引（年干遁月）。
@@ -99,6 +151,9 @@ impl LunarMonth {
     pub fn sixty_cycle(&self) -> SixtyCycle {
         SixtyCycle::from_name(&self.gan_zhi()).expect("month ganzhi must map to sixty-cycle")
     }
+    pub fn get_sixty_cycle(&self) -> SixtyCycle {
+        self.sixty_cycle()
+    }
     pub fn nayin(&self) -> &'static str {
         lunar_util::nayin(&self.gan_zhi())
     }
@@ -110,6 +165,9 @@ impl LunarMonth {
     }
     pub fn season_info(&self) -> Season {
         Season::new(self.season())
+    }
+    pub fn get_season(&self) -> Season {
+        self.season_info()
     }
     pub fn xun(&self) -> &'static str {
         lunar_util::get_xun(&self.gan_zhi())
@@ -195,6 +253,16 @@ impl LunarMonth {
         lunar_util::position_desc(self.position_tai_sui())
     }
 
+    pub fn get_jupiter_direction(&self) -> Direction {
+        let branch_index = (self.get_sixty_cycle().earth_branch().index() + 10) % 12;
+        let n = [7_i32, -1, 1, 3][branch_index % 4];
+        if n == -1 {
+            self.get_sixty_cycle().heaven_stem().element().direction()
+        } else {
+            Direction::from_index(n as usize)
+        }
+    }
+
     /// 月九星。
     pub fn nine_star(&self) -> NineStar {
         let index = LunarYear::from_year(self.year).zhi_index() % 3;
@@ -207,9 +275,19 @@ impl LunarMonth {
         let offset = (n - month_zhi_index) % 9;
         NineStar::from_index(offset)
     }
+    pub fn get_nine_star(&self) -> NineStar {
+        self.nine_star()
+    }
+
+    pub fn get_fetus(&self) -> Option<FetusMonth> {
+        FetusMonth::from_month(self.get_month() as i32)
+    }
 
     pub fn minor_ren(&self) -> MinorRen {
         MinorRen::from_index((self.month.abs().saturating_sub(1) as usize) % 6)
+    }
+    pub fn get_minor_ren(&self) -> MinorRen {
+        self.minor_ren()
     }
 
     /// 推进 / 回退 n 个月（跨年）。

@@ -215,6 +215,9 @@ impl LunarYear {
     pub const fn year(&self) -> i32 {
         self.year
     }
+    pub const fn get_year(&self) -> i32 {
+        self.year()
+    }
     #[inline]
     pub const fn gan_index(&self) -> i64 {
         self.gan_index
@@ -241,6 +244,9 @@ impl LunarYear {
     pub fn sixty_cycle(&self) -> SixtyCycle {
         SixtyCycle::from_name(&self.gan_zhi()).expect("year ganzhi must map to sixty-cycle")
     }
+    pub fn get_sixty_cycle(&self) -> SixtyCycle {
+        self.sixty_cycle()
+    }
     pub fn nayin(&self) -> &'static str {
         lunar_util::nayin(&self.gan_zhi())
     }
@@ -261,6 +267,9 @@ impl LunarYear {
     pub fn months(&self) -> Vec<LunarMonth> {
         self.months.clone()
     }
+    pub fn get_months(&self) -> Vec<LunarMonth> {
+        self.months_in_year().collect()
+    }
     /// 当年所属月份。
     pub fn months_in_year(&self) -> impl Iterator<Item = LunarMonth> + '_ {
         self.months.iter().copied().filter(move |m| m.year == self.year)
@@ -268,6 +277,12 @@ impl LunarYear {
     /// 当年总天数。
     pub fn day_count(&self) -> i32 {
         self.months.iter().filter(|m| m.year == self.year).map(|m| m.day_count).sum()
+    }
+    pub fn get_day_count(&self) -> i32 {
+        self.day_count()
+    }
+    pub fn get_month_count(&self) -> usize {
+        self.get_months().len()
     }
 
     pub fn first_solar_day(&self) -> Solar {
@@ -294,6 +309,9 @@ impl LunarYear {
         }
         0
     }
+    pub fn get_leap_month(&self) -> i32 {
+        self.leap_month()
+    }
 
     /// 元（上 / 中 / 下元）。
     pub fn yuan(&self) -> String {
@@ -311,6 +329,14 @@ impl LunarYear {
     pub fn yun_cycle(&self) -> YunCycle {
         YunCycle::new(self.yun())
     }
+    pub fn get_twenty(&self) -> crate::Twenty {
+        let index = (self.year - 1864).div_euclid(20).rem_euclid(9) as usize;
+        crate::Twenty::from_index(index)
+    }
+    pub fn get_jupiter_direction(&self) -> Direction {
+        let branch_index = self.get_sixty_cycle().earth_branch().index();
+        Direction::from_index([0, 7, 7, 2, 3, 3, 8, 1, 1, 6, 0, 0][branch_index])
+    }
     /// 年九星。
     pub fn nine_star(&self) -> NineStar {
         let index = lunar_util::get_jia_zi_index(&self.gan_zhi()) + 1;
@@ -320,6 +346,9 @@ impl LunarYear {
             offset = 9;
         }
         NineStar::from_index(offset - 1)
+    }
+    pub fn get_nine_star(&self) -> NineStar {
+        self.nine_star()
     }
 
     pub fn position_xi(&self) -> &'static str {
@@ -498,6 +527,9 @@ impl LunarYear {
 
     pub fn kitchen_god_steed(&self) -> KitchenGodSteed {
         KitchenGodSteed::new(self.first_day_gan_index() as usize, self.first_day_zhi_index() as usize)
+    }
+    pub fn get_kitchen_god_steed(&self) -> KitchenGodSteed {
+        self.kitchen_god_steed()
     }
 
     pub fn year_fortunes(&self) -> Vec<YearFortune> {

@@ -1,6 +1,7 @@
 //! 道历。对应 lunar-go `calendar/Tao.go`。
 
 use std::fmt;
+use std::marker::PhantomData;
 
 use crate::event::{CalendarKind, Event, EventKind, EventQuery, EventSource, TaoFestivalEvent, filter_events};
 use crate::lunar::Lunar;
@@ -242,36 +243,56 @@ impl fmt::Display for TaoFestival {
     }
 }
 
-/// 道历。借用底层 [`Lunar`]。
+/// 道历。内部持有一个 [`Lunar`] 快照，兼容对外的 lifetime 形状。
+#[derive(Clone)]
 pub struct Tao<'a> {
-    lunar: &'a Lunar,
+    lunar: Lunar,
+    marker: PhantomData<&'a Lunar>,
 }
 
 impl<'a> Tao<'a> {
-    pub(crate) const fn from_lunar(lunar: &'a Lunar) -> Self {
-        Self { lunar }
+    pub(crate) fn from_lunar(lunar: &'a Lunar) -> Tao<'static> {
+        Tao { lunar: lunar.clone(), marker: PhantomData }
     }
 
     pub const fn lunar(&self) -> &Lunar {
-        self.lunar
+        &self.lunar
+    }
+    pub fn get_lunar(&self) -> &Lunar {
+        self.lunar()
     }
     pub const fn year(&self) -> i32 {
         self.lunar.year() - BIRTH_YEAR
     }
+    pub const fn get_year(&self) -> i32 {
+        self.year()
+    }
     pub const fn month(&self) -> i32 {
         self.lunar.month()
     }
+    pub const fn get_month(&self) -> i32 {
+        self.month()
+    }
     pub const fn day(&self) -> i32 {
         self.lunar.day()
+    }
+    pub const fn get_day(&self) -> i32 {
+        self.day()
     }
 
     pub fn tao_year(&self) -> TaoYear {
         TaoYear::from_year(self.year())
     }
+    pub fn get_tao_year(&self) -> TaoYear {
+        self.tao_year()
+    }
 
     pub fn tao_month(&self) -> TaoMonth {
         let month = LunarMonth::from_ym(self.lunar.year(), self.lunar.month()).unwrap();
         TaoMonth::from_lunar_month(month)
+    }
+    pub fn get_tao_month(&self) -> TaoMonth {
+        self.tao_month()
     }
 
     pub fn year_in_chinese(&self) -> String {
@@ -281,11 +302,20 @@ impl<'a> Tao<'a> {
             .map(|c| lunar_util::tables::NUMBER[c.to_digit(10).unwrap_or(0) as usize])
             .collect()
     }
+    pub fn get_year_in_chinese(&self) -> String {
+        self.year_in_chinese()
+    }
     pub fn month_in_chinese(&self) -> String {
         self.lunar.month_in_chinese()
     }
+    pub fn get_month_in_chinese(&self) -> String {
+        self.month_in_chinese()
+    }
     pub fn day_in_chinese(&self) -> &'static str {
         self.lunar.day_in_chinese()
+    }
+    pub fn get_day_in_chinese(&self) -> &'static str {
+        self.day_in_chinese()
     }
 
     pub fn festivals(&self) -> Vec<TaoFestival> {
@@ -311,6 +341,9 @@ impl<'a> Tao<'a> {
         }
         out
     }
+    pub fn get_festivals(&self) -> Vec<TaoFestival> {
+        self.festivals()
+    }
 
     /// Unified events for the current Taoist calendar date.
     pub fn events(&self) -> Vec<Event> {
@@ -329,27 +362,51 @@ impl<'a> Tao<'a> {
     pub fn is_day_san_hui(&self) -> bool {
         self.is_day_in(tao_util::SAN_HUI)
     }
+    pub fn get_is_day_san_hui(&self) -> bool {
+        self.is_day_san_hui()
+    }
     pub fn is_day_san_yuan(&self) -> bool {
         self.is_day_in(tao_util::SAN_YUAN)
+    }
+    pub fn get_is_day_san_yuan(&self) -> bool {
+        self.is_day_san_yuan()
     }
     pub fn is_day_wu_la(&self) -> bool {
         self.is_day_in(tao_util::WU_LA)
     }
+    pub fn get_is_day_wu_la(&self) -> bool {
+        self.is_day_wu_la()
+    }
     pub fn is_day_ba_jie(&self) -> bool {
         tao_util::BA_JIE.contains_key(self.lunar.jie_qi())
+    }
+    pub fn get_is_day_ba_jie(&self) -> bool {
+        self.is_day_ba_jie()
     }
     pub fn is_day_ba_hui(&self) -> bool {
         tao_util::BA_HUI.contains_key(self.lunar.day_in_gan_zhi().as_str())
     }
+    pub fn get_is_day_ba_hui(&self) -> bool {
+        self.is_day_ba_hui()
+    }
     pub fn is_day_ming_wu(&self) -> bool {
         self.lunar.day_gan() == "戊"
+    }
+    pub fn get_is_day_ming_wu(&self) -> bool {
+        self.is_day_ming_wu()
     }
     pub fn is_day_an_wu(&self) -> bool {
         let m = self.month().unsigned_abs() as usize;
         tao_util::AN_WU.get(m - 1).copied().unwrap_or("") == self.lunar.day_zhi()
     }
+    pub fn get_is_day_an_wu(&self) -> bool {
+        self.is_day_an_wu()
+    }
     pub fn is_day_wu(&self) -> bool {
         self.is_day_ming_wu() || self.is_day_an_wu()
+    }
+    pub fn get_is_day_wu(&self) -> bool {
+        self.is_day_wu()
     }
 
     pub fn to_string_cn(&self) -> String {
