@@ -207,6 +207,7 @@ Differential test workflow:
 ```bash
 cargo run --bin lunar_ref_driver -- solar 2024 4 22 23 30 0
 sh scripts/run_differential_self_check.sh
+bash scripts/run_tyme4rs_diff_check.sh
 ```
 
 ## Project Layout
@@ -227,6 +228,8 @@ sh scripts/run_differential_self_check.sh
   stable `key=value` snapshots.
 - `scripts/run_differential_self_check.sh`: one-command local protocol smoke
   check using the sample driver itself.
+- `scripts/run_tyme4rs_diff_check.sh`: builds a temporary tyme4rs v2 reference
+  bridge and runs the ignored external differential test matrix against it.
 
 ## License
 

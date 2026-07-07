@@ -196,6 +196,7 @@ cargo test --features i18n
 ```bash
 cargo run --bin lunar_ref_driver -- solar 2024 4 22 23 30 0
 sh scripts/run_differential_self_check.sh
+bash scripts/run_tyme4rs_diff_check.sh
 ```
 
 ## 目录结构
@@ -212,6 +213,7 @@ sh scripts/run_differential_self_check.sh
 - `tests/fixtures/differential_cases.txt`：可维护的差分测试样例矩阵。
 - `src/bin/lunar_ref_driver.rs`：输出稳定 `key=value` 快照的差分测试示例驱动。
 - `scripts/run_differential_self_check.sh`：基于示例驱动的一键本地协议自检脚本。
+- `scripts/run_tyme4rs_diff_check.sh`：临时构建 `tyme4rs` v2 参考桥，并对忽略的外部差分矩阵执行一次真实比对。
 
 ## 许可证
 
