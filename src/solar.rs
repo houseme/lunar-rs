@@ -9,7 +9,7 @@ use crate::auc::Auc;
 use crate::bengali::Bengali;
 use crate::byzantine::Byzantine;
 use crate::coptic::Coptic;
-use crate::culture::{HideHeavenStem, HideHeavenStemDay, HideHeavenStemType, Nine, NineDay};
+use crate::culture::{HideHeavenStem, HideHeavenStemDay, HideHeavenStemType, Nine, NineDay, Week};
 use crate::dangi::Dangi;
 use crate::ethiopian::Ethiopian;
 use crate::event::{
@@ -192,6 +192,12 @@ impl Solar {
     #[inline]
     pub fn week_in_chinese(&self) -> &'static str {
         solar_util::WEEK[self.week() as usize]
+    }
+
+    /// 星期 typed 对象。
+    #[inline]
+    pub fn week_info(&self) -> Week {
+        Week::from_index(self.week() as usize)
     }
 
     /// 星期几（显式语言版本，需启用 `i18n` feature）。

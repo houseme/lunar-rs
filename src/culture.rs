@@ -903,6 +903,36 @@ impl fmt::Display for Terrain {
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct Week {
+    index: usize,
+}
+
+impl Week {
+    pub const fn from_index(index: usize) -> Self {
+        Self { index }
+    }
+
+    pub fn from_name(name: &str) -> Option<Self> {
+        solar_util::WEEK.iter().position(|value| *value == name).map(Self::from_index)
+    }
+
+    pub const fn index(&self) -> usize {
+        self.index
+    }
+
+    pub fn name(&self) -> &'static str {
+        solar_util::WEEK[self.index % solar_util::WEEK.len()]
+    }
+}
+
+impl fmt::Display for Week {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.name())
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Xiu {
     name: &'static str,
     luck: GodLuck,
@@ -1785,6 +1815,7 @@ impl_named_culture!(
     XiuAnimal,
     Shou,
     Terrain,
+    Week,
     Xiu,
     XunKong,
     Xun,
@@ -1947,6 +1978,20 @@ impl CycleItem for Terrain {
 
     fn size() -> usize {
         TERRAIN_NAMES.len()
+    }
+}
+
+impl CycleItem for Week {
+    fn from_cycle_index(index: usize) -> Self {
+        Self::from_index(index % Self::size())
+    }
+
+    fn index(&self) -> usize {
+        self.index()
+    }
+
+    fn size() -> usize {
+        solar_util::WEEK.len()
     }
 }
 

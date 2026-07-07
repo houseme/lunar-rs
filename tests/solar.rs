@@ -2,7 +2,7 @@
 
 mod common;
 
-use lunar_rs::{Solar, lunar_util, solar_util};
+use lunar_rs::{CycleItem, Solar, lunar_util, solar_util};
 
 use common::norm;
 
@@ -44,6 +44,17 @@ fn days_between_1582() {
     assert_eq!(solar_util::days_between(1582, 1, 1, 1583, 1, 1), 355);
     assert_eq!(solar_util::days_between(1582, 10, 4, 1582, 11, 1), 18);
     assert_eq!(solar_util::days_between(1582, 10, 4, 1582, 10, 15), 1);
+}
+
+#[test]
+fn solar_week_info_wraps_legacy_week_getters() {
+    let solar = Solar::from_ymd(2024, 4, 22).unwrap();
+    let week = solar.week_info();
+
+    assert_eq!(week.index() as i32, solar.week());
+    assert_eq!(week.name(), solar.week_in_chinese());
+    assert_eq!(week.next(1).steps_back_to(week.index()), -1);
+    assert_eq!(lunar_rs::Week::from_name(week.name()).unwrap(), week);
 }
 
 #[test]
