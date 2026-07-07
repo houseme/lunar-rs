@@ -315,7 +315,12 @@ fn tyme_core_day_time_and_term_names_are_available() {
     assert_eq!(lunar_hour.get_sixty_cycle().name(), lunar_hour.sixty_cycle().name());
     assert_eq!(lunar_hour.get_sixty_cycle_hour().name(), lunar_hour.sixty_cycle_hour().name());
     assert_eq!(lunar_hour.get_nine_star().to_string(), lunar_hour.nine_star().to_string());
-    assert_eq!(lunar_hour.get_twelve_star().name(), lunar_hour.tian_shen());
+    // The hour 黄黑道 twelve-star (`get_twelve_star`) is a distinct concept from the
+    // 七曜 时天神 (`tian_shen`); the old `from_name(tian_shen())` impl wrongly
+    // conflated them. `get_twelve_star` now uses the 建除 formula (matching the day
+    // method and tyme4rs), and its values are pinned by the differential suite and
+    // `tests/differential_protocol.rs` rather than equated to `tian_shen` here.
+    assert!(!lunar_hour.get_twelve_star().name().is_empty());
     assert!(!lunar_hour.get_recommends().is_empty());
     assert!(!lunar_hour.get_avoids().is_empty());
     assert_eq!(lunar_hour.get_minor_ren().name(), lunar_hour.minor_ren().name());

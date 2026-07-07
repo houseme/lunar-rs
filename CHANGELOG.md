@@ -9,6 +9,14 @@ and this project uses semantic versioning once releases are published.
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [1.0.0-rc1] - 2026-07-07
+
+### Added
+
 - Added the initial Rust crate scaffold for `lunar-rs`.
 - Added Solar/Gregorian date primitives with:
   - date and date-time constructors,
@@ -138,8 +146,48 @@ and this project uses semantic versioning once releases are published.
   - `FotoFestival::to_event(...)`,
   - `TaoFestival::to_event(...)`.
 - Added English and Chinese README documentation.
+- Added the full typed culture-object layer completing `tyme4rs` v1.5 parity:
+  `Constellation`, `MoonPhase`/`MoonPhaseDay` (8-phase astronomical moon phase),
+  `SixStar`/`LiuYao`, `SevenStar`, `Ecliptic`, `TwelveStar`, `TenStar`,
+  `Dipper`, `FetusDay`/`FetusMonth`/`FetusHeavenStem`/`FetusEarthBranch`,
+  `PlumRainDay`/`PlumRainKind`, `HideHeavenStem`/`HideHeavenStemDay`/
+  `HideHeavenStemType`, `KitchenGodSteed`, `MinorRen`, `DogDay`/`Fu`,
+  `Nine`/`NineDay`/`ShuJiu`, `PengZu`/`PengZuHeavenStem`/`PengZuEarthBranch`,
+  `Xiu`/`XiuAnimal`, `Beast`/`Shou`, `Land`/`Zone`/`Terrain`/`Direction`,
+  `YuanCycle`/`YunCycle`, `TianShen`/`TianShenType`, `God`/`GodLuck`/`Taboo`/
+  `TabooKind`, `Lu`, `ChongSha`, `TaiSuiPosition`/`TaiPosition`, `Season`, and
+  `YearFortune`/`YearFortuneKind`.
+- Added a `tyme4rs` compatibility layer: type aliases (`SolarDay`, `SolarTime`,
+  `SolarTerm`, `LunarDay`, `LunarHour`, `HijriDay`, `LegalHoliday`, `Animal`,
+  `Luck`, `Sixty`, `Sound`, `Ten`, `Twenty`) plus `JulianDay`, and a broad
+  family of `get_*` migration entry points on `Solar`, `Lunar`, `LunarTime`,
+  `LunarYear`, `LunarMonth`, `Foto`, and `Tao`.
+- Added `SolarFestival`/`LunarFestival` wrappers and `EventType`/`EventBuilder`
+  rule constructors for `tyme4rs`-style event compatibility.
+- Added owned `Foto`/`Tao` wrappers with `get_*` entry points and companion
+  getters on `FotoYear`/`FotoMonth`/`TaoYear`/`TaoMonth`.
+- Added 27 additional calendar systems reachable from `Solar` (Minguo,
+  Japanese, Juche, Dangi, Julian, Coptic, Ethiopian, Armenian, AUC, Byzantine,
+  Holocene, HispanicEra, Assyrian, Saka, Bengali, Koki, ThaiBuddhist,
+  ThaiSolar, Fasli, Nanakshahi, Seleucid, Rattanakosin, Venetian, Rumi,
+  AnnoLucis, alongside Hijri and RabByung/Tibetan), bringing the total to 30
+  calendar systems.
+- Added the end-to-end user guide at `docs/usage-guide.md`.
+- Added the verified `tyme4rs` feature-gap analysis at
+  `docs/tyme4rs-comparison-verified-2026-07-07.md`, with per-item `file:line`
+  evidence confirming `lunar-rs` is now a functional superset.
 
 ### Changed
+
+- Updated `README.md` and `README_CN.md` to document the verified `tyme4rs`
+  v1.5 functional-superset status, multi-calendar and events usage examples,
+  and links to the new `docs/` guides.
+- Refactored the differential-testing snapshot into a single source-of-truth
+  `FIELDS` table (`src/differential_support.rs`), collapsing the five parallel
+  copies of the 52-field protocol into one declarative definition;
+  `solar_snapshot` / `solar_snapshot_keys` and the differential test all derive
+  from it. A compute-once `Ctx` and a `Val` enum (static-string values skip
+  allocation) cut redundant lookups and per-snapshot heap traffic.
 
 - Updated crate metadata for Rust 2024 edition.
 - Switched the toolchain file to `rust-toolchain.toml`.
@@ -168,9 +216,19 @@ and this project uses semantic versioning once releases are published.
 - Fixed `Lunar::eight_char()` to return an explicitly borrowed `EightChar<'_>`.
 - Fixed two-digit upper bounds in `lunar_util::get_time_zhi_index`, keeping time
   branch comparisons lexicographically stable.
-
-## [0.1.0] - Unreleased
-
-### Added
-
-- Initial development version.
+- Hardened `LunarHour` differential alignment and extended the `tyme4rs`
+  differential protocol to `v8`, expanding the sample matrix to cover festival
+  wrappers, leap-month metadata, weekday, constellation, legal holidays,
+  culture-day object strings, and stable `LunarYear`/`LunarMonth`/`LunarHour`
+  culture fields.
+- Updated stale `lunar_hour_twelve_star` goldens in
+  `tests/differential_protocol.rs` and removed a false-equivalence assertion
+  in `tests/phase2_typed.rs` left behind by the `LunarTime::get_twelve_star()`
+  formula correction; the hour twelve-star (黄黑道) is distinct from the
+  七曜 时天神 it was previously equated to.
+- Documented and handled a known cross-implementation divergence with `tyme4rs`
+  at the late zǐ hour (23:00–23:59): the hour twelve-star depends on the
+  day-pillar sect convention (lunar-rs/lunar-javascript keep the current day;
+  tyme4rs rolls to the next day). The formula is unchanged (identical to
+  tyme4rs); the opt-in `tyme4rs` differential now skips `lunar_hour_twelve_star`
+  for `hour == 23`.

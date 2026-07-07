@@ -10,8 +10,21 @@ The implementation is a Rust port inspired by
 astronomical algorithms and embedded data tables. The core crate is designed to
 avoid third-party runtime dependencies.
 
-> Status: active 0.1.0 port. `cargo test` and crate doctests currently pass
-> against the local golden integration suite.
+> Status: **1.0.0-rc1** release candidate. `cargo test` and crate doctests pass
+> against the local golden integration suite. A verified feature-by-feature
+> comparison against [`6tail/tyme4rs`](https://github.com/6tail/tyme4rs) v1.5
+> confirms `lunar-rs` is now a functional **superset** (30 calendar systems vs
+> 4, plus Buddhist/Taoist calendars, runtime holiday override, i18n, and serde),
+> with a `tyme4rs` compatibility layer of type aliases and `get_*` entry points.
+
+## Documentation
+
+- [`docs/usage-guide.md`](docs/usage-guide.md) — end-to-end user guide (Chinese)
+  covering conversion, GanZhi, JieQi, almanac fields, EightChar, multi-calendar,
+  events, holidays, i18n, serde, and tyme4rs migration.
+- [`docs/tyme4rs-comparison-verified-2026-07-07.md`](docs/tyme4rs-comparison-verified-2026-07-07.md)
+  — verified feature-gap analysis vs `tyme4rs` v1.5, with `file:line` evidence.
+- [`docs/DESIGN.md`](docs/DESIGN.md) — internal design notes.
 
 ## Features
 
@@ -61,7 +74,7 @@ From crates.io after release:
 
 ```toml
 [dependencies]
-lunar-rs = "0.1"
+lunar-rs = "1.0.0-rc1"
 ```
 
 From Git while the crate is under active development:
@@ -154,6 +167,34 @@ let tao = lunar.tao();
 
 println!("Buddhist calendar: {}", foto.to_string_cn());
 println!("Taoist calendar: {}", tao.to_string_cn());
+```
+
+Multi-calendar conversion (30 systems reachable from `Solar`):
+
+```rust
+use lunar_rs::Solar;
+
+let solar = Solar::from_ymd(2024, 5, 15).unwrap();
+println!("Hijri:    {}", solar.hijri());
+println!("Tibetan:  {}", solar.rab_byung_day().unwrap());
+println!("Minguo:   {}", solar.minguo());
+println!("Japanese: {}", solar.japanese().unwrap());
+println!("Julian:   {}", solar.julian_calendar());
+```
+
+Event aggregation (festivals, JieQi, legal holidays in one call):
+
+```rust
+use lunar_rs::Solar;
+
+let solar = Solar::from_ymd(2024, 10, 1).unwrap();
+for event in solar.events() {
+    println!("[{:?}] {}", event.kind(), event.name());
+}
+
+// Range scan over a period
+let end = Solar::from_ymd(2024, 10, 7).unwrap();
+let count = solar.events_until(end).len();
 ```
 
 ## tyme4rs Migration Notes

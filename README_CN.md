@@ -7,7 +7,18 @@
 [lunar-javascript](https://github.com/6tail/lunar-javascript)，并移植寿星天文历
 相关天文算法与数据表。核心 crate 设计目标是零第三方运行时依赖。
 
-> 当前状态：0.1.0 移植阶段。当前本地黄金测试与 doctest 已全部通过。
+> 当前状态：**1.0.0-rc1** 发布候选。当前本地黄金测试与 doctest 已全部通过。
+> 已逐项核实对标 [`6tail/tyme4rs`](https://github.com/6tail/tyme4rs) v1.5：`lunar-rs`
+> 现已是功能**超集**（30 套历法 vs 4 套，外加佛历/道历、法定假日运行时覆盖、i18n、serde），
+> 并提供 `tyme4rs` 兼容层（类型别名 + `get_*` 迁移入口）。
+
+## 文档
+
+- [`docs/usage-guide.md`](docs/usage-guide.md) — 端到端用户使用指南，覆盖互转、干支、
+  节气、黄历字段、八字、多历法、事件、假日、i18n、serde 与 tyme4rs 迁移。
+- [`docs/tyme4rs-comparison-verified-2026-07-07.md`](docs/tyme4rs-comparison-verified-2026-07-07.md)
+  — 对标 tyme4rs v1.5 的核实结论，每项附 `file:line` 依据。
+- [`docs/DESIGN.md`](docs/DESIGN.md) — 内部设计说明。
 
 ## 功能特性
 
@@ -52,7 +63,7 @@
 
 ```toml
 [dependencies]
-lunar-rs = "0.1"
+lunar-rs = "1.0.0-rc1"
 ```
 
 开发阶段可直接引用 Git 仓库：
@@ -145,6 +156,34 @@ let tao = lunar.tao();
 
 println!("佛历：{}", foto.to_string_cn());
 println!("道历：{}", tao.to_string_cn());
+```
+
+多历法转换（经 `Solar` 入口可达 30 套历法）：
+
+```rust
+use lunar_rs::Solar;
+
+let solar = Solar::from_ymd(2024, 5, 15).unwrap();
+println!("回历：{}", solar.hijri());
+println!("藏历：{}", solar.rab_byung_day().unwrap());
+println!("民国历：{}", solar.minguo());
+println!("日本年号：{}", solar.japanese().unwrap());
+println!("儒略历：{}", solar.julian_calendar());
+```
+
+事件聚合（一次调用拿到节日、节气、法定假日）：
+
+```rust
+use lunar_rs::Solar;
+
+let solar = Solar::from_ymd(2024, 10, 1).unwrap();
+for event in solar.events() {
+    println!("[{:?}] {}", event.kind(), event.name());
+}
+
+// 区间扫描
+let end = Solar::from_ymd(2024, 10, 7).unwrap();
+let count = solar.events_until(end).len();
 ```
 
 ## tyme4rs 迁移示例

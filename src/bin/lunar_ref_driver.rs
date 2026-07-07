@@ -2,7 +2,7 @@ use std::env;
 use std::process::ExitCode;
 
 use lunar_rs::Solar;
-use lunar_rs::differential_support::solar_snapshot;
+use lunar_rs::differential_support::{solar_snapshot, write_snapshot};
 
 fn usage(program: &str) -> String {
     format!(
@@ -32,9 +32,9 @@ fn run() -> Result<(), String> {
     let solar = Solar::from_ymd_hms(year, month, day, hour, minute, second)
         .map_err(|err| format!("invalid solar input: {err}"))?;
 
-    for (key, value) in solar_snapshot(solar) {
-        println!("{key}={value}");
-    }
+    let snapshot = solar_snapshot(solar);
+    write_snapshot(&snapshot, &mut std::io::stdout())
+        .map_err(|err| format!("failed to write snapshot: {err}"))?;
 
     Ok(())
 }
