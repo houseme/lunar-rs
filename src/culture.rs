@@ -16,6 +16,11 @@ const FETUS_EARTH_BRANCH_NAMES: [&str; 6] = ["碓", "厕", "炉", "门", "栖", 
 const MINOR_REN_NAMES: [&str; 6] = ["大安", "留连", "速喜", "赤口", "小吉", "空亡"];
 const MINOR_REN_ELEMENTS: [&str; 6] = ["木", "水", "火", "金", "木", "土"];
 const NINE_NAMES: [&str; 9] = ["一九", "二九", "三九", "四九", "五九", "六九", "七九", "八九", "九九"];
+const XIU_ANIMAL_NAMES: [&str; 28] = [
+    "蛟", "龙", "貉", "兔", "狐", "虎", "豹", "獬", "牛", "蝠", "鼠", "燕", "猪", "獝", "狼", "狗", "彘", "鸡", "乌",
+    "猴", "猿", "犴", "羊", "獐", "马", "鹿", "蛇", "蚓",
+];
+const BEAST_NAMES: [&str; 4] = ["青龙", "玄武", "白虎", "朱雀"];
 
 pub trait NamedCulture {
     fn name(&self) -> &str;
@@ -806,8 +811,26 @@ impl XiuAnimal {
         Self { name }
     }
 
+    pub const fn from_index(index: usize) -> Self {
+        Self { name: XIU_ANIMAL_NAMES[index % XIU_ANIMAL_NAMES.len()] }
+    }
+
+    pub fn from_name(name: &str) -> Option<Self> {
+        XIU_ANIMAL_NAMES.iter().position(|value| *value == name).map(Self::from_index)
+    }
+
+    pub fn index(&self) -> usize {
+        XIU_ANIMAL_NAMES.iter().position(|value| *value == self.name).unwrap_or(0)
+    }
+
     pub const fn name(&self) -> &'static str {
         self.name
+    }
+}
+
+impl fmt::Display for XiuAnimal {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.name)
     }
 }
 
@@ -822,10 +845,30 @@ impl Shou {
         Self { name }
     }
 
+    pub const fn from_index(index: usize) -> Self {
+        Self { name: BEAST_NAMES[index % BEAST_NAMES.len()] }
+    }
+
+    pub fn from_name(name: &str) -> Option<Self> {
+        BEAST_NAMES.iter().position(|value| *value == name).map(Self::from_index)
+    }
+
+    pub fn index(&self) -> usize {
+        BEAST_NAMES.iter().position(|value| *value == self.name).unwrap_or(0)
+    }
+
     pub const fn name(&self) -> &'static str {
         self.name
     }
 }
+
+impl fmt::Display for Shou {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.name)
+    }
+}
+
+pub type Beast = Shou;
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -1830,6 +1873,34 @@ impl CycleItem for PengZuEarthBranch {
 
     fn size() -> usize {
         lunar_util::tables::PENGZU_ZHI.len() - 1
+    }
+}
+
+impl CycleItem for XiuAnimal {
+    fn from_cycle_index(index: usize) -> Self {
+        Self::from_index(index % Self::size())
+    }
+
+    fn index(&self) -> usize {
+        self.index()
+    }
+
+    fn size() -> usize {
+        XIU_ANIMAL_NAMES.len()
+    }
+}
+
+impl CycleItem for Shou {
+    fn from_cycle_index(index: usize) -> Self {
+        Self::from_index(index % Self::size())
+    }
+
+    fn index(&self) -> usize {
+        self.index()
+    }
+
+    fn size() -> usize {
+        BEAST_NAMES.len()
     }
 }
 

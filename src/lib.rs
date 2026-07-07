@@ -127,7 +127,7 @@ pub use bengali::{Bengali, BengaliMonth, BengaliYear};
 pub use byzantine::{Byzantine, ByzantineMonth, ByzantineYear};
 pub use coptic::{Coptic, CopticMonth, CopticYear};
 pub use culture::{
-    ChongSha, Constellation, CultureDay, CycleItem, Direction, DogDay, Duty, EarthBranch, Element, FetusDay,
+    Beast, ChongSha, Constellation, CultureDay, CycleItem, Direction, DogDay, Duty, EarthBranch, Element, FetusDay,
     FetusEarthBranch, FetusHeavenStem, FetusMonth, God, GodLuck, HeavenStem, HideHeavenStem, HideHeavenStemDay,
     HideHeavenStemType, LiuYao, Lu, MinorRen, NamedCulture, Nayin, Nine, NineDay, PengZu, PengZuEarthBranch,
     PengZuHeavenStem, Phase, PhaseDay, Phenology, PhenologyDay, PlumRainDay, PlumRainKind, Season, Shou, SixtyCycle,

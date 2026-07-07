@@ -273,8 +273,10 @@ fn typed_tian_shen_xiu_lu_and_chong_sha_match_legacy_getters() {
     assert_eq!(xiu.luck().label(), lunar.xiu_luck());
     assert_eq!(xiu.zheng(), lunar.zheng());
     assert_eq!(xiu.animal().name(), lunar.animal());
+    assert_eq!(xiu.animal().next(1).steps_back_to(xiu.animal().index()), -1);
     assert_eq!(xiu.gong().name(), lunar.gong());
     assert_eq!(xiu.shou().name(), lunar.shou());
+    assert_eq!(xiu.shou().next(1).steps_back_to(xiu.shou().index()), -1);
 
     let lu = Solar::from_ymd(2017, 2, 15).unwrap().lunar().day_lu_info();
     assert_eq!(lu.mutual(), "子");
