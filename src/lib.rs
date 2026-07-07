@@ -185,6 +185,10 @@ pub use tao::{Tao, TaoMonth, TaoYear};
 pub use thai_buddhist::{ThaiBuddhist, ThaiBuddhistMonth, ThaiBuddhistYear};
 pub use thai_solar::{ThaiSolar, ThaiSolarMonth, ThaiSolarYear};
 pub use venetian::{Venetian, VenetianMonth, VenetianYear};
+pub use yun::{
+    ChildLimit, ChildLimitInfo, ChildLimitProvider, China95ChildLimitProvider, DefaultChildLimitProvider,
+    LunarSect1ChildLimitProvider, LunarSect2ChildLimitProvider,
+};
 pub use yun::{DaYun, LiuNian, LiuYue, XiaoYun, Yun};
 
 /// 性别：`1` 男，`0` 女（与参考实现 lunar-go 一致）。

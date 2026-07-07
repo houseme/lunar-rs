@@ -1,8 +1,9 @@
 //! EightChar / Yun focused tests migrated from the reference implementations.
 
 use lunar_rs::{
-    DefaultEightCharProvider, EightCharProvider, Lunar, LunarSect1EightCharProvider, LunarSect2EightCharProvider,
-    NamedCulture, SixtyCycleDay, SixtyCycleHour, SixtyCycleMonth, SixtyCycleYear,
+    ChildLimitProvider, China95ChildLimitProvider, DefaultChildLimitProvider, DefaultEightCharProvider,
+    EightCharProvider, Lunar, LunarSect1ChildLimitProvider, LunarSect1EightCharProvider, LunarSect2ChildLimitProvider,
+    LunarSect2EightCharProvider, NamedCulture, SixtyCycleDay, SixtyCycleHour, SixtyCycleMonth, SixtyCycleYear,
 };
 
 #[test]
@@ -62,6 +63,49 @@ fn eight_char_provider_api_preserves_default_and_allows_sect_selection() {
     let sect2 = lunar.eight_char_with_provider(provider);
     assert_eq!(sect2.sect(), 2);
     assert_eq!(sect2.time(), lunar.eight_char().time());
+}
+
+#[test]
+fn child_limit_provider_api_wraps_yun_start_rules() {
+    let lunar = Lunar::from_ymd_hms(2019, 12, 12, 11, 22, 0).unwrap();
+    let ec = lunar.eight_char();
+    let gender = 1;
+
+    let sect1_provider = LunarSect1ChildLimitProvider::new();
+    let sect1 = ec.child_limit_with_provider(gender, &sect1_provider);
+    let sect1_yun = ec.yun_by_sect(gender, 1);
+    assert_eq!(sect1.info(), sect1_yun.child_limit_info());
+    assert_eq!(sect1.start_solar(), lunar.solar());
+    assert_eq!(sect1.end_solar(), sect1_yun.start_solar());
+    assert_eq!(sect1.is_forward(), sect1_yun.is_forward());
+
+    let sect2_provider = LunarSect2ChildLimitProvider::new();
+    let provider: &dyn ChildLimitProvider = &sect2_provider;
+    let sect2 = ec.child_limit_with_provider(gender, provider);
+    let sect2_yun = ec.yun_by_sect(gender, 2);
+    assert_eq!(sect2.info(), sect2_yun.child_limit_info());
+    assert_eq!(sect2.hour_count(), sect2_yun.start_hour());
+
+    let default_limit = ec.child_limit(gender);
+    assert_eq!(default_limit.gender(), gender);
+    assert_eq!(default_limit.start_solar().to_ymd_hms(), "2020-01-06 11:22:00");
+    assert!(default_limit.end_solar().is_after(&default_limit.start_solar()));
+}
+
+#[test]
+fn child_limit_default_and_china95_providers_expose_distinct_counts() {
+    let lunar = Lunar::from_ymd_hms(2019, 12, 12, 11, 22, 0).unwrap();
+    let ec = lunar.eight_char();
+    let gender = 1;
+
+    let default_provider = DefaultChildLimitProvider::new();
+    let default_limit = ec.child_limit_with_provider(gender, &default_provider);
+    assert_eq!(default_limit.minute_count() % 2, 0);
+
+    let china95 = ec.child_limit_with_provider(gender, &China95ChildLimitProvider::new());
+    assert_eq!(china95.hour_count(), 0);
+    assert_eq!(china95.minute_count(), 0);
+    assert!(china95.end_solar().is_after(&china95.start_solar()));
 }
 
 #[test]

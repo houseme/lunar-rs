@@ -4,7 +4,7 @@ use crate::Gender;
 use crate::culture::{SixtyCycle, SixtyCycleDay, SixtyCycleHour, SixtyCycleMonth, SixtyCycleYear, ThreePillars};
 use crate::lunar::Lunar;
 use crate::lunar_util;
-use crate::yun::Yun;
+use crate::yun::{ChildLimit, ChildLimitProvider, DefaultChildLimitProvider, Yun};
 
 const MONTH_ZHI: &[&str; 13] = &["", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥", "子", "丑"];
 const CHANG_SHENG: &[&str; 12] = &["长生", "沐浴", "冠带", "临官", "帝旺", "衰", "病", "死", "墓", "绝", "胎", "养"];
@@ -361,6 +361,15 @@ impl<'a> EightChar<'a> {
     }
     pub fn yun_by_sect(&self, gender: Gender, sect: u8) -> Yun<'_> {
         Yun::new(self.lunar, gender, sect)
+    }
+    pub fn child_limit(&self, gender: Gender) -> ChildLimit<'_> {
+        self.child_limit_with_provider(gender, &DefaultChildLimitProvider::new())
+    }
+    pub fn child_limit_with_provider<P>(&self, gender: Gender, provider: &P) -> ChildLimit<'_>
+    where
+        P: ChildLimitProvider + ?Sized,
+    {
+        provider.child_limit(self.lunar, gender)
     }
 
     // ---- 旬 / 空亡 ----

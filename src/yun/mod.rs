@@ -2,11 +2,16 @@
 //!
 //! 每个结构体持有 `&Lunar` 并在构造期捕获所需标量（顺逆、起始年等），避免嵌套借用。
 
+mod child_limit;
 mod da_yun;
 mod liu_nian;
 mod liu_yue;
 mod xiao_yun;
 
+pub use child_limit::{
+    ChildLimit, ChildLimitInfo, ChildLimitProvider, China95ChildLimitProvider, DefaultChildLimitProvider,
+    LunarSect1ChildLimitProvider, LunarSect2ChildLimitProvider,
+};
 pub use da_yun::DaYun;
 pub use liu_nian::LiuNian;
 pub use liu_yue::LiuYue;
@@ -103,6 +108,10 @@ impl<'a> Yun<'a> {
     }
     pub const fn lunar(&self) -> &Lunar {
         self.lunar
+    }
+
+    pub fn child_limit_info(&self) -> ChildLimitInfo {
+        ChildLimitInfo::from_yun(self)
     }
 
     pub fn start_solar(&self) -> Solar {

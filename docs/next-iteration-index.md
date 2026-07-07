@@ -221,5 +221,6 @@
 | `P3` | `Task 65` | EightChar provider 化 | `已完成` | [docs/tasks/65-phase-next-eight-char-provider.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/65-phase-next-eight-char-provider.md) |
 | `P3` | `Task 66` | EventRule 节气后天干 / 地支规则 | `已完成` | [docs/tasks/66-phase-next-event-term-stem-branch-rules.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/66-phase-next-event-term-stem-branch-rules.md) |
 | `P2` | `Task 67` | NineDay / HideHeavenStemDay 文化日对象 | `已完成` | [docs/tasks/67-phase-next-nine-hide-heaven-stem-days.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/67-phase-next-nine-hide-heaven-stem-days.md) |
+| `P2` | `Task 68` | ChildLimit provider 与童限信息对象 | `已完成` | [docs/tasks/68-phase-next-child-limit-provider.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/68-phase-next-child-limit-provider.md) |
 
-后续建议继续按新对标文档和本索引中的 `Task 59` - `Task 67` 推进，不再把已经完成的 Phase 4 多历法工作重复列为待办。
+后续建议继续按新对标文档和本索引中的 `Task 59` - `Task 68` 推进，不再把已经完成的 Phase 4 多历法工作重复列为待办。
