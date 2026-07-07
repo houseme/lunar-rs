@@ -16,6 +16,8 @@ pub enum LunarError {
     GregorianGap { year: i32, month: i32, day: i32 },
     /// 非法农历字段（年 / 月 / 日）。
     InvalidLunar { year: i32, month: i32, day: i32 },
+    /// 非法回历字段（年 / 月 / 日）。
+    InvalidHijri { year: i32, month: i32, day: i32 },
     /// 农历日超出当月天数。
     LunarDayOverflow { year: i32, month: i32, day: i32, max: i32 },
     /// 该年无此闰月（例如指定了闰四月但当年不闰四月）。
@@ -35,6 +37,9 @@ impl fmt::Display for LunarError {
             }
             Self::InvalidLunar { year, month, day } => {
                 write!(f, "invalid lunar date: {year}-{month}-{day}")
+            }
+            Self::InvalidHijri { year, month, day } => {
+                write!(f, "invalid hijri date: {year}-{month}-{day}")
             }
             Self::LunarDayOverflow { year, month, day, max } => {
                 write!(f, "lunar day {day} out of range: only {max} days in lunar {year}-{month}")

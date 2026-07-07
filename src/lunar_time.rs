@@ -1,5 +1,8 @@
 //! 时辰（两小时为一时辰）。对应 lunar-go `calendar/LunarTime.go`。
 
+use crate::culture::{
+    ChongSha, Direction, EarthBranch, HeavenStem, MinorRen, Nayin, SixtyCycle, SixtyCycleHour, TianShen, Xun, Zodiac,
+};
 use crate::lunar::Lunar;
 use crate::lunar_util;
 use crate::nine_star::NineStar;
@@ -29,11 +32,27 @@ impl<'a> LunarTime<'a> {
     pub fn gan(&self) -> &'static str {
         lunar_util::tables::GAN[(self.gan_index + 1) as usize]
     }
+    pub fn heaven_stem(&self) -> HeavenStem {
+        HeavenStem::from_index(self.gan_index as usize)
+    }
     pub fn zhi(&self) -> &'static str {
         lunar_util::tables::ZHI[(self.zhi_index + 1) as usize]
     }
+    pub fn earth_branch(&self) -> EarthBranch {
+        EarthBranch::from_index(self.zhi_index as usize)
+    }
     pub fn gan_zhi(&self) -> String {
         format!("{}{}", self.gan(), self.zhi())
+    }
+    pub fn sixty_cycle(&self) -> SixtyCycle {
+        SixtyCycle::from_name(&self.gan_zhi()).expect("time ganzhi must map to sixty-cycle")
+    }
+    pub fn sixty_cycle_hour(&self) -> SixtyCycleHour {
+        SixtyCycleHour::new(self.sixty_cycle())
+    }
+    pub fn minor_ren(&self) -> MinorRen {
+        let index = self.lunar.day_minor_ren().index() as i64 + self.zhi_index;
+        MinorRen::from_index(index.rem_euclid(6) as usize)
     }
     pub fn sheng_xiao(&self) -> &'static str {
         lunar_util::tables::SHENG_XIAO[(self.zhi_index + 1) as usize]
@@ -42,11 +61,17 @@ impl<'a> LunarTime<'a> {
     pub fn position_xi(&self) -> &'static str {
         lunar_util::tables::POSITION_XI[(self.gan_index + 1) as usize]
     }
+    pub fn position_xi_direction(&self) -> Direction {
+        Direction::new(self.position_xi())
+    }
     pub fn position_xi_desc(&self) -> &'static str {
         lunar_util::position_desc(self.position_xi())
     }
     pub fn position_yang_gui(&self) -> &'static str {
         lunar_util::tables::POSITION_YANG_GUI[(self.gan_index + 1) as usize]
+    }
+    pub fn position_yang_gui_direction(&self) -> Direction {
+        Direction::new(self.position_yang_gui())
     }
     pub fn position_yang_gui_desc(&self) -> &'static str {
         lunar_util::position_desc(self.position_yang_gui())
@@ -54,11 +79,17 @@ impl<'a> LunarTime<'a> {
     pub fn position_yin_gui(&self) -> &'static str {
         lunar_util::tables::POSITION_YIN_GUI[(self.gan_index + 1) as usize]
     }
+    pub fn position_yin_gui_direction(&self) -> Direction {
+        Direction::new(self.position_yin_gui())
+    }
     pub fn position_yin_gui_desc(&self) -> &'static str {
         lunar_util::position_desc(self.position_yin_gui())
     }
     pub fn position_fu(&self) -> &'static str {
         self.position_fu_by_sect(2)
+    }
+    pub fn position_fu_direction(&self) -> Direction {
+        Direction::new(self.position_fu())
     }
     pub fn position_fu_by_sect(&self, sect: u8) -> &'static str {
         let offset = (self.gan_index + 1) as usize;
@@ -70,6 +101,9 @@ impl<'a> LunarTime<'a> {
     pub fn position_cai(&self) -> &'static str {
         lunar_util::tables::POSITION_CAI[(self.gan_index + 1) as usize]
     }
+    pub fn position_cai_direction(&self) -> Direction {
+        Direction::new(self.position_cai())
+    }
     pub fn position_cai_desc(&self) -> &'static str {
         lunar_util::position_desc(self.position_cai())
     }
@@ -77,11 +111,17 @@ impl<'a> LunarTime<'a> {
     pub fn nayin(&self) -> &'static str {
         lunar_util::nayin(&self.gan_zhi())
     }
+    pub fn nayin_info(&self) -> Nayin {
+        Nayin::new(self.nayin())
+    }
 
     pub fn tian_shen(&self) -> &'static str {
         let off = lunar_util::ZHI_TIAN_SHEN_OFFSET
             [lunar_util::find(self.lunar.day_zhi_exact(), lunar_util::tables::ZHI, 0) as usize];
         lunar_util::tables::TIAN_SHEN[((self.zhi_index + off) % 12 + 1) as usize]
+    }
+    pub fn tian_shen_info(&self) -> TianShen {
+        TianShen::new(self.tian_shen())
     }
     pub fn tian_shen_type(&self) -> &'static str {
         lunar_util::tian_shen_type(self.tian_shen())
@@ -113,6 +153,9 @@ impl<'a> LunarTime<'a> {
     }
     pub fn chong_desc(&self) -> String {
         format!("({}{}){}", self.chong_gan(), self.chong(), self.chong_sheng_xiao())
+    }
+    pub fn chong_sha(&self) -> ChongSha {
+        ChongSha::new(self.chong_gan(), self.chong(), Zodiac::new(self.chong_sheng_xiao()), Direction::new(self.sha()))
     }
 
     pub fn yi(&self) -> Vec<&'static str> {
@@ -150,6 +193,9 @@ impl<'a> LunarTime<'a> {
     }
     pub fn xun_kong(&self) -> &'static str {
         lunar_util::get_xun_kong(&self.gan_zhi())
+    }
+    pub fn xun_info(&self) -> Xun {
+        Xun::new(self.xun(), self.xun_kong())
     }
 
     /// 当前时辰最早时分。

@@ -21,6 +21,12 @@
 - 九星、数九、三伏、阳历年/月/周/季度/半年等辅助模型。
 - 八字四柱、大运、流年、流月、小运等运程基础能力。
 - 可通过 `Lunar::foto()` 与 `Lunar::tao()` 获取佛历、道历模型。
+- 额外多历法 companion 已覆盖 `Hijri`、`RabByung`、`Minguo`、
+  `ThaiSolar`、`Japanese`、`Juche`、`Dangi`、`Julian`、`Holocene`、
+  `Byzantine`、`Coptic`、`Ethiopian`、`Armenian`、`AUC`、`Assyrian`、
+  `HispanicEra`、`Saka`、`Koki`、`ThaiBuddhist`、`Fasli`、
+  `Nanakshahi`、`Seleucid`、`Rattanakosin`、`Venetian`、`Rumi`、
+  `AnnoLucis` 等 `Solar` 入口变体。
 - 提供 `Solar::events()`、`Lunar::events()`、`Foto::events()`、
   `Tao::events()` 的最小统一事件聚合出口，可查询节日、节气与法定假日。
 - 统一事件模型现已包含 `EventKind`、`CalendarKind`、`EventSource`、

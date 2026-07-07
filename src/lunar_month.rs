@@ -1,7 +1,9 @@
 //! 农历月。对应 lunar-go `calendar/LunarMonth.go`。
 
+use crate::culture::{Direction, EarthBranch, HeavenStem, MinorRen, Nayin, Season, SixtyCycle, TaiSuiPosition, Xun};
 use crate::lunar_util;
 use crate::lunar_year::LunarYear;
+use crate::multi_calendar::CalendarSpan;
 use crate::nine_star::NineStar;
 use crate::solar::Solar;
 
@@ -64,6 +66,14 @@ impl LunarMonth {
         self.zhi_index
     }
 
+    pub fn first_solar_day(&self) -> Solar {
+        Solar::from_julian_day(self.first_julian_day)
+    }
+
+    pub fn last_solar_day(&self) -> Solar {
+        self.first_solar_day().next_day(self.day_count - 1)
+    }
+
     /// 月天干索引（年干遁月）。
     pub fn gan_index(&self) -> i64 {
         let offset = (LunarYear::from_year(self.year).gan_index() + 1) % 5 * 2;
@@ -74,15 +84,48 @@ impl LunarMonth {
     pub fn gan(&self) -> &'static str {
         lunar_util::tables::GAN[(self.gan_index() + 1) as usize]
     }
+    pub fn heaven_stem(&self) -> HeavenStem {
+        HeavenStem::from_index(self.gan_index() as usize)
+    }
     pub fn zhi(&self) -> &'static str {
         lunar_util::tables::ZHI[(self.zhi_index + 1) as usize]
+    }
+    pub fn earth_branch(&self) -> EarthBranch {
+        EarthBranch::from_index(self.zhi_index as usize)
     }
     pub fn gan_zhi(&self) -> String {
         format!("{}{}", self.gan(), self.zhi())
     }
+    pub fn sixty_cycle(&self) -> SixtyCycle {
+        SixtyCycle::from_name(&self.gan_zhi()).expect("month ganzhi must map to sixty-cycle")
+    }
+    pub fn nayin(&self) -> &'static str {
+        lunar_util::nayin(&self.gan_zhi())
+    }
+    pub fn nayin_info(&self) -> Nayin {
+        Nayin::new(self.nayin())
+    }
+    pub fn season(&self) -> &'static str {
+        lunar_util::tables::SEASON[self.month.abs() as usize]
+    }
+    pub fn season_info(&self) -> Season {
+        Season::new(self.season())
+    }
+    pub fn xun(&self) -> &'static str {
+        lunar_util::get_xun(&self.gan_zhi())
+    }
+    pub fn xun_kong(&self) -> &'static str {
+        lunar_util::get_xun_kong(&self.gan_zhi())
+    }
+    pub fn xun_info(&self) -> Xun {
+        Xun::new(self.xun(), self.xun_kong())
+    }
 
     pub fn position_xi(&self) -> &'static str {
         lunar_util::tables::POSITION_XI[(self.gan_index() + 1) as usize]
+    }
+    pub fn position_xi_direction(&self) -> Direction {
+        Direction::new(self.position_xi())
     }
     pub fn position_xi_desc(&self) -> &'static str {
         lunar_util::position_desc(self.position_xi())
@@ -90,17 +133,26 @@ impl LunarMonth {
     pub fn position_yang_gui(&self) -> &'static str {
         lunar_util::tables::POSITION_YANG_GUI[(self.gan_index() + 1) as usize]
     }
+    pub fn position_yang_gui_direction(&self) -> Direction {
+        Direction::new(self.position_yang_gui())
+    }
     pub fn position_yang_gui_desc(&self) -> &'static str {
         lunar_util::position_desc(self.position_yang_gui())
     }
     pub fn position_yin_gui(&self) -> &'static str {
         lunar_util::tables::POSITION_YIN_GUI[(self.gan_index() + 1) as usize]
     }
+    pub fn position_yin_gui_direction(&self) -> Direction {
+        Direction::new(self.position_yin_gui())
+    }
     pub fn position_yin_gui_desc(&self) -> &'static str {
         lunar_util::position_desc(self.position_yin_gui())
     }
     pub fn position_fu(&self) -> &'static str {
         self.position_fu_by_sect(2)
+    }
+    pub fn position_fu_direction(&self) -> Direction {
+        Direction::new(self.position_fu())
     }
     pub fn position_fu_by_sect(&self, sect: u8) -> &'static str {
         let offset = (self.gan_index() + 1) as usize;
@@ -114,6 +166,9 @@ impl LunarMonth {
     }
     pub fn position_cai(&self) -> &'static str {
         lunar_util::tables::POSITION_CAI[(self.gan_index() + 1) as usize]
+    }
+    pub fn position_cai_direction(&self) -> Direction {
+        Direction::new(self.position_cai())
     }
     pub fn position_cai_desc(&self) -> &'static str {
         lunar_util::position_desc(self.position_cai())
@@ -133,6 +188,9 @@ impl LunarMonth {
             }
         }
     }
+    pub fn tai_sui_position(&self) -> TaiSuiPosition {
+        TaiSuiPosition::new(Direction::new(self.position_tai_sui()), self.position_tai_sui_desc())
+    }
     pub fn position_tai_sui_desc(&self) -> &'static str {
         lunar_util::position_desc(self.position_tai_sui())
     }
@@ -148,6 +206,10 @@ impl LunarMonth {
         }
         let offset = (n - month_zhi_index) % 9;
         NineStar::from_index(offset)
+    }
+
+    pub fn minor_ren(&self) -> MinorRen {
+        MinorRen::from_index((self.month.abs().saturating_sub(1) as usize) % 6)
     }
 
     /// 推进 / 回退 n 个月（跨年）。
@@ -215,5 +277,15 @@ impl LunarMonth {
             let offset = (index - rest) as usize;
             months.get(offset).copied()
         }
+    }
+}
+
+impl CalendarSpan for LunarMonth {
+    fn first_solar_day(&self) -> Solar {
+        LunarMonth::first_solar_day(self)
+    }
+
+    fn last_solar_day(&self) -> Solar {
+        LunarMonth::last_solar_day(self)
     }
 }

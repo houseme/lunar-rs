@@ -29,6 +29,11 @@ avoid third-party runtime dependencies.
 - BaZi/EightChar, DaYun, LiuNian, LiuYue, and XiaoYun fortune-cycle primitives.
 - Buddhist and Taoist calendar models available from `Lunar::foto()` and
   `Lunar::tao()`.
+- Additional multi-calendar companions now include Hijri, RabByung, Minguo,
+  ThaiSolar, Japanese, Juche, Dangi, Julian, Holocene, Byzantine, Coptic,
+  Ethiopian, Armenian, AUC, Assyrian, Hispanic Era, Saka, Koki, ThaiBuddhist,
+  Fasli, Nanakshahi, Seleucid, Rattanakosin, Venetian, Rumi, and AnnoLucis
+  variants from `Solar`.
 - Minimal unified event aggregation via `Solar::events()`, `Lunar::events()`,
   `Foto::events()` and `Tao::events()` for festivals, holidays and JieQi.
 - Events now carry `EventKind`, `CalendarKind`, `EventSource`, solar anchor

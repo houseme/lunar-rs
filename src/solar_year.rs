@@ -2,6 +2,8 @@
 
 use std::fmt;
 
+use crate::multi_calendar::CalendarSpan;
+use crate::solar::Solar;
 use crate::solar_month::SolarMonth;
 
 const MONTH_IN_YEAR: i32 = 12;
@@ -27,6 +29,14 @@ impl SolarYear {
         (0..MONTH_IN_YEAR).map(|i| first.next(i)).collect()
     }
 
+    pub fn first_solar_day(&self) -> Solar {
+        Solar::from_ymd(self.year, 1, 1).unwrap()
+    }
+
+    pub fn last_solar_day(&self) -> Solar {
+        Solar::from_ymd(self.year, 12, 31).unwrap()
+    }
+
     pub const fn next(&self, years: i32) -> Self {
         Self::from_year(self.year + years)
     }
@@ -35,5 +45,15 @@ impl SolarYear {
 impl fmt::Display for SolarYear {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.year)
+    }
+}
+
+impl CalendarSpan for SolarYear {
+    fn first_solar_day(&self) -> Solar {
+        SolarYear::first_solar_day(self)
+    }
+
+    fn last_solar_day(&self) -> Solar {
+        SolarYear::last_solar_day(self)
     }
 }

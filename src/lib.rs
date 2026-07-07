@@ -15,7 +15,7 @@
 //! - 大运 / 流年 / 流月 / 小运（运程）。
 //! - 九星（九宫飞星：玄空 / 北斗 / 奇门 / 太乙）。
 //! - 每日宜忌、吉神宜趋、凶煞宜忌、彭祖百忌、吉神方位、冲煞、建除十二值星、二十八宿、月相、数九、三伏、七十二候。
-//! - 佛历、道历。
+//! - 佛历、道历、回历、藏历、民国历、泰阳历、现代日本年号历、主体纪年、檀纪、儒略历、全新世纪年、拜占庭纪年、科普特历、埃塞俄比亚历、亚美尼亚历、罗马建城纪年、亚述纪年、西班牙纪元、印度国历、旧制泰佛历、法斯里历、纳纳克沙希历、塞琉古纪元、拉达那哥欣纪元、威尼斯纪年、鲁米历、光明纪年。
 //! - 法定节假日（含调休）与薪资倍率。
 //!
 //! ## 快速示例
@@ -64,23 +64,48 @@ pub mod solar_util;
 
 pub mod lunar_util;
 
+mod fasli;
 mod foto_util;
 pub mod holiday_util;
+mod holocene;
 mod nine_star_util;
 mod tao_util;
 
+mod anno_lucis;
+mod armenian;
+mod assyrian;
+mod auc;
+mod bengali;
+mod byzantine;
+mod coptic;
 mod culture;
+mod dangi;
 mod eight_char;
+mod ethiopian;
 mod event;
 mod foto;
 mod fu;
+mod hijri;
+mod hispanic_era;
 mod holiday;
+mod japanese;
 mod jieqi;
+mod juche;
+mod julian;
+mod koki;
 mod lunar;
 mod lunar_month;
 mod lunar_time;
 mod lunar_year;
+mod minguo;
+mod multi_calendar;
+mod nanakshahi;
 mod nine_star;
+mod rab_byung;
+mod rattanakosin;
+mod rumi;
+mod saka;
+mod seleucid;
 mod shu_jiu;
 mod solar;
 mod solar_half_year;
@@ -89,28 +114,66 @@ mod solar_season;
 mod solar_week;
 mod solar_year;
 mod tao;
+mod thai_buddhist;
+mod thai_solar;
+mod venetian;
 mod yun;
 
-pub use culture::{Direction, Duty, EarthBranch, Element, HeavenStem, Phase, Phenology, SixtyCycle, Zodiac};
-pub use eight_char::EightChar;
-pub use error::LunarError;
-pub use event::{
-    CalendarKind, Event, EventDayGroup, EventKind, EventQuery, EventSource, EventWeekGroup, dedup_events,
-    filter_events, group_event_days_by_week, group_events_by_day, scan_event_days_in_range,
-    scan_event_days_in_range_filtered, scan_event_weeks_in_range, scan_event_weeks_in_range_filtered,
-    scan_events_in_range, scan_events_in_range_filtered, sort_events,
+pub use anno_lucis::{AnnoLucis, AnnoLucisMonth, AnnoLucisYear};
+pub use armenian::{Armenian, ArmenianMonth, ArmenianYear};
+pub use assyrian::{Assyrian, AssyrianMonth, AssyrianYear};
+pub use auc::{Auc, AucMonth, AucYear};
+pub use bengali::{Bengali, BengaliMonth, BengaliYear};
+pub use byzantine::{Byzantine, ByzantineMonth, ByzantineYear};
+pub use coptic::{Coptic, CopticMonth, CopticYear};
+pub use culture::{
+    ChongSha, Constellation, CultureDay, CycleItem, Direction, DogDay, Duty, EarthBranch, Element, FetusDay,
+    FetusEarthBranch, FetusHeavenStem, FetusMonth, God, GodLuck, HeavenStem, LiuYao, Lu, MinorRen, NamedCulture, Nayin,
+    PengZu, Phase, PhaseDay, Phenology, PhenologyDay, PlumRainDay, PlumRainKind, Season, Shou, SixtyCycle,
+    SixtyCycleDay, SixtyCycleHour, SixtyCycleMonth, SixtyCycleYear, SolarTermDay, Taboo, TabooKind, TaiPosition,
+    TaiSuiPosition, ThreePillars, TianShen, TianShenType, Xiu, XiuAnimal, Xun, XunKong, YearFortune, YearFortuneKind,
+    YuanCycle, YunCycle, Zodiac,
 };
-pub use foto::Foto;
+pub use dangi::{Dangi, DangiMonth, DangiYear};
+pub use eight_char::{
+    DefaultEightCharProvider, EightChar, EightCharProvider, LunarSect1EightCharProvider, LunarSect2EightCharProvider,
+};
+pub use error::LunarError;
+pub use ethiopian::{Ethiopian, EthiopianMonth, EthiopianYear};
+pub use event::{
+    CalendarKind, Event, EventDayGroup, EventKind, EventManager, EventQuery, EventRangeKind, EventRule, EventSource,
+    EventSourceFamily, EventWeekGroup, FotoFestivalEvent, HolidayEvent, HolidayPeriodEvent, JieQiEvent,
+    LunarFestivalEvent, SolarFestivalEvent, TaoFestivalEvent, dedup_events, filter_events, group_event_days_by_week,
+    group_events_by_day, scan_event_days_in_range, scan_event_days_in_range_filtered, scan_event_weeks_in_range,
+    scan_event_weeks_in_range_filtered, scan_events_in_range, scan_events_in_range_filtered, sort_events,
+};
+pub use fasli::{Fasli, FasliMonth, FasliYear};
+pub use foto::{Foto, FotoMonth, FotoYear};
 pub use fu::Fu;
+pub use hijri::{Hijri, HijriMonth, HijriYear};
+pub use hispanic_era::{HispanicEra, HispanicEraMonth, HispanicEraYear};
 pub use holiday::Holiday;
+pub use holocene::{Holocene, HoloceneMonth, HoloceneYear};
 #[cfg(feature = "i18n")]
 pub use i18n::Language;
+pub use japanese::{Japanese, JapaneseEra, JapaneseMonth, JapaneseYear};
 pub use jieqi::JieQi;
+pub use juche::{Juche, JucheMonth, JucheYear};
+pub use julian::{Julian, JulianMonth, JulianYear};
+pub use koki::{Koki, KokiMonth, KokiYear};
 pub use lunar::Lunar;
 pub use lunar_month::LunarMonth;
 pub use lunar_time::LunarTime;
 pub use lunar_year::LunarYear;
+pub use minguo::{Minguo, MinguoMonth, MinguoYear};
+pub use multi_calendar::{CalendarDay, CalendarSpan};
+pub use nanakshahi::{Nanakshahi, NanakshahiMonth, NanakshahiYear};
 pub use nine_star::NineStar;
+pub use rab_byung::{RabByungDay, RabByungElement, RabByungMonth, RabByungYear};
+pub use rattanakosin::{Rattanakosin, RattanakosinMonth, RattanakosinYear};
+pub use rumi::{Rumi, RumiMonth, RumiYear};
+pub use saka::{Saka, SakaMonth, SakaYear};
+pub use seleucid::{Seleucid, SeleucidMonth, SeleucidYear};
 pub use shu_jiu::ShuJiu;
 pub use solar::Solar;
 pub use solar_half_year::SolarHalfYear;
@@ -118,7 +181,10 @@ pub use solar_month::SolarMonth;
 pub use solar_season::SolarSeason;
 pub use solar_week::SolarWeek;
 pub use solar_year::SolarYear;
-pub use tao::Tao;
+pub use tao::{Tao, TaoMonth, TaoYear};
+pub use thai_buddhist::{ThaiBuddhist, ThaiBuddhistMonth, ThaiBuddhistYear};
+pub use thai_solar::{ThaiSolar, ThaiSolarMonth, ThaiSolarYear};
+pub use venetian::{Venetian, VenetianMonth, VenetianYear};
 pub use yun::{DaYun, LiuNian, LiuYue, XiaoYun, Yun};
 
 /// 性别：`1` 男，`0` 女（与参考实现 lunar-go 一致）。

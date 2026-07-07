@@ -1,7 +1,8 @@
 use lunar_rs::{
-    CalendarKind, Event, EventKind, EventQuery, EventSource, Lunar, Solar, SolarMonth, SolarWeek,
-    group_event_days_by_week, group_events_by_day, holiday_util, scan_event_days_in_range, scan_event_weeks_in_range,
-    scan_events_in_range, scan_events_in_range_filtered,
+    CalendarKind, Event, EventKind, EventManager, EventQuery, EventRangeKind, EventRule, EventSource,
+    EventSourceFamily, Lunar, Solar, SolarMonth, SolarWeek, group_event_days_by_week, group_events_by_day,
+    holiday_util, scan_event_days_in_range, scan_event_weeks_in_range, scan_events_in_range,
+    scan_events_in_range_filtered,
 };
 
 #[test]
@@ -63,11 +64,21 @@ fn holiday_events_include_detail() {
     assert_eq!(holiday.calendar_label(), "solar");
     assert_eq!(holiday.source_label(), "holiday_data");
     assert_eq!(holiday.detail(), Some("work=false target=2024-01-01"));
+    assert_eq!(holiday.range_kind(), EventRangeKind::FullDay);
+    assert_eq!(holiday.end_solar(), None);
     assert_eq!(holiday.priority(), 20);
     assert_eq!(holiday.source_id(), Some("holiday:2024-01-01:元旦节"));
     assert!(holiday.is_observed());
     assert!(holiday.is_primary());
     assert!(holiday.has_tag("day_off"));
+
+    let period = events
+        .iter()
+        .find(|event| matches!(event.kind(), EventKind::HolidayPeriod))
+        .expect("expected holiday period event");
+    assert_eq!(period.range_kind(), EventRangeKind::MultiDay);
+    assert!(period.detail().is_some_and(|detail| detail.contains("range=")));
+    assert!(period.has_tag("holiday_period"));
 }
 
 #[test]
@@ -158,6 +169,36 @@ fn event_display_text_and_dedup_sort_are_stable() {
 }
 
 #[test]
+fn event_range_kind_models_moment_and_multi_day_events() {
+    let jieqi = Solar::from_ymd(2021, 12, 21)
+        .unwrap()
+        .events()
+        .into_iter()
+        .find(|event| matches!(event.kind(), EventKind::JieQi))
+        .expect("expected jieqi event");
+    assert_eq!(jieqi.range_kind(), EventRangeKind::Moment);
+    assert!(jieqi.covers_solar(jieqi.solar()));
+    assert!(!jieqi.spans_multiple_days());
+
+    let start = Solar::from_ymd(2024, 5, 1).unwrap();
+    let end = Solar::from_ymd(2024, 5, 3).unwrap();
+    let travel = Event::new(
+        EventKind::SolarOtherFestival,
+        CalendarKind::Solar,
+        EventSource::BuiltInOtherFestival,
+        "Travel Window",
+        start,
+    )
+    .with_range(EventRangeKind::MultiDay, Some(end));
+
+    assert_eq!(travel.range_kind(), EventRangeKind::MultiDay);
+    assert_eq!(travel.end_solar(), Some(end));
+    assert!(travel.spans_multiple_days());
+    assert!(travel.covers_solar(Solar::from_ymd(2024, 5, 2).unwrap()));
+    assert!(!travel.covers_solar(Solar::from_ymd(2024, 5, 4).unwrap()));
+}
+
+#[test]
 fn event_query_filters_by_kind_and_source() {
     let solar = Solar::from_ymd(2021, 12, 21).unwrap();
 
@@ -172,6 +213,20 @@ fn event_query_filters_by_kind_and_source() {
 
     let primary_events = solar.find_events(&EventQuery::new().with_is_primary(true));
     assert!(primary_events.iter().all(|event| event.is_primary()));
+
+    let moment_events = solar.find_events(&EventQuery::new().with_range_kind(EventRangeKind::Moment));
+    assert_eq!(moment_events.len(), 1);
+    assert_eq!(moment_events[0].name(), "冬至");
+
+    let period_events =
+        Solar::from_ymd(2024, 1, 1).unwrap().find_events(&EventQuery::new().with_kind(EventKind::HolidayPeriod));
+    assert!(!period_events.is_empty());
+    assert!(period_events.iter().all(|event| event.range_kind() == EventRangeKind::MultiDay));
+
+    let observance_events = Solar::from_ymd(2024, 1, 1)
+        .unwrap()
+        .find_events(&EventQuery::new().with_source_family(EventSourceFamily::Observance));
+    assert!(observance_events.iter().all(|event| event.source_family() == EventSourceFamily::Observance));
 }
 
 #[test]
@@ -187,6 +242,49 @@ fn event_query_filters_by_calendar_and_detail() {
 
     let tagged_events = foto.find_events(&EventQuery::new().with_tag("festival"));
     assert!(tagged_events.iter().all(|event| event.has_tag("festival")));
+
+    let workday_remap_events = Solar::from_ymd(2024, 2, 18)
+        .unwrap()
+        .find_events(&EventQuery::new().with_is_observed(false).with_source(EventSource::HolidayData));
+    assert!(!workday_remap_events.is_empty());
+    assert!(workday_remap_events.iter().all(|event| !event.is_observed()));
+}
+
+#[test]
+fn event_manager_resolves_typed_rules_and_joins_day_events() {
+    struct EventManagerReset(Vec<(String, EventRule)>);
+
+    impl Drop for EventManagerReset {
+        fn drop(&mut self) {
+            EventManager::clear();
+            for (name, rule) in self.0.drain(..) {
+                EventManager::update(name, rule);
+            }
+        }
+    }
+
+    let _reset = EventManagerReset(EventManager::rules());
+    EventManager::clear();
+
+    let solar_rule = EventRule::solar_day(6, 1).with_start_year(2098);
+    let solar_event = solar_rule.to_event("规则儿童节", 2098).unwrap();
+    assert_eq!(solar_event.solar().to_ymd(), "2098-06-01");
+    assert!(solar_event.has_tag("event_manager"));
+
+    let lunar_event = EventRule::lunar_day(1, 1).to_event("规则春节", 2024).unwrap();
+    assert_eq!(lunar_event.solar().to_ymd(), "2024-02-10");
+
+    let week_event = EventRule::solar_week(5, 2, 0).to_event("规则母亲节", 2024).unwrap();
+    assert_eq!(week_event.solar().to_ymd(), "2024-05-12");
+
+    let term_event = EventRule::solar_term_offset("清明", -1).to_event("规则寒食节", 2024).unwrap();
+    assert_eq!(term_event.solar().to_ymd(), "2024-04-03");
+
+    EventManager::update("规则儿童节", solar_rule);
+    let events = Solar::from_ymd(2098, 6, 1).unwrap().find_events(&EventQuery::new().with_tag("event_manager"));
+    assert_eq!(events.len(), 1);
+    assert_eq!(events[0].name(), "规则儿童节");
+    assert_eq!(EventManager::event_for_year("规则儿童节", 2098).unwrap().source_id(), events[0].source_id());
 }
 
 #[test]

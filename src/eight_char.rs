@@ -1,6 +1,7 @@
 //! 八字（四柱）。对应 lunar-go `calendar/EightChar.go`。
 
 use crate::Gender;
+use crate::culture::{SixtyCycle, SixtyCycleDay, SixtyCycleHour, SixtyCycleMonth, SixtyCycleYear, ThreePillars};
 use crate::lunar::Lunar;
 use crate::lunar_util;
 use crate::yun::Yun;
@@ -25,6 +26,61 @@ fn chang_sheng_offset(gan: &str) -> i64 {
 pub struct EightChar<'a> {
     sect: u8,
     lunar: &'a Lunar,
+}
+
+pub trait EightCharProvider {
+    fn sect(&self, lunar: &Lunar) -> u8;
+
+    fn eight_char<'a>(&self, lunar: &'a Lunar) -> EightChar<'a> {
+        let mut eight_char = EightChar::from_lunar(lunar);
+        eight_char.set_sect(self.sect(lunar));
+        eight_char
+    }
+}
+
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
+pub struct DefaultEightCharProvider;
+
+impl DefaultEightCharProvider {
+    pub const fn new() -> Self {
+        Self
+    }
+}
+
+impl EightCharProvider for DefaultEightCharProvider {
+    fn sect(&self, _lunar: &Lunar) -> u8 {
+        2
+    }
+}
+
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
+pub struct LunarSect1EightCharProvider;
+
+impl LunarSect1EightCharProvider {
+    pub const fn new() -> Self {
+        Self
+    }
+}
+
+impl EightCharProvider for LunarSect1EightCharProvider {
+    fn sect(&self, _lunar: &Lunar) -> u8 {
+        1
+    }
+}
+
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
+pub struct LunarSect2EightCharProvider;
+
+impl LunarSect2EightCharProvider {
+    pub const fn new() -> Self {
+        Self
+    }
+}
+
+impl EightCharProvider for LunarSect2EightCharProvider {
+    fn sect(&self, _lunar: &Lunar) -> u8 {
+        2
+    }
 }
 
 impl<'a> EightChar<'a> {
@@ -74,6 +130,9 @@ impl<'a> EightChar<'a> {
     pub fn year(&self) -> String {
         self.lunar.year_in_gan_zhi_exact()
     }
+    pub fn year_pillar(&self) -> SixtyCycleYear {
+        SixtyCycleYear::new(SixtyCycle::from_name(&self.year()).unwrap_or_else(|| SixtyCycle::from_index(0)))
+    }
     pub fn year_gan(&self) -> &'static str {
         self.lunar.year_gan_exact()
     }
@@ -102,6 +161,9 @@ impl<'a> EightChar<'a> {
     // ---- 月柱 ----
     pub fn month(&self) -> String {
         self.lunar.month_in_gan_zhi_exact()
+    }
+    pub fn month_pillar(&self) -> SixtyCycleMonth {
+        SixtyCycleMonth::new(SixtyCycle::from_name(&self.month()).unwrap_or_else(|| SixtyCycle::from_index(0)))
     }
     pub fn month_gan(&self) -> &'static str {
         self.lunar.month_gan_exact()
@@ -132,6 +194,9 @@ impl<'a> EightChar<'a> {
     pub fn day(&self) -> String {
         if self.sect == 2 { self.lunar.day_in_gan_zhi_exact2() } else { self.lunar.day_in_gan_zhi_exact() }
     }
+    pub fn day_pillar(&self) -> SixtyCycleDay {
+        SixtyCycleDay::new(SixtyCycle::from_name(&self.day()).unwrap_or_else(|| SixtyCycle::from_index(0)))
+    }
     pub fn day_gan(&self) -> &'static str {
         if self.sect == 2 { self.lunar.day_gan_exact2() } else { self.lunar.day_gan_exact() }
     }
@@ -161,6 +226,9 @@ impl<'a> EightChar<'a> {
     pub fn time(&self) -> String {
         self.lunar.time_in_gan_zhi()
     }
+    pub fn time_pillar(&self) -> SixtyCycleHour {
+        SixtyCycleHour::new(SixtyCycle::from_name(&self.time()).unwrap_or_else(|| SixtyCycle::from_index(0)))
+    }
     pub fn time_gan(&self) -> &'static str {
         self.lunar.time_gan()
     }
@@ -184,6 +252,10 @@ impl<'a> EightChar<'a> {
     }
     pub fn time_di_shi(&self) -> &'static str {
         self.di_shi(self.lunar.time_zhi_index())
+    }
+
+    pub fn three_pillars(&self) -> ThreePillars {
+        ThreePillars::new(self.year_pillar(), self.month_pillar(), self.day_pillar())
     }
 
     // ---- 胎元 / 胎息 / 命宫 / 身宫 ----

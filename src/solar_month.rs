@@ -3,6 +3,7 @@
 use std::fmt;
 
 use crate::event::{EventDayGroup, EventQuery, scan_event_days_in_range, scan_event_days_in_range_filtered};
+use crate::multi_calendar::CalendarSpan;
 use crate::solar::Solar;
 use crate::solar_util;
 use crate::solar_week::SolarWeek;
@@ -24,6 +25,14 @@ impl SolarMonth {
     }
     pub const fn month(&self) -> i32 {
         self.month
+    }
+
+    pub fn first_solar_day(&self) -> Solar {
+        Solar::from_ymd(self.year, self.month, 1).unwrap()
+    }
+
+    pub fn last_solar_day(&self) -> Solar {
+        Solar::from_ymd(self.year, self.month, solar_util::days_of_month(self.year, self.month)).unwrap()
     }
 
     /// 当月每日。
@@ -81,5 +90,15 @@ impl SolarMonth {
 impl fmt::Display for SolarMonth {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}-{}", self.year, self.month)
+    }
+}
+
+impl CalendarSpan for SolarMonth {
+    fn first_solar_day(&self) -> Solar {
+        SolarMonth::first_solar_day(self)
+    }
+
+    fn last_solar_day(&self) -> Solar {
+        SolarMonth::last_solar_day(self)
     }
 }

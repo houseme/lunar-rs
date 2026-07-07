@@ -114,16 +114,7 @@ impl NineStar {
 
     #[cfg(feature = "i18n")]
     pub fn to_string_in_lang(&self, language: crate::i18n::Language) -> String {
-        match language {
-            crate::i18n::Language::ZhCn => self.to_string(),
-            crate::i18n::Language::En => format!(
-                "{} {} {} {}",
-                self.number(),
-                self.color_in_lang(language),
-                self.wu_xing_in_lang(language),
-                self.name_in_bei_dou_in_lang(language)
-            ),
-        }
+        crate::i18n::locale(language).render_nine_star(self)
     }
 }
 

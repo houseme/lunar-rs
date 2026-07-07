@@ -3,14 +3,187 @@
 use std::fmt;
 use std::fmt::Write as _;
 
-use crate::event::{CalendarKind, Event, EventKind, EventQuery, EventSource, filter_events};
+use crate::event::{CalendarKind, Event, EventKind, EventQuery, EventSource, FotoFestivalEvent, filter_events};
 use crate::foto_util;
 use crate::lunar::Lunar;
 use crate::lunar_month::LunarMonth;
 use crate::lunar_util;
+use crate::lunar_year::LunarYear;
+use crate::multi_calendar::{CalendarSpan, span_all_events, span_contains_solar, span_events, span_find_events};
+use crate::solar::Solar;
 
 /// 佛历元年（公元前 543 年）。
 pub const DEAD_YEAR: i32 = -543;
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct FotoYear {
+    year: i32,
+}
+
+impl FotoYear {
+    pub const fn from_year(year: i32) -> Self {
+        Self { year }
+    }
+
+    pub const fn year(&self) -> i32 {
+        self.year
+    }
+
+    pub const fn lunar_year(&self) -> i32 {
+        self.year + DEAD_YEAR - 1
+    }
+
+    pub fn first_month(&self) -> FotoMonth {
+        let month = LunarYear::from_year(self.lunar_year()).months_in_year().next().unwrap();
+        FotoMonth::from_lunar_month(month)
+    }
+
+    pub fn last_month(&self) -> FotoMonth {
+        let month = LunarYear::from_year(self.lunar_year()).months_in_year().last().unwrap();
+        FotoMonth::from_lunar_month(month)
+    }
+
+    pub fn months(&self) -> Vec<FotoMonth> {
+        LunarYear::from_year(self.lunar_year()).months_in_year().map(FotoMonth::from_lunar_month).collect()
+    }
+
+    pub fn first_solar_day(&self) -> Solar {
+        self.first_month().first_solar_day()
+    }
+
+    pub fn last_solar_day(&self) -> Solar {
+        self.last_month().last_solar_day()
+    }
+
+    pub fn contains_solar(&self, solar: Solar) -> bool {
+        span_contains_solar(self, solar)
+    }
+
+    pub fn events(&self) -> Vec<Event> {
+        span_events(self)
+    }
+
+    pub fn all_events(&self) -> Vec<Event> {
+        span_all_events(self)
+    }
+
+    pub fn find_events(&self, query: &EventQuery<'_>) -> Vec<Event> {
+        span_find_events(self, query)
+    }
+}
+
+impl CalendarSpan for FotoYear {
+    fn first_solar_day(&self) -> Solar {
+        FotoYear::first_solar_day(self)
+    }
+
+    fn last_solar_day(&self) -> Solar {
+        FotoYear::last_solar_day(self)
+    }
+}
+
+impl fmt::Display for FotoYear {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}年", self.year)
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct FotoMonth {
+    lunar_year: i32,
+    month: i32,
+    day_count: i32,
+    first_julian_day_bits: u64,
+    index: i32,
+}
+
+impl FotoMonth {
+    pub const fn from_lunar_month(lunar_month: LunarMonth) -> Self {
+        Self {
+            lunar_year: lunar_month.year(),
+            month: lunar_month.month(),
+            day_count: lunar_month.day_count(),
+            first_julian_day_bits: lunar_month.first_julian_day().to_bits(),
+            index: lunar_month.index(),
+        }
+    }
+
+    pub const fn year(&self) -> i32 {
+        self.lunar_year - DEAD_YEAR + 1
+    }
+
+    pub const fn month(&self) -> i32 {
+        self.month
+    }
+
+    pub const fn is_leap(&self) -> bool {
+        self.month < 0
+    }
+
+    pub const fn day_count(&self) -> i32 {
+        self.day_count
+    }
+
+    pub const fn index(&self) -> i32 {
+        self.index
+    }
+
+    pub fn name(&self) -> String {
+        if self.month() < 0 {
+            format!("闰{}", lunar_util::tables::MONTH[self.month().unsigned_abs() as usize])
+        } else {
+            lunar_util::tables::MONTH[self.month() as usize].to_string()
+        }
+    }
+
+    pub fn first_solar_day(&self) -> Solar {
+        Solar::from_julian_day(f64::from_bits(self.first_julian_day_bits))
+    }
+
+    pub fn last_solar_day(&self) -> Solar {
+        self.first_solar_day().next_day(self.day_count() - 1)
+    }
+
+    pub fn contains_solar(&self, solar: Solar) -> bool {
+        span_contains_solar(self, solar)
+    }
+
+    pub fn next(&self, months: i32) -> Option<Self> {
+        LunarMonth::from_ym(self.lunar_year, self.month)
+            .and_then(|lunar_month| lunar_month.next(months))
+            .map(Self::from_lunar_month)
+    }
+
+    pub fn events(&self) -> Vec<Event> {
+        span_events(self)
+    }
+
+    pub fn all_events(&self) -> Vec<Event> {
+        span_all_events(self)
+    }
+
+    pub fn find_events(&self, query: &EventQuery<'_>) -> Vec<Event> {
+        span_find_events(self, query)
+    }
+}
+
+impl CalendarSpan for FotoMonth {
+    fn first_solar_day(&self) -> Solar {
+        FotoMonth::first_solar_day(self)
+    }
+
+    fn last_solar_day(&self) -> Solar {
+        FotoMonth::last_solar_day(self)
+    }
+}
+
+impl fmt::Display for FotoMonth {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}年{}月", self.year(), self.name())
+    }
+}
 
 /// 佛历节日记录。
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -108,6 +281,15 @@ impl<'a> Foto<'a> {
         self.lunar.day()
     }
 
+    pub fn foto_year(&self) -> FotoYear {
+        FotoYear::from_year(self.year())
+    }
+
+    pub fn foto_month(&self) -> FotoMonth {
+        let month = LunarMonth::from_ym(self.lunar.year(), self.lunar.month()).unwrap();
+        FotoMonth::from_lunar_month(month)
+    }
+
     pub fn year_in_chinese(&self) -> String {
         self.year()
             .to_string()
@@ -144,7 +326,7 @@ impl<'a> Foto<'a> {
         let solar = self.lunar.solar();
 
         for festival in self.festivals() {
-            events.push(festival.to_event(solar));
+            events.push(FotoFestivalEvent::new(festival, solar).to_event());
         }
 
         for name in self.other_festivals() {
@@ -223,12 +405,7 @@ impl<'a> Foto<'a> {
 
     #[cfg(feature = "i18n")]
     pub fn to_string_in_lang(&self, language: crate::i18n::Language) -> String {
-        match language {
-            crate::i18n::Language::ZhCn => self.to_string_cn(),
-            crate::i18n::Language::En => {
-                format!("Buddhist {}-{:02}-{:02}", self.year(), self.month().abs(), self.day())
-            }
-        }
+        crate::i18n::locale(language).render_foto_string(self)
     }
 
     pub fn to_full_string(&self) -> String {
@@ -241,13 +418,6 @@ impl<'a> Foto<'a> {
 
     #[cfg(feature = "i18n")]
     pub fn to_full_string_in_lang(&self, language: crate::i18n::Language) -> String {
-        if matches!(language, crate::i18n::Language::ZhCn) {
-            return self.to_full_string();
-        }
-        let mut s = self.to_string_in_lang(language);
-        for f in self.festivals() {
-            let _ = write!(s, " ({f})");
-        }
-        s
+        crate::i18n::locale(language).render_foto_full(self)
     }
 }

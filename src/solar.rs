@@ -2,14 +2,42 @@
 
 use std::fmt;
 
-use crate::LunarError;
+use crate::anno_lucis::AnnoLucis;
+use crate::armenian::Armenian;
+use crate::assyrian::Assyrian;
+use crate::auc::Auc;
+use crate::bengali::Bengali;
+use crate::byzantine::Byzantine;
+use crate::coptic::Coptic;
+use crate::dangi::Dangi;
+use crate::ethiopian::Ethiopian;
 use crate::event::{
-    CalendarKind, Event, EventKind, EventQuery, EventSource, all_events_for_day, find_events_for_day,
-    scan_events_in_range, scan_events_in_range_filtered,
+    CalendarKind, Event, EventQuery, HolidayEvent, JieQiEvent, SolarFestivalEvent, all_events_for_day,
+    find_events_for_day, holiday_period_events_for_day, scan_events_in_range, scan_events_in_range_filtered,
 };
+use crate::fasli::Fasli;
+use crate::hijri::Hijri;
+use crate::hispanic_era::HispanicEra;
 use crate::holiday_util;
+use crate::holocene::Holocene;
+use crate::japanese::Japanese;
+use crate::juche::Juche;
+use crate::julian::Julian;
+use crate::koki::Koki;
 use crate::lunar::Lunar;
+use crate::minguo::Minguo;
+use crate::multi_calendar::CalendarDay;
+use crate::nanakshahi::Nanakshahi;
+use crate::rab_byung::{RabByungDay, RabByungYear};
+use crate::rattanakosin::Rattanakosin;
+use crate::rumi::Rumi;
+use crate::saka::Saka;
+use crate::seleucid::Seleucid;
 use crate::solar_util;
+use crate::thai_buddhist::ThaiBuddhist;
+use crate::thai_solar::ThaiSolar;
+use crate::venetian::Venetian;
+use crate::{Constellation, LunarError};
 
 /// 阳历日期时间。
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -200,6 +228,13 @@ impl Solar {
         solar_util::XINGZUO[index]
     }
 
+    /// 星座 typed 对象。
+    pub fn constellation(&self) -> Constellation {
+        let name = self.xing_zuo();
+        let index = solar_util::XINGZUO.iter().position(|value| *value == name).unwrap_or(0);
+        Constellation::from_index(index)
+    }
+
     /// 星座（显式语言版本，需启用 `i18n` feature）。
     #[cfg(feature = "i18n")]
     pub fn xing_zuo_in_lang(&self, language: crate::i18n::Language) -> &'static str {
@@ -217,6 +252,358 @@ impl Solar {
         Lunar::from_solar(*self)
     }
 
+    /// 转回历（公历民用回历）。
+    pub fn hijri(&self) -> Hijri {
+        Hijri::from_solar(*self)
+    }
+
+    pub fn hijri_year(&self) -> crate::HijriYear {
+        self.hijri().hijri_year()
+    }
+
+    pub fn hijri_month(&self) -> crate::HijriMonth {
+        self.hijri().hijri_month()
+    }
+
+    /// 转民国历。
+    pub fn minguo(&self) -> Minguo {
+        Minguo::from_solar(*self)
+    }
+
+    pub fn minguo_year(&self) -> crate::MinguoYear {
+        self.minguo().minguo_year()
+    }
+
+    pub fn minguo_month(&self) -> crate::MinguoMonth {
+        self.minguo().minguo_month()
+    }
+
+    /// 转泰阳历（泰佛历公历纪年）。
+    pub fn thai_solar(&self) -> ThaiSolar {
+        ThaiSolar::from_solar(*self)
+    }
+
+    pub fn thai_solar_year(&self) -> crate::ThaiSolarYear {
+        self.thai_solar().thai_solar_year()
+    }
+
+    pub fn thai_solar_month(&self) -> crate::ThaiSolarMonth {
+        self.thai_solar().thai_solar_month()
+    }
+
+    /// 转现代日本年号历。
+    pub fn japanese(&self) -> Result<Japanese, LunarError> {
+        Japanese::from_solar(*self)
+    }
+
+    pub fn japanese_year(&self) -> Result<crate::JapaneseYear, LunarError> {
+        self.japanese().map(|date| date.japanese_year())
+    }
+
+    pub fn japanese_month(&self) -> Result<crate::JapaneseMonth, LunarError> {
+        self.japanese().map(|date| date.japanese_month())
+    }
+
+    /// 转主体纪年。
+    pub fn juche(&self) -> Result<Juche, LunarError> {
+        Juche::from_solar(*self)
+    }
+
+    pub fn juche_year(&self) -> Result<crate::JucheYear, LunarError> {
+        self.juche().map(|date| date.juche_year())
+    }
+
+    pub fn juche_month(&self) -> Result<crate::JucheMonth, LunarError> {
+        self.juche().map(|date| date.juche_month())
+    }
+
+    /// 转檀纪。
+    pub fn dangi(&self) -> Result<Dangi, LunarError> {
+        Dangi::from_solar(*self)
+    }
+
+    pub fn dangi_year(&self) -> Result<crate::DangiYear, LunarError> {
+        self.dangi().map(|date| date.dangi_year())
+    }
+
+    pub fn dangi_month(&self) -> Result<crate::DangiMonth, LunarError> {
+        self.dangi().map(|date| date.dangi_month())
+    }
+
+    /// 转儒略历。
+    pub fn julian_calendar(&self) -> Julian {
+        Julian::from_solar(*self)
+    }
+
+    pub fn julian_calendar_year(&self) -> crate::JulianYear {
+        self.julian_calendar().julian_year()
+    }
+
+    pub fn julian_calendar_month(&self) -> crate::JulianMonth {
+        self.julian_calendar().julian_month()
+    }
+
+    /// 转全新世纪年。
+    pub fn holocene(&self) -> Result<Holocene, LunarError> {
+        Holocene::from_solar(*self)
+    }
+
+    pub fn holocene_year(&self) -> Result<crate::HoloceneYear, LunarError> {
+        self.holocene().map(|date| date.holocene_year())
+    }
+
+    pub fn holocene_month(&self) -> Result<crate::HoloceneMonth, LunarError> {
+        self.holocene().map(|date| date.holocene_month())
+    }
+
+    /// 转拜占庭纪年。
+    pub fn byzantine(&self) -> Result<Byzantine, LunarError> {
+        Ok(Byzantine::from_solar(*self))
+    }
+
+    pub fn byzantine_year(&self) -> Result<crate::ByzantineYear, LunarError> {
+        self.byzantine().map(|date| date.byzantine_year())
+    }
+
+    pub fn byzantine_month(&self) -> Result<crate::ByzantineMonth, LunarError> {
+        self.byzantine().map(|date| date.byzantine_month())
+    }
+
+    /// 转科普特历。
+    pub fn coptic(&self) -> Coptic {
+        Coptic::from_solar(*self)
+    }
+
+    pub fn coptic_year(&self) -> crate::CopticYear {
+        self.coptic().coptic_year()
+    }
+
+    pub fn coptic_month(&self) -> crate::CopticMonth {
+        self.coptic().coptic_month()
+    }
+
+    /// 转亚美尼亚历。
+    pub fn armenian(&self) -> Armenian {
+        Armenian::from_solar(*self)
+    }
+
+    pub fn armenian_year(&self) -> crate::ArmenianYear {
+        self.armenian().armenian_year()
+    }
+
+    pub fn armenian_month(&self) -> crate::ArmenianMonth {
+        self.armenian().armenian_month()
+    }
+
+    /// 转光明纪年。
+    pub fn anno_lucis(&self) -> Result<AnnoLucis, LunarError> {
+        AnnoLucis::from_solar(*self)
+    }
+
+    pub fn anno_lucis_year(&self) -> Result<crate::AnnoLucisYear, LunarError> {
+        self.anno_lucis().map(|date| date.anno_lucis_year())
+    }
+
+    pub fn anno_lucis_month(&self) -> Result<crate::AnnoLucisMonth, LunarError> {
+        self.anno_lucis().map(|date| date.anno_lucis_month())
+    }
+
+    /// 转罗马建城纪年。
+    pub fn auc(&self) -> Result<Auc, LunarError> {
+        Auc::from_solar(*self)
+    }
+
+    pub fn auc_year(&self) -> Result<crate::AucYear, LunarError> {
+        self.auc().map(|date| date.auc_year())
+    }
+
+    pub fn auc_month(&self) -> Result<crate::AucMonth, LunarError> {
+        self.auc().map(|date| date.auc_month())
+    }
+
+    /// 转亚述纪年。
+    pub fn assyrian(&self) -> Result<Assyrian, LunarError> {
+        Assyrian::from_solar(*self)
+    }
+
+    pub fn assyrian_year(&self) -> Result<crate::AssyrianYear, LunarError> {
+        self.assyrian().map(|date| date.assyrian_year())
+    }
+
+    pub fn assyrian_month(&self) -> Result<crate::AssyrianMonth, LunarError> {
+        self.assyrian().map(|date| date.assyrian_month())
+    }
+
+    /// 转西班牙纪元。
+    pub fn hispanic_era(&self) -> Result<HispanicEra, LunarError> {
+        HispanicEra::from_solar(*self)
+    }
+
+    pub fn hispanic_era_year(&self) -> Result<crate::HispanicEraYear, LunarError> {
+        self.hispanic_era().map(|date| date.hispanic_era_year())
+    }
+
+    pub fn hispanic_era_month(&self) -> Result<crate::HispanicEraMonth, LunarError> {
+        self.hispanic_era().map(|date| date.hispanic_era_month())
+    }
+
+    /// 转萨卡历（印度国历）。
+    pub fn saka(&self) -> Result<Saka, LunarError> {
+        Saka::from_solar(*self)
+    }
+
+    pub fn saka_year(&self) -> Result<crate::SakaYear, LunarError> {
+        self.saka().map(|date| date.saka_year())
+    }
+
+    pub fn saka_month(&self) -> Result<crate::SakaMonth, LunarError> {
+        self.saka().map(|date| date.saka_month())
+    }
+
+    /// 转孟加拉历。
+    pub fn bengali(&self) -> Result<Bengali, LunarError> {
+        Bengali::from_solar(*self)
+    }
+
+    pub fn bengali_year(&self) -> Result<crate::BengaliYear, LunarError> {
+        self.bengali().map(|date| date.bengali_year())
+    }
+
+    pub fn bengali_month(&self) -> Result<crate::BengaliMonth, LunarError> {
+        self.bengali().map(|date| date.bengali_month())
+    }
+
+    /// 转皇纪。
+    pub fn koki(&self) -> Result<Koki, LunarError> {
+        Koki::from_solar(*self)
+    }
+
+    pub fn koki_year(&self) -> Result<crate::KokiYear, LunarError> {
+        self.koki().map(|date| date.koki_year())
+    }
+
+    pub fn koki_month(&self) -> Result<crate::KokiMonth, LunarError> {
+        self.koki().map(|date| date.koki_month())
+    }
+
+    /// 转旧制泰佛历。
+    pub fn thai_buddhist(&self) -> Result<ThaiBuddhist, LunarError> {
+        ThaiBuddhist::from_solar(*self)
+    }
+
+    pub fn thai_buddhist_year(&self) -> Result<crate::ThaiBuddhistYear, LunarError> {
+        self.thai_buddhist().map(|date| date.thai_buddhist_year())
+    }
+
+    pub fn thai_buddhist_month(&self) -> Result<crate::ThaiBuddhistMonth, LunarError> {
+        self.thai_buddhist().map(|date| date.thai_buddhist_month())
+    }
+
+    /// 转法斯里历。
+    pub fn fasli(&self) -> Result<Fasli, LunarError> {
+        Fasli::from_solar(*self)
+    }
+
+    pub fn fasli_year(&self) -> Result<crate::FasliYear, LunarError> {
+        self.fasli().map(|date| date.fasli_year())
+    }
+
+    pub fn fasli_month(&self) -> Result<crate::FasliMonth, LunarError> {
+        self.fasli().map(|date| date.fasli_month())
+    }
+
+    /// 转纳纳克沙希历。
+    pub fn nanakshahi(&self) -> Result<Nanakshahi, LunarError> {
+        Nanakshahi::from_solar(*self)
+    }
+
+    pub fn nanakshahi_year(&self) -> Result<crate::NanakshahiYear, LunarError> {
+        self.nanakshahi().map(|date| date.nanakshahi_year())
+    }
+
+    pub fn nanakshahi_month(&self) -> Result<crate::NanakshahiMonth, LunarError> {
+        self.nanakshahi().map(|date| date.nanakshahi_month())
+    }
+
+    /// 转拉达那哥欣纪元。
+    pub fn rattanakosin(&self) -> Result<Rattanakosin, LunarError> {
+        Rattanakosin::from_solar(*self)
+    }
+
+    pub fn rattanakosin_year(&self) -> Result<crate::RattanakosinYear, LunarError> {
+        self.rattanakosin().map(|date| date.rattanakosin_year())
+    }
+
+    pub fn rattanakosin_month(&self) -> Result<crate::RattanakosinMonth, LunarError> {
+        self.rattanakosin().map(|date| date.rattanakosin_month())
+    }
+
+    /// 转塞琉古纪元。
+    pub fn seleucid(&self) -> Result<Seleucid, LunarError> {
+        Seleucid::from_solar(*self)
+    }
+
+    pub fn seleucid_year(&self) -> Result<crate::SeleucidYear, LunarError> {
+        self.seleucid().map(|date| date.seleucid_year())
+    }
+
+    pub fn seleucid_month(&self) -> Result<crate::SeleucidMonth, LunarError> {
+        self.seleucid().map(|date| date.seleucid_month())
+    }
+
+    /// 转埃塞俄比亚历。
+    pub fn ethiopian(&self) -> Ethiopian {
+        Ethiopian::from_solar(*self)
+    }
+
+    pub fn ethiopian_year(&self) -> crate::EthiopianYear {
+        self.ethiopian().ethiopian_year()
+    }
+
+    pub fn ethiopian_month(&self) -> crate::EthiopianMonth {
+        self.ethiopian().ethiopian_month()
+    }
+
+    /// 转威尼斯纪年（More Veneto）。
+    pub fn venetian(&self) -> Result<Venetian, LunarError> {
+        Venetian::from_solar(*self)
+    }
+
+    pub fn venetian_year(&self) -> Result<crate::VenetianYear, LunarError> {
+        self.venetian().map(|date| date.venetian_year())
+    }
+
+    pub fn venetian_month(&self) -> Result<crate::VenetianMonth, LunarError> {
+        self.venetian().map(|date| date.venetian_month())
+    }
+
+    /// 转鲁米历。
+    pub fn rumi(&self) -> Result<Rumi, LunarError> {
+        Rumi::from_solar(*self)
+    }
+
+    pub fn rumi_year(&self) -> Result<crate::RumiYear, LunarError> {
+        self.rumi().map(|date| date.rumi_year())
+    }
+
+    pub fn rumi_month(&self) -> Result<crate::RumiMonth, LunarError> {
+        self.rumi().map(|date| date.rumi_month())
+    }
+
+    /// 转藏历年（饶迥年）。
+    pub fn rab_byung_year(&self) -> Result<RabByungYear, LunarError> {
+        RabByungYear::from_year(self.year)
+    }
+
+    /// 转藏历日（饶迥历日）。
+    pub fn rab_byung_day(&self) -> Result<RabByungDay, LunarError> {
+        RabByungDay::from_solar(*self)
+    }
+
+    pub fn rab_byung_month(&self) -> Result<crate::RabByungMonth, LunarError> {
+        self.rab_byung_day().map(|day| day.rab_byung_month())
+    }
+
     /// `YYYY-MM-DD`。
     pub fn to_ymd(&self) -> String {
         format!("{:04}-{:02}-{:02}", self.year, self.month, self.day)
@@ -229,8 +616,8 @@ impl Solar {
 
     /// 显式语言版本的基础字符串。
     #[cfg(feature = "i18n")]
-    pub fn to_string_in_lang(&self, _language: crate::i18n::Language) -> String {
-        self.to_ymd()
+    pub fn to_string_in_lang(&self, language: crate::i18n::Language) -> String {
+        crate::i18n::locale(language).render_solar_string(self)
     }
 
     /// 完整字符串：日期 + 闰年 + 星期 + 节日 + 星座。
@@ -260,30 +647,7 @@ impl Solar {
     /// 完整字符串（显式语言版本，需启用 `i18n` feature）。
     #[cfg(feature = "i18n")]
     pub fn to_full_string_in_lang(&self, language: crate::i18n::Language) -> String {
-        if matches!(language, crate::i18n::Language::ZhCn) {
-            return self.to_full_string();
-        }
-
-        let mut s = self.to_ymd_hms();
-        if self.is_leap_year() {
-            s.push_str(" Leap Year");
-        }
-        s.push_str(" Weekday ");
-        s.push_str(self.week_in_lang(language));
-        for f in self.festivals() {
-            s.push_str(" (");
-            s.push_str(f);
-            s.push(')');
-        }
-        for f in self.other_festivals() {
-            s.push_str(" (");
-            s.push_str(f);
-            s.push(')');
-        }
-        s.push(' ');
-        s.push_str(self.xing_zuo_in_lang(language));
-        s.push_str(" Sign");
-        s
+        crate::i18n::locale(language).render_solar_full(self)
     }
 
     /// 节日（几月几日 + 第 N 个星期几）。
@@ -319,41 +683,18 @@ impl Solar {
         let mut events = Vec::new();
 
         for name in self.festivals() {
-            events.push(Event::with_meta(
-                EventKind::SolarFestival,
-                CalendarKind::Solar,
-                EventSource::BuiltInFestival,
-                name,
-                *self,
-                None,
-                30,
-                Some(format!("solar-festival:{}:{}", self.to_ymd(), name)),
-                true,
-                true,
-                vec!["solar".to_string(), "festival".to_string(), "built_in_festival".to_string()],
-            ));
+            events.push(SolarFestivalEvent::new(*self, name, false).to_event());
         }
         for name in self.other_festivals() {
-            events.push(Event::with_meta(
-                EventKind::SolarOtherFestival,
-                CalendarKind::Solar,
-                EventSource::BuiltInOtherFestival,
-                name,
-                *self,
-                None,
-                40,
-                Some(format!("solar-other:{}:{}", self.to_ymd(), name)),
-                true,
-                false,
-                vec!["solar".to_string(), "other_festival".to_string(), "built_in_other_festival".to_string()],
-            ));
+            events.push(SolarFestivalEvent::new(*self, name, true).to_event());
         }
         for holiday in holiday_util::get_holidays(&format!("{:04}{:02}{:02}", self.year, self.month, self.day)) {
-            events.push(holiday.to_event(*self, CalendarKind::Solar));
+            events.push(HolidayEvent::new(holiday, *self, CalendarKind::Solar).to_event());
         }
         if let Some(jieqi) = self.lunar().current_jie_qi() {
-            events.push(jieqi.to_event(CalendarKind::Solar));
+            events.push(JieQiEvent::new(jieqi, CalendarKind::Solar).to_event());
         }
+        events.extend(holiday_period_events_for_day(*self));
 
         events
     }
@@ -564,6 +905,12 @@ impl Solar {
 impl fmt::Display for Solar {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.to_ymd())
+    }
+}
+
+impl CalendarDay for Solar {
+    fn solar(&self) -> Solar {
+        *self
     }
 }
 

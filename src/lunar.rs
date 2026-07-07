@@ -4,17 +4,23 @@ use std::collections::HashMap;
 use std::fmt;
 
 use crate::LunarError;
-use crate::culture::{Direction, Duty, EarthBranch, HeavenStem, Phase, Phenology, SixtyCycle, Zodiac};
-use crate::eight_char::EightChar;
+use crate::culture::{
+    ChongSha, Direction, DogDay, Duty, EarthBranch, FetusDay, FetusMonth, God, GodLuck, HeavenStem, LiuYao, Lu,
+    MinorRen, Nayin, PengZu, Phase, PhaseDay, Phenology, PhenologyDay, PlumRainDay, Season, SixtyCycle, SixtyCycleDay,
+    SixtyCycleHour, SixtyCycleMonth, SixtyCycleYear, SolarTermDay, Taboo, TabooKind, TaiPosition, TaiSuiPosition,
+    TianShen, Xiu, Xun, Zodiac,
+};
+use crate::eight_char::{EightChar, EightCharProvider};
 use crate::event::{
-    CalendarKind, Event, EventKind, EventQuery, EventSource, all_events_for_day, find_events_for_day,
-    scan_events_in_range, scan_events_in_range_filtered,
+    CalendarKind, Event, EventQuery, HolidayEvent, JieQiEvent, LunarFestivalEvent, all_events_for_day,
+    find_events_for_day, holiday_period_events_for_day, scan_events_in_range, scan_events_in_range_filtered,
 };
 use crate::fu::Fu;
 use crate::jieqi::JieQi;
 use crate::lunar_time::LunarTime;
 use crate::lunar_util;
 use crate::lunar_year::{JIE_QI, JIE_QI_IN_USE, LunarYear};
+use crate::multi_calendar::CalendarDay;
 use crate::nine_star::NineStar;
 use crate::shu_jiu::ShuJiu;
 use crate::solar::Solar;
@@ -488,6 +494,9 @@ impl Lunar {
     pub fn year_sixty_cycle(&self) -> SixtyCycle {
         SixtyCycle::from_name(&self.year_in_gan_zhi()).expect("year ganzhi must map to sixty-cycle")
     }
+    pub fn sixty_cycle_year(&self) -> SixtyCycleYear {
+        SixtyCycleYear::new(self.year_sixty_cycle())
+    }
     #[cfg(feature = "i18n")]
     pub fn year_in_gan_zhi_in_lang(&self, language: crate::i18n::Language) -> String {
         crate::i18n::ganzhi(self.year_gan(), self.year_zhi(), language)
@@ -522,6 +531,9 @@ impl Lunar {
     }
     pub fn month_sixty_cycle(&self) -> SixtyCycle {
         SixtyCycle::from_name(&self.month_in_gan_zhi()).expect("month ganzhi must map to sixty-cycle")
+    }
+    pub fn sixty_cycle_month(&self) -> SixtyCycleMonth {
+        SixtyCycleMonth::new(self.month_sixty_cycle())
     }
     #[cfg(feature = "i18n")]
     pub fn month_in_gan_zhi_in_lang(&self, language: crate::i18n::Language) -> String {
@@ -561,6 +573,9 @@ impl Lunar {
     pub fn day_sixty_cycle(&self) -> SixtyCycle {
         SixtyCycle::from_name(&self.day_in_gan_zhi()).expect("day ganzhi must map to sixty-cycle")
     }
+    pub fn sixty_cycle_day(&self) -> SixtyCycleDay {
+        SixtyCycleDay::new(self.day_sixty_cycle())
+    }
     #[cfg(feature = "i18n")]
     pub fn day_in_gan_zhi_in_lang(&self, language: crate::i18n::Language) -> String {
         crate::i18n::ganzhi(self.day_gan(), self.day_zhi(), language)
@@ -590,6 +605,9 @@ impl Lunar {
     pub fn time_sixty_cycle(&self) -> SixtyCycle {
         SixtyCycle::from_name(&self.time_in_gan_zhi()).expect("time ganzhi must map to sixty-cycle")
     }
+    pub fn sixty_cycle_hour(&self) -> SixtyCycleHour {
+        SixtyCycleHour::new(self.time_sixty_cycle())
+    }
     #[cfg(feature = "i18n")]
     pub fn time_in_gan_zhi_in_lang(&self, language: crate::i18n::Language) -> String {
         crate::i18n::ganzhi(self.time_gan(), self.time_zhi(), language)
@@ -599,14 +617,42 @@ impl Lunar {
     pub fn year_nayin(&self) -> &'static str {
         lunar_util::nayin(&self.year_in_gan_zhi())
     }
+    pub fn year_nayin_info(&self) -> Nayin {
+        Nayin::new(self.year_nayin())
+    }
+    #[cfg(feature = "i18n")]
+    pub fn year_nayin_in_lang(&self, language: crate::i18n::Language) -> &'static str {
+        crate::i18n::nayin(self.year_nayin(), language)
+    }
     pub fn month_nayin(&self) -> &'static str {
         lunar_util::nayin(&self.month_in_gan_zhi())
+    }
+    pub fn month_nayin_info(&self) -> Nayin {
+        Nayin::new(self.month_nayin())
+    }
+    #[cfg(feature = "i18n")]
+    pub fn month_nayin_in_lang(&self, language: crate::i18n::Language) -> &'static str {
+        crate::i18n::nayin(self.month_nayin(), language)
     }
     pub fn day_nayin(&self) -> &'static str {
         lunar_util::nayin(&self.day_in_gan_zhi())
     }
+    pub fn day_nayin_info(&self) -> Nayin {
+        Nayin::new(self.day_nayin())
+    }
+    #[cfg(feature = "i18n")]
+    pub fn day_nayin_in_lang(&self, language: crate::i18n::Language) -> &'static str {
+        crate::i18n::nayin(self.day_nayin(), language)
+    }
     pub fn time_nayin(&self) -> &'static str {
         lunar_util::nayin(&self.time_in_gan_zhi())
+    }
+    pub fn time_nayin_info(&self) -> Nayin {
+        Nayin::new(self.time_nayin())
+    }
+    #[cfg(feature = "i18n")]
+    pub fn time_nayin_in_lang(&self, language: crate::i18n::Language) -> &'static str {
+        crate::i18n::nayin(self.time_nayin(), language)
     }
 
     // ---- 生肖 ----
@@ -681,6 +727,9 @@ impl Lunar {
     pub fn season(&self) -> &'static str {
         let m = self.month.abs();
         lunar_util::tables::SEASON[m as usize]
+    }
+    pub fn season_info(&self) -> Season {
+        Season::new(self.season())
     }
 
     // ---- 节气 ----
@@ -869,37 +918,13 @@ impl Lunar {
         let mut events = Vec::new();
 
         for name in self.festivals() {
-            events.push(Event::with_meta(
-                EventKind::LunarFestival,
-                CalendarKind::Lunar,
-                EventSource::BuiltInFestival,
-                name,
-                self.solar,
-                None,
-                50,
-                Some(format!("lunar-festival:{}:{}", self.solar.to_ymd(), name)),
-                true,
-                true,
-                vec!["lunar".to_string(), "festival".to_string(), "built_in_festival".to_string()],
-            ));
+            events.push(LunarFestivalEvent::new(self.solar, name, false).to_event());
         }
         for name in self.other_festivals() {
-            events.push(Event::with_meta(
-                EventKind::LunarOtherFestival,
-                CalendarKind::Lunar,
-                EventSource::BuiltInOtherFestival,
-                name,
-                self.solar,
-                None,
-                60,
-                Some(format!("lunar-other:{}:{}", self.solar.to_ymd(), name)),
-                true,
-                false,
-                vec!["lunar".to_string(), "other_festival".to_string(), "built_in_other_festival".to_string()],
-            ));
+            events.push(LunarFestivalEvent::new(self.solar, name, true).to_event());
         }
         if let Some(jieqi) = self.current_jie_qi() {
-            events.push(jieqi.to_event(CalendarKind::Lunar));
+            events.push(JieQiEvent::new(jieqi, CalendarKind::Lunar).to_event());
         }
         for holiday in crate::holiday_util::get_holidays(&format!(
             "{:04}{:02}{:02}",
@@ -907,8 +932,9 @@ impl Lunar {
             self.solar.month(),
             self.solar.day()
         )) {
-            events.push(holiday.to_event(self.solar, CalendarKind::Lunar));
+            events.push(HolidayEvent::new(holiday, self.solar, CalendarKind::Lunar).to_event());
         }
+        events.extend(holiday_period_events_for_day(self.solar));
 
         events
     }
@@ -936,6 +962,9 @@ impl Lunar {
     }
     pub fn peng_zu_zhi(&self) -> &'static str {
         lunar_util::tables::PENGZU_ZHI[(self.day_zhi_index + 1) as usize]
+    }
+    pub fn peng_zu(&self) -> PengZu {
+        PengZu::new(self.peng_zu_gan(), self.peng_zu_zhi())
     }
 
     // ---- 方位（日）----
@@ -992,6 +1021,9 @@ impl Lunar {
     pub fn year_position_tai_sui(&self) -> &'static str {
         self.year_position_tai_sui_by_sect(2)
     }
+    pub fn year_tai_sui_position(&self) -> TaiSuiPosition {
+        TaiSuiPosition::new(Direction::new(self.year_position_tai_sui()), self.year_position_tai_sui_desc())
+    }
     pub fn year_position_tai_sui_by_sect(&self, sect: u8) -> &'static str {
         let year_zhi_index = match sect {
             1 => self.year_zhi_index,
@@ -1019,6 +1051,9 @@ impl Lunar {
     }
     pub fn month_position_tai_sui(&self) -> &'static str {
         self.month_position_tai_sui_by_sect(2)
+    }
+    pub fn month_tai_sui_position(&self) -> TaiSuiPosition {
+        TaiSuiPosition::new(Direction::new(self.month_position_tai_sui()), self.month_position_tai_sui_desc())
     }
     pub fn month_position_tai_sui_by_sect(&self, sect: u8) -> &'static str {
         let (mzi, mgi) = match sect {
@@ -1048,6 +1083,9 @@ impl Lunar {
     }
     pub fn day_position_tai_sui(&self) -> &'static str {
         self.day_position_tai_sui_by_sect(2)
+    }
+    pub fn day_tai_sui_position(&self) -> TaiSuiPosition {
+        TaiSuiPosition::new(Direction::new(self.day_position_tai_sui()), self.day_position_tai_sui_desc())
     }
     pub fn day_position_tai_sui_by_sect(&self, sect: u8) -> &'static str {
         let (day_in_gan_zhi, year_zhi_index) = match sect {
@@ -1098,11 +1136,39 @@ impl Lunar {
         let idx = lunar_util::get_jia_zi_index(&self.day_in_gan_zhi());
         lunar_util::tables::POSITION_TAI_DAY[idx as usize]
     }
+    pub fn day_tai_position(&self) -> TaiPosition {
+        TaiPosition::new(self.day_position_tai())
+    }
+    pub fn fetus_day(&self) -> FetusDay {
+        FetusDay::new(self.sixty_cycle_day())
+    }
     pub fn month_position_tai(&self) -> &'static str {
         if self.month < 0 {
             return "";
         }
         lunar_util::tables::POSITION_TAI_MONTH[(self.month - 1) as usize]
+    }
+    pub fn month_tai_position(&self) -> TaiPosition {
+        TaiPosition::new(self.month_position_tai())
+    }
+    pub fn fetus_month(&self) -> Option<FetusMonth> {
+        FetusMonth::from_month(self.month)
+    }
+
+    // ---- 小六壬 ----
+    pub fn month_minor_ren(&self) -> MinorRen {
+        MinorRen::from_index((self.month.abs().saturating_sub(1) as usize) % 6)
+    }
+    pub fn day_minor_ren(&self) -> MinorRen {
+        let index = self.month_minor_ren().index() as i32 + self.day - 1;
+        MinorRen::from_index(index.rem_euclid(6) as usize)
+    }
+    pub fn time_minor_ren(&self) -> MinorRen {
+        let index = self.day_minor_ren().index() as i64 + self.time_zhi_index;
+        MinorRen::from_index(index.rem_euclid(6) as usize)
+    }
+    pub fn minor_ren(&self) -> MinorRen {
+        self.day_minor_ren()
     }
 
     // ---- 冲煞 ----
@@ -1127,8 +1193,16 @@ impl Lunar {
     pub fn day_chong_desc(&self) -> String {
         format!("({}{}){}", self.day_chong_gan(), self.day_chong(), self.day_chong_sheng_xiao())
     }
+    #[cfg(feature = "i18n")]
+    pub fn day_chong_desc_in_lang(&self, language: crate::i18n::Language) -> String {
+        crate::i18n::chong_desc(self.day_chong_gan(), self.day_chong(), self.day_chong_sheng_xiao(), language)
+    }
     pub fn day_sha(&self) -> &'static str {
         lunar_util::sha(self.day_zhi())
+    }
+    #[cfg(feature = "i18n")]
+    pub fn day_sha_in_lang(&self, language: crate::i18n::Language) -> &'static str {
+        crate::i18n::direction(self.day_sha(), language)
     }
     pub fn time_chong(&self) -> &'static str {
         lunar_util::tables::CHONG[self.time_zhi_index as usize]
@@ -1166,6 +1240,12 @@ impl Lunar {
             [lunar_util::find(self.day_zhi_exact(), lunar_util::tables::ZHI, 0) as usize];
         lunar_util::tables::TIAN_SHEN[((self.time_zhi_index + off) % 12 + 1) as usize]
     }
+    pub fn day_tian_shen_info(&self) -> TianShen {
+        TianShen::new(self.day_tian_shen())
+    }
+    pub fn time_tian_shen_info(&self) -> TianShen {
+        TianShen::new(self.time_tian_shen())
+    }
     pub fn day_tian_shen_type(&self) -> &'static str {
         lunar_util::tian_shen_type(self.day_tian_shen())
     }
@@ -1200,8 +1280,19 @@ impl Lunar {
         let k1 = format!("{} {}", self.day_zhi(), self.week_index);
         lunar_util::xiu(&k1)
     }
+    pub fn xiu_info(&self) -> Xiu {
+        Xiu::new(self.xiu())
+    }
     pub fn xiu_luck(&self) -> &'static str {
         lunar_util::xiu_luck(self.xiu())
+    }
+    #[cfg(feature = "i18n")]
+    pub fn xiu_in_lang(&self, language: crate::i18n::Language) -> &'static str {
+        crate::i18n::xiu(self.xiu(), language)
+    }
+    #[cfg(feature = "i18n")]
+    pub fn xiu_luck_in_lang(&self, language: crate::i18n::Language) -> &'static str {
+        crate::i18n::xiu_luck(self.xiu_luck(), language)
     }
     pub fn xiu_song(&self) -> &'static str {
         lunar_util::xiu_song(self.xiu())
@@ -1209,14 +1300,30 @@ impl Lunar {
     pub fn zheng(&self) -> &'static str {
         lunar_util::zheng(self.xiu())
     }
+    #[cfg(feature = "i18n")]
+    pub fn zheng_in_lang(&self, language: crate::i18n::Language) -> &'static str {
+        crate::i18n::zheng(self.zheng(), language)
+    }
     pub fn animal(&self) -> &'static str {
         lunar_util::animal(self.xiu())
+    }
+    #[cfg(feature = "i18n")]
+    pub fn animal_in_lang(&self, language: crate::i18n::Language) -> &'static str {
+        crate::i18n::xiu_animal(self.animal(), language)
     }
     pub fn gong(&self) -> &'static str {
         lunar_util::gong(self.xiu())
     }
+    #[cfg(feature = "i18n")]
+    pub fn gong_in_lang(&self, language: crate::i18n::Language) -> &'static str {
+        crate::i18n::direction(self.gong(), language)
+    }
     pub fn shou(&self) -> &'static str {
         lunar_util::shou(self.gong())
+    }
+    #[cfg(feature = "i18n")]
+    pub fn shou_in_lang(&self, language: crate::i18n::Language) -> &'static str {
+        crate::i18n::shou(self.shou(), language)
     }
 
     // ---- 宜忌 / 吉神凶煞 ----
@@ -1240,11 +1347,29 @@ impl Lunar {
     pub fn day_xiong_sha(&self) -> Vec<&'static str> {
         lunar_util::get_day_xiong_sha(self.month_zhi_index, &self.day_in_gan_zhi())
     }
+    pub fn gods(&self) -> Vec<God> {
+        let mut gods = Vec::new();
+        gods.extend(self.day_ji_shen().into_iter().map(|name| God::new(name, GodLuck::Auspicious)));
+        gods.extend(self.day_xiong_sha().into_iter().map(|name| God::new(name, GodLuck::Inauspicious)));
+        gods
+    }
+    pub fn day_recommends(&self) -> Vec<Taboo> {
+        self.day_yi().into_iter().map(|name| Taboo::new(name, TabooKind::Recommend)).collect()
+    }
+    pub fn day_avoids(&self) -> Vec<Taboo> {
+        self.day_ji().into_iter().map(|name| Taboo::new(name, TabooKind::Avoid)).collect()
+    }
     pub fn time_yi(&self) -> Vec<&'static str> {
         lunar_util::get_time_yi(&self.day_in_gan_zhi_exact(), &self.time_in_gan_zhi())
     }
     pub fn time_ji(&self) -> Vec<&'static str> {
         lunar_util::get_time_ji(&self.day_in_gan_zhi_exact(), &self.time_in_gan_zhi())
+    }
+    pub fn time_recommends(&self) -> Vec<Taboo> {
+        self.time_yi().into_iter().map(|name| Taboo::new(name, TabooKind::Recommend)).collect()
+    }
+    pub fn time_avoids(&self) -> Vec<Taboo> {
+        self.time_ji().into_iter().map(|name| Taboo::new(name, TabooKind::Avoid)).collect()
     }
 
     // ---- 月相 / 六曜 / 星期 ----
@@ -1254,10 +1379,16 @@ impl Lunar {
     pub fn phase(&self) -> Phase {
         Phase::new(self.yue_xiang())
     }
+    pub fn phase_day(&self) -> PhaseDay {
+        PhaseDay::new(self.phase(), self.day)
+    }
     pub fn liu_yao(&self) -> &'static str {
         let month = self.month.abs();
         let idx = ((month + self.day - 2) % 6) as usize;
         lunar_util::tables::LIU_YAO[idx]
+    }
+    pub fn liu_yao_info(&self) -> LiuYao {
+        LiuYao::new(self.liu_yao())
     }
     pub const fn week(&self) -> i32 {
         self.week_index
@@ -1274,16 +1405,53 @@ impl Lunar {
     pub fn jie_qi_in_lang(&self, language: crate::i18n::Language) -> &'static str {
         crate::i18n::jieqi(self.jie_qi(), language)
     }
+    #[cfg(feature = "i18n")]
+    pub fn peng_zu_gan_in_lang(&self, language: crate::i18n::Language) -> &'static str {
+        crate::i18n::pengzu_gan(self.peng_zu_gan(), language)
+    }
+    #[cfg(feature = "i18n")]
+    pub fn peng_zu_zhi_in_lang(&self, language: crate::i18n::Language) -> &'static str {
+        crate::i18n::pengzu_zhi(self.peng_zu_zhi(), language)
+    }
+    #[cfg(feature = "i18n")]
+    pub fn day_position_xi_desc_in_lang(&self, language: crate::i18n::Language) -> &'static str {
+        crate::i18n::position_desc(self.day_position_xi_desc(), language)
+    }
+    #[cfg(feature = "i18n")]
+    pub fn day_position_yang_gui_desc_in_lang(&self, language: crate::i18n::Language) -> &'static str {
+        crate::i18n::position_desc(self.day_position_yang_gui_desc(), language)
+    }
+    #[cfg(feature = "i18n")]
+    pub fn day_position_yin_gui_desc_in_lang(&self, language: crate::i18n::Language) -> &'static str {
+        crate::i18n::position_desc(self.day_position_yin_gui_desc(), language)
+    }
+    #[cfg(feature = "i18n")]
+    pub fn day_position_fu_desc_in_lang(&self, language: crate::i18n::Language) -> &'static str {
+        crate::i18n::position_desc(self.day_position_fu_desc(), language)
+    }
+    #[cfg(feature = "i18n")]
+    pub fn day_position_cai_desc_in_lang(&self, language: crate::i18n::Language) -> &'static str {
+        crate::i18n::position_desc(self.day_position_cai_desc(), language)
+    }
 
     // ---- 旬 / 空亡 ----
     pub fn year_xun(&self) -> &'static str {
         lunar_util::get_xun(&self.year_in_gan_zhi())
     }
+    pub fn year_xun_info(&self) -> Xun {
+        Xun::new(self.year_xun(), self.year_xun_kong())
+    }
     pub fn year_xun_by_li_chun(&self) -> &'static str {
         lunar_util::get_xun(&self.year_in_gan_zhi_by_li_chun())
     }
+    pub fn year_xun_by_li_chun_info(&self) -> Xun {
+        Xun::new(self.year_xun_by_li_chun(), self.year_xun_kong_by_li_chun())
+    }
     pub fn year_xun_exact(&self) -> &'static str {
         lunar_util::get_xun(&self.year_in_gan_zhi_exact())
+    }
+    pub fn year_xun_exact_info(&self) -> Xun {
+        Xun::new(self.year_xun_exact(), self.year_xun_kong_exact())
     }
     pub fn year_xun_kong(&self) -> &'static str {
         lunar_util::get_xun_kong(&self.year_in_gan_zhi())
@@ -1297,8 +1465,14 @@ impl Lunar {
     pub fn month_xun(&self) -> &'static str {
         lunar_util::get_xun(&self.month_in_gan_zhi())
     }
+    pub fn month_xun_info(&self) -> Xun {
+        Xun::new(self.month_xun(), self.month_xun_kong())
+    }
     pub fn month_xun_exact(&self) -> &'static str {
         lunar_util::get_xun(&self.month_in_gan_zhi_exact())
+    }
+    pub fn month_xun_exact_info(&self) -> Xun {
+        Xun::new(self.month_xun_exact(), self.month_xun_kong_exact())
     }
     pub fn month_xun_kong(&self) -> &'static str {
         lunar_util::get_xun_kong(&self.month_in_gan_zhi())
@@ -1309,11 +1483,20 @@ impl Lunar {
     pub fn day_xun(&self) -> &'static str {
         lunar_util::get_xun(&self.day_in_gan_zhi())
     }
+    pub fn day_xun_info(&self) -> Xun {
+        Xun::new(self.day_xun(), self.day_xun_kong())
+    }
     pub fn day_xun_exact(&self) -> &'static str {
         lunar_util::get_xun(&self.day_in_gan_zhi_exact())
     }
+    pub fn day_xun_exact_info(&self) -> Xun {
+        Xun::new(self.day_xun_exact(), self.day_xun_kong_exact())
+    }
     pub fn day_xun_exact2(&self) -> &'static str {
         lunar_util::get_xun(&self.day_in_gan_zhi_exact2())
+    }
+    pub fn day_xun_exact2_info(&self) -> Xun {
+        Xun::new(self.day_xun_exact2(), self.day_xun_kong_exact2())
     }
     pub fn day_xun_kong(&self) -> &'static str {
         lunar_util::get_xun_kong(&self.day_in_gan_zhi())
@@ -1326,6 +1509,9 @@ impl Lunar {
     }
     pub fn time_xun(&self) -> &'static str {
         lunar_util::get_xun(&self.time_in_gan_zhi())
+    }
+    pub fn time_xun_info(&self) -> Xun {
+        Xun::new(self.time_xun(), self.time_xun_kong())
     }
     pub fn time_xun_kong(&self) -> &'static str {
         lunar_util::get_xun_kong(&self.time_in_gan_zhi())
@@ -1343,6 +1529,32 @@ impl Lunar {
         }
         lu
     }
+    pub fn day_lu_info(&self) -> Lu {
+        let mutual = lunar_util::lu(self.day_gan());
+        let advancing = {
+            let zhi = lunar_util::lu(self.day_zhi());
+            if zhi.is_empty() { None } else { Some(zhi) }
+        };
+        Lu::new(mutual, advancing)
+    }
+
+    pub fn day_chong_sha(&self) -> ChongSha {
+        ChongSha::new(
+            self.day_chong_gan(),
+            self.day_chong(),
+            Zodiac::new(self.day_chong_sheng_xiao()),
+            Direction::new(self.day_sha()),
+        )
+    }
+
+    pub fn time_chong_sha(&self) -> ChongSha {
+        ChongSha::new(
+            self.time_chong_gan(),
+            self.time_chong(),
+            Zodiac::new(self.time_chong_sheng_xiao()),
+            Direction::new(self.time_sha()),
+        )
+    }
 
     // ---- 数九 / 三伏 / 候 ----
     pub fn shu_jiu(&self) -> Option<ShuJiu> {
@@ -1359,6 +1571,10 @@ impl Lunar {
         }
         let days = current.subtract(&start);
         Some(ShuJiu::new(format!("{}九", lunar_util::tables::NUMBER[(days / 9 + 1) as usize]), days % 9 + 1))
+    }
+
+    pub fn shu_jiu_day(&self) -> Option<ShuJiu> {
+        self.shu_jiu()
     }
 
     pub fn fu(&self) -> Option<Fu> {
@@ -1400,6 +1616,14 @@ impl Lunar {
         None
     }
 
+    pub fn fu_day(&self) -> Option<Fu> {
+        self.fu()
+    }
+
+    pub fn dog_day(&self) -> Option<DogDay> {
+        self.fu().map(|fu| DogDay::new(fu.name().to_string(), fu.index()))
+    }
+
     pub fn hou(&self) -> String {
         let jq = self.prev_jie_qi_by_whole_day(true).unwrap();
         let max = lunar_util::tables::HOU.len() as i32 - 1;
@@ -1433,6 +1657,41 @@ impl Lunar {
             offset = max;
         }
         Phenology::new(jq.name().to_string(), lunar_util::tables::HOU[offset as usize], self.wu_hou())
+    }
+
+    pub fn solar_term_day(&self) -> Option<SolarTermDay> {
+        let jq = self.prev_jie_qi_by_whole_day(true)?;
+        let day_index = self.solar.subtract(&jq.solar()) + 1;
+        Some(SolarTermDay::new(jq.name().to_string(), day_index))
+    }
+
+    pub fn phenology_day(&self) -> Option<PhenologyDay> {
+        let jq = self.prev_jie_qi_by_whole_day(true)?;
+        let offset = self.solar.subtract(&jq.solar()).clamp(0, 14);
+        let day_index = offset % 5 + 1;
+        Some(PhenologyDay::new(self.phenology(), day_index))
+    }
+
+    pub fn plum_rain_day(&self) -> Option<PlumRainDay> {
+        let current = Solar::from_ymd(self.solar.year(), self.solar.month(), self.solar.day()).unwrap_or(self.solar);
+
+        let mang_zhong = self.jq("芒种");
+        let mut start = Solar::from_ymd(mang_zhong.year(), mang_zhong.month(), mang_zhong.day()).unwrap_or(mang_zhong);
+        while start.lunar().day_gan() != "丙" {
+            start = start.next_day(1);
+        }
+
+        let xiao_shu = self.jq("小暑");
+        let mut end = Solar::from_ymd(xiao_shu.year(), xiao_shu.month(), xiao_shu.day()).unwrap_or(xiao_shu);
+        while end.lunar().day_zhi() != "未" {
+            end = end.next_day(1);
+        }
+
+        if current.is_before(&start) || current.is_after(&end) {
+            return None;
+        }
+
+        Some(if current == end { PlumRainDay::leaving() } else { PlumRainDay::entering(current.subtract(&start) + 1) })
     }
 
     // ---- 九星 ----
@@ -1541,6 +1800,12 @@ impl Lunar {
     pub const fn eight_char(&self) -> EightChar<'_> {
         EightChar::from_lunar(self)
     }
+    pub fn eight_char_with_provider<P>(&self, provider: &P) -> EightChar<'_>
+    where
+        P: EightCharProvider + ?Sized,
+    {
+        provider.eight_char(self)
+    }
 
     /// 佛历。
     pub const fn foto(&self) -> crate::foto::Foto<'_> {
@@ -1564,18 +1829,17 @@ impl fmt::Display for Lunar {
     }
 }
 
+impl CalendarDay for Lunar {
+    fn solar(&self) -> Solar {
+        Lunar::solar(self)
+    }
+}
+
 impl Lunar {
     /// 基础字符串（显式语言版本，需启用 `i18n` feature）。
     #[cfg(feature = "i18n")]
     pub fn to_string_in_lang(&self, language: crate::i18n::Language) -> String {
-        match language {
-            crate::i18n::Language::ZhCn => self.to_string(),
-            crate::i18n::Language::En => {
-                let month =
-                    if self.month < 0 { format!("Leap{:02}", self.month.abs()) } else { format!("{:02}", self.month) };
-                format!("Lunar {}-{}-{:02}", self.year, month, self.day)
-            }
-        }
+        crate::i18n::locale(language).render_lunar_string(self)
     }
 
     /// 完整字符串（与 lunar-go `ToFullString` 对齐）。
@@ -1669,93 +1933,6 @@ impl Lunar {
     /// 完整字符串（显式语言版本，需启用 `i18n` feature）。
     #[cfg(feature = "i18n")]
     pub fn to_full_string_in_lang(&self, language: crate::i18n::Language) -> String {
-        if matches!(language, crate::i18n::Language::ZhCn) {
-            return self.to_full_string();
-        }
-
-        let mut s = String::new();
-        s.push_str(&self.to_string_in_lang(language));
-        s.push(' ');
-        s.push_str(&self.year_in_gan_zhi_in_lang(language));
-        s.push('(');
-        s.push_str(self.year_sheng_xiao_in_lang(language));
-        s.push_str(") Year ");
-        s.push_str(&self.month_in_gan_zhi_in_lang(language));
-        s.push('(');
-        s.push_str(self.month_sheng_xiao_in_lang(language));
-        s.push_str(") Month ");
-        s.push_str(&self.day_in_gan_zhi_in_lang(language));
-        s.push('(');
-        s.push_str(self.day_sheng_xiao_in_lang(language));
-        s.push_str(") Day ");
-        s.push_str(&self.time_in_gan_zhi_in_lang(language));
-        s.push('(');
-        s.push_str(self.time_sheng_xiao_in_lang(language));
-        s.push_str(") Hour NaYin [");
-        s.push_str(self.year_nayin());
-        s.push(' ');
-        s.push_str(self.month_nayin());
-        s.push(' ');
-        s.push_str(self.day_nayin());
-        s.push(' ');
-        s.push_str(self.time_nayin());
-        s.push_str("] Weekday ");
-        s.push_str(self.week_in_lang(language));
-        for f in self.festivals() {
-            s.push_str(" (");
-            s.push_str(f);
-            s.push(')');
-        }
-        for f in self.other_festivals() {
-            s.push_str(" (");
-            s.push_str(f);
-            s.push(')');
-        }
-        let jq = self.jie_qi_in_lang(language);
-        if !jq.is_empty() {
-            s.push_str(" [");
-            s.push_str(jq);
-            s.push(']');
-        }
-        s.push_str(" Direction ");
-        s.push_str(self.gong());
-        s.push_str(" Beast ");
-        s.push_str(self.shou());
-        s.push_str(" Xiu [");
-        s.push_str(self.xiu());
-        s.push_str(self.zheng());
-        s.push_str(self.animal());
-        s.push_str("](");
-        s.push_str(self.xiu_luck());
-        s.push_str(") PengZu [");
-        s.push_str(self.peng_zu_gan());
-        s.push(' ');
-        s.push_str(self.peng_zu_zhi());
-        s.push_str("] Xi Position [");
-        s.push_str(self.day_position_xi());
-        s.push_str("](");
-        s.push_str(self.day_position_xi_desc());
-        s.push_str(") YangGui Position [");
-        s.push_str(self.day_position_yang_gui());
-        s.push_str("](");
-        s.push_str(self.day_position_yang_gui_desc());
-        s.push_str(") YinGui Position [");
-        s.push_str(self.day_position_yin_gui());
-        s.push_str("](");
-        s.push_str(self.day_position_yin_gui_desc());
-        s.push_str(") Fu Position [");
-        s.push_str(self.day_position_fu());
-        s.push_str("](");
-        s.push_str(self.day_position_fu_desc());
-        s.push_str(") Cai Position [");
-        s.push_str(self.day_position_cai());
-        s.push_str("](");
-        s.push_str(self.day_position_cai_desc());
-        s.push_str(") Chong [");
-        s.push_str(&self.day_chong_desc());
-        s.push_str("] Sha [");
-        s.push_str(self.day_sha());
-        s.push(']');
-        s
+        crate::i18n::locale(language).render_lunar_full(self)
     }
 }

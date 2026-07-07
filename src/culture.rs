@@ -3,11 +3,59 @@
 //! These types are the first step toward Phase 2 of the roadmap: replacing
 //! raw string-heavy APIs with stable, composable domain objects.
 
+use std::fmt;
+
 use crate::lunar_util;
+use crate::solar_util;
 
 const STEM_ELEMENTS: [&str; 10] = ["木", "木", "火", "火", "土", "土", "金", "金", "水", "水"];
 const BRANCH_ELEMENTS: [&str; 12] = ["水", "土", "木", "木", "土", "火", "火", "土", "金", "金", "土", "水"];
 const ELEMENT_DIRECTIONS: [(&str, &str); 5] = [("木", "东"), ("火", "南"), ("土", "中"), ("金", "西"), ("水", "北")];
+const FETUS_HEAVEN_STEM_NAMES: [&str; 5] = ["门", "碓磨", "厨灶", "仓库", "房床"];
+const FETUS_EARTH_BRANCH_NAMES: [&str; 6] = ["碓", "厕", "炉", "门", "栖", "床"];
+const MINOR_REN_NAMES: [&str; 6] = ["大安", "留连", "速喜", "赤口", "小吉", "空亡"];
+const MINOR_REN_ELEMENTS: [&str; 6] = ["木", "水", "火", "金", "木", "土"];
+
+pub trait NamedCulture {
+    fn name(&self) -> &str;
+}
+
+pub trait CycleItem: NamedCulture + Copy {
+    fn from_cycle_index(index: usize) -> Self;
+
+    fn index(&self) -> usize;
+
+    fn size() -> usize;
+
+    fn next(&self, offset: isize) -> Self {
+        let size = Self::size() as isize;
+        let index = (self.index() as isize + offset).rem_euclid(size) as usize;
+        Self::from_cycle_index(index)
+    }
+
+    fn steps_to(&self, target_index: usize) -> usize {
+        (target_index + Self::size() - self.index()) % Self::size()
+    }
+
+    fn steps_back_to(&self, target_index: usize) -> isize {
+        let size = Self::size() as isize;
+        -((self.index() as isize - target_index as isize + size) % size)
+    }
+
+    fn steps_close_to(&self, target_index: usize) -> isize {
+        let forward = self.steps_to(target_index) as isize;
+        let backward = self.steps_back_to(target_index);
+        if forward <= backward.abs() { forward } else { backward }
+    }
+}
+
+pub trait CultureDay: NamedCulture {
+    fn day_index(&self) -> Option<i32>;
+
+    fn is_boundary(&self) -> bool {
+        self.day_index().is_none()
+    }
+}
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -22,6 +70,11 @@ impl Direction {
 
     pub const fn name(&self) -> &'static str {
         self.name
+    }
+
+    #[cfg(feature = "i18n")]
+    pub fn name_in_lang(&self, language: crate::i18n::Language) -> &'static str {
+        crate::i18n::direction(self.name(), language)
     }
 }
 
@@ -48,6 +101,11 @@ impl Element {
         }
         Direction::new("")
     }
+
+    #[cfg(feature = "i18n")]
+    pub fn name_in_lang(&self, language: crate::i18n::Language) -> &'static str {
+        crate::i18n::wu_xing(self.name(), language)
+    }
 }
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -63,6 +121,46 @@ impl Zodiac {
 
     pub const fn name(&self) -> &'static str {
         self.name
+    }
+
+    #[cfg(feature = "i18n")]
+    pub fn name_in_lang(&self, language: crate::i18n::Language) -> &'static str {
+        crate::i18n::sheng_xiao(self.name(), language)
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct Constellation {
+    index: usize,
+}
+
+impl Constellation {
+    pub fn from_index(index: usize) -> Self {
+        Self { index: index % solar_util::XINGZUO.len() }
+    }
+
+    pub fn from_name(name: &str) -> Option<Self> {
+        solar_util::XINGZUO.iter().position(|value| *value == name).map(Self::from_index)
+    }
+
+    pub const fn index(&self) -> usize {
+        self.index
+    }
+
+    pub fn name(&self) -> &'static str {
+        solar_util::XINGZUO[self.index]
+    }
+
+    pub fn next(&self, offset: isize) -> Self {
+        let size = solar_util::XINGZUO.len() as isize;
+        let index = (self.index as isize + offset).rem_euclid(size) as usize;
+        Self::from_index(index)
+    }
+
+    #[cfg(feature = "i18n")]
+    pub fn name_in_lang(&self, language: crate::i18n::Language) -> &'static str {
+        crate::i18n::constellation(self.name(), language)
     }
 }
 
@@ -80,6 +178,11 @@ impl Duty {
     pub const fn name(&self) -> &'static str {
         self.name
     }
+
+    #[cfg(feature = "i18n")]
+    pub fn name_in_lang(&self, language: crate::i18n::Language) -> &'static str {
+        crate::i18n::duty(self.name(), language)
+    }
 }
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -95,6 +198,11 @@ impl Phase {
 
     pub const fn name(&self) -> &'static str {
         self.name
+    }
+
+    #[cfg(feature = "i18n")]
+    pub fn name_in_lang(&self, language: crate::i18n::Language) -> &'static str {
+        crate::i18n::phase(self.name(), language)
     }
 }
 
@@ -121,6 +229,95 @@ impl Phenology {
 
     pub const fn wu_hou(&self) -> &'static str {
         self.wu_hou
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub struct SolarTermDay {
+    name: String,
+    day_index: i32,
+}
+
+impl SolarTermDay {
+    pub fn new(name: impl Into<String>, day_index: i32) -> Self {
+        Self { name: name.into(), day_index }
+    }
+
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub const fn day_index_value(&self) -> i32 {
+        self.day_index
+    }
+}
+
+impl fmt::Display for SolarTermDay {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}第{}天", self.name, self.day_index)
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub struct PhenologyDay {
+    phenology: Phenology,
+    day_index: i32,
+}
+
+impl PhenologyDay {
+    pub fn new(phenology: Phenology, day_index: i32) -> Self {
+        Self { phenology, day_index }
+    }
+
+    pub const fn phenology(&self) -> &Phenology {
+        &self.phenology
+    }
+
+    pub const fn day_index_value(&self) -> i32 {
+        self.day_index
+    }
+
+    pub const fn name(&self) -> &'static str {
+        self.phenology.wu_hou()
+    }
+}
+
+impl fmt::Display for PhenologyDay {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}第{}天", self.name(), self.day_index)
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct PhaseDay {
+    phase: Phase,
+    day_index: i32,
+}
+
+impl PhaseDay {
+    pub const fn new(phase: Phase, day_index: i32) -> Self {
+        Self { phase, day_index }
+    }
+
+    pub const fn phase(&self) -> Phase {
+        self.phase
+    }
+
+    pub const fn day_index_value(&self) -> i32 {
+        self.day_index
+    }
+
+    pub fn name(&self) -> &'static str {
+        self.phase.name()
+    }
+}
+
+impl fmt::Display for PhaseDay {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}第{}天", self.name(), self.day_index)
     }
 }
 
@@ -152,6 +349,11 @@ impl HeavenStem {
 
     pub fn element(&self) -> Element {
         Element::new(STEM_ELEMENTS[self.index])
+    }
+
+    #[cfg(feature = "i18n")]
+    pub fn name_in_lang(&self, language: crate::i18n::Language) -> &'static str {
+        crate::i18n::gan(self.name(), language)
     }
 }
 
@@ -188,6 +390,11 @@ impl EarthBranch {
     pub fn element(&self) -> Element {
         Element::new(BRANCH_ELEMENTS[self.index])
     }
+
+    #[cfg(feature = "i18n")]
+    pub fn name_in_lang(&self, language: crate::i18n::Language) -> &'static str {
+        crate::i18n::zhi(self.name(), language)
+    }
 }
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -219,5 +426,1179 @@ impl SixtyCycle {
 
     pub fn earth_branch(&self) -> EarthBranch {
         EarthBranch::from_index(self.index % 12)
+    }
+
+    #[cfg(feature = "i18n")]
+    pub fn name_in_lang(&self, language: crate::i18n::Language) -> String {
+        crate::i18n::ganzhi(self.heaven_stem().name(), self.earth_branch().name(), language)
+    }
+}
+
+macro_rules! define_sixty_cycle_pillar {
+    ($ty:ident) => {
+        #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+        #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+        pub struct $ty {
+            cycle: SixtyCycle,
+        }
+
+        impl $ty {
+            pub const fn new(cycle: SixtyCycle) -> Self {
+                Self { cycle }
+            }
+
+            pub fn from_name(name: &str) -> Option<Self> {
+                SixtyCycle::from_name(name).map(Self::new)
+            }
+
+            pub const fn cycle(&self) -> SixtyCycle {
+                self.cycle
+            }
+
+            pub fn name(&self) -> &'static str {
+                self.cycle.name()
+            }
+
+            pub fn heaven_stem(&self) -> HeavenStem {
+                self.cycle.heaven_stem()
+            }
+
+            pub fn earth_branch(&self) -> EarthBranch {
+                self.cycle.earth_branch()
+            }
+
+            pub fn nayin(&self) -> Nayin {
+                Nayin::new(lunar_util::nayin(self.name()))
+            }
+        }
+
+        impl NamedCulture for $ty {
+            fn name(&self) -> &str {
+                self.name()
+            }
+        }
+
+        impl fmt::Display for $ty {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                f.write_str(self.name())
+            }
+        }
+    };
+}
+
+define_sixty_cycle_pillar!(SixtyCycleYear);
+define_sixty_cycle_pillar!(SixtyCycleMonth);
+define_sixty_cycle_pillar!(SixtyCycleDay);
+define_sixty_cycle_pillar!(SixtyCycleHour);
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct ThreePillars {
+    year: SixtyCycleYear,
+    month: SixtyCycleMonth,
+    day: SixtyCycleDay,
+}
+
+impl ThreePillars {
+    pub const fn new(year: SixtyCycleYear, month: SixtyCycleMonth, day: SixtyCycleDay) -> Self {
+        Self { year, month, day }
+    }
+
+    pub const fn year(&self) -> SixtyCycleYear {
+        self.year
+    }
+
+    pub const fn month(&self) -> SixtyCycleMonth {
+        self.month
+    }
+
+    pub const fn day(&self) -> SixtyCycleDay {
+        self.day
+    }
+}
+
+impl fmt::Display for ThreePillars {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{} {} {}", self.year, self.month, self.day)
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum GodLuck {
+    Auspicious,
+    Inauspicious,
+}
+
+impl GodLuck {
+    pub const fn label(&self) -> &'static str {
+        match self {
+            Self::Auspicious => "吉",
+            Self::Inauspicious => "凶",
+        }
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub struct God {
+    name: String,
+    luck: GodLuck,
+}
+
+impl God {
+    pub fn new(name: impl Into<String>, luck: GodLuck) -> Self {
+        Self { name: name.into(), luck }
+    }
+
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub const fn luck(&self) -> GodLuck {
+        self.luck
+    }
+
+    pub const fn is_auspicious(&self) -> bool {
+        matches!(self.luck, GodLuck::Auspicious)
+    }
+
+    pub const fn is_inauspicious(&self) -> bool {
+        matches!(self.luck, GodLuck::Inauspicious)
+    }
+}
+
+impl fmt::Display for God {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.name())
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum TabooKind {
+    Recommend,
+    Avoid,
+}
+
+impl TabooKind {
+    pub const fn label(&self) -> &'static str {
+        match self {
+            Self::Recommend => "宜",
+            Self::Avoid => "忌",
+        }
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub struct Taboo {
+    name: String,
+    kind: TabooKind,
+}
+
+impl Taboo {
+    pub fn new(name: impl Into<String>, kind: TabooKind) -> Self {
+        Self { name: name.into(), kind }
+    }
+
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub const fn kind(&self) -> TabooKind {
+        self.kind
+    }
+
+    pub const fn is_recommend(&self) -> bool {
+        matches!(self.kind, TabooKind::Recommend)
+    }
+
+    pub const fn is_avoid(&self) -> bool {
+        matches!(self.kind, TabooKind::Avoid)
+    }
+}
+
+impl fmt::Display for Taboo {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.name())
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct PengZu {
+    heaven_stem: &'static str,
+    earth_branch: &'static str,
+}
+
+impl PengZu {
+    pub const fn new(heaven_stem: &'static str, earth_branch: &'static str) -> Self {
+        Self { heaven_stem, earth_branch }
+    }
+
+    pub const fn heaven_stem(&self) -> &'static str {
+        self.heaven_stem
+    }
+
+    pub const fn earth_branch(&self) -> &'static str {
+        self.earth_branch
+    }
+
+    pub fn items(&self) -> [&'static str; 2] {
+        [self.heaven_stem, self.earth_branch]
+    }
+}
+
+impl fmt::Display for PengZu {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{} {}", self.heaven_stem, self.earth_branch)
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum TianShenType {
+    YellowPath,
+    BlackPath,
+}
+
+impl TianShenType {
+    pub const fn name(&self) -> &'static str {
+        match self {
+            Self::YellowPath => "黄道",
+            Self::BlackPath => "黑道",
+        }
+    }
+
+    pub const fn luck(&self) -> GodLuck {
+        match self {
+            Self::YellowPath => GodLuck::Auspicious,
+            Self::BlackPath => GodLuck::Inauspicious,
+        }
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct TianShen {
+    name: &'static str,
+    kind: TianShenType,
+}
+
+impl TianShen {
+    pub fn new(name: &'static str) -> Self {
+        let kind = match lunar_util::tian_shen_type(name) {
+            "黄道" => TianShenType::YellowPath,
+            _ => TianShenType::BlackPath,
+        };
+        Self { name, kind }
+    }
+
+    pub const fn name(&self) -> &'static str {
+        self.name
+    }
+
+    pub const fn kind(&self) -> TianShenType {
+        self.kind
+    }
+
+    pub const fn luck(&self) -> GodLuck {
+        self.kind.luck()
+    }
+}
+
+impl fmt::Display for TianShen {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.name)
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct XiuAnimal {
+    name: &'static str,
+}
+
+impl XiuAnimal {
+    pub const fn new(name: &'static str) -> Self {
+        Self { name }
+    }
+
+    pub const fn name(&self) -> &'static str {
+        self.name
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct Shou {
+    name: &'static str,
+}
+
+impl Shou {
+    pub const fn new(name: &'static str) -> Self {
+        Self { name }
+    }
+
+    pub const fn name(&self) -> &'static str {
+        self.name
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct Xiu {
+    name: &'static str,
+    luck: GodLuck,
+    zheng: &'static str,
+    animal: XiuAnimal,
+    gong: Direction,
+    shou: Shou,
+}
+
+impl Xiu {
+    pub fn new(name: &'static str) -> Self {
+        let luck = match lunar_util::xiu_luck(name) {
+            "吉" => GodLuck::Auspicious,
+            _ => GodLuck::Inauspicious,
+        };
+        let zheng = lunar_util::zheng(name);
+        let animal = XiuAnimal::new(lunar_util::animal(name));
+        let gong = Direction::new(lunar_util::gong(name));
+        let shou = Shou::new(lunar_util::shou(gong.name()));
+
+        Self { name, luck, zheng, animal, gong, shou }
+    }
+
+    pub const fn name(&self) -> &'static str {
+        self.name
+    }
+
+    pub const fn luck(&self) -> GodLuck {
+        self.luck
+    }
+
+    pub const fn zheng(&self) -> &'static str {
+        self.zheng
+    }
+
+    pub const fn animal(&self) -> XiuAnimal {
+        self.animal
+    }
+
+    pub const fn gong(&self) -> Direction {
+        self.gong
+    }
+
+    pub const fn shou(&self) -> Shou {
+        self.shou
+    }
+}
+
+impl fmt::Display for Xiu {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.name)
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct Lu {
+    mutual: &'static str,
+    advancing: Option<&'static str>,
+}
+
+impl Lu {
+    pub const fn new(mutual: &'static str, advancing: Option<&'static str>) -> Self {
+        Self { mutual, advancing }
+    }
+
+    pub const fn mutual(&self) -> &'static str {
+        self.mutual
+    }
+
+    pub const fn advancing(&self) -> Option<&'static str> {
+        self.advancing
+    }
+
+    pub const fn has_advancing(&self) -> bool {
+        self.advancing.is_some()
+    }
+}
+
+impl fmt::Display for Lu {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.mutual)?;
+        f.write_str("命互禄")?;
+        if let Some(advancing) = self.advancing {
+            write!(f, " {advancing}命进禄")?;
+        }
+        Ok(())
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct ChongSha {
+    gan: &'static str,
+    branch: &'static str,
+    zodiac: Zodiac,
+    sha: Direction,
+}
+
+impl ChongSha {
+    pub const fn new(gan: &'static str, branch: &'static str, zodiac: Zodiac, sha: Direction) -> Self {
+        Self { gan, branch, zodiac, sha }
+    }
+
+    pub const fn gan(&self) -> &'static str {
+        self.gan
+    }
+
+    pub const fn branch(&self) -> &'static str {
+        self.branch
+    }
+
+    pub const fn zodiac(&self) -> Zodiac {
+        self.zodiac
+    }
+
+    pub const fn sha(&self) -> Direction {
+        self.sha
+    }
+}
+
+impl fmt::Display for ChongSha {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "({}{}){}", self.gan, self.branch, self.zodiac.name())
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct XunKong {
+    name: &'static str,
+}
+
+impl XunKong {
+    pub const fn new(name: &'static str) -> Self {
+        Self { name }
+    }
+
+    pub const fn name(&self) -> &'static str {
+        self.name
+    }
+
+    pub fn branches(&self) -> Option<(EarthBranch, EarthBranch)> {
+        let mut chars = self.name.chars();
+        let first = chars.next()?;
+        let second = chars.next()?;
+        let first = EarthBranch::from_name(&first.to_string())?;
+        let second = EarthBranch::from_name(&second.to_string())?;
+        Some((first, second))
+    }
+}
+
+impl fmt::Display for XunKong {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.name)
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct Xun {
+    name: &'static str,
+    kong: XunKong,
+}
+
+impl Xun {
+    pub fn new(name: &'static str, kong: &'static str) -> Self {
+        Self { name, kong: XunKong::new(kong) }
+    }
+
+    pub const fn name(&self) -> &'static str {
+        self.name
+    }
+
+    pub const fn kong(&self) -> XunKong {
+        self.kong
+    }
+}
+
+impl fmt::Display for Xun {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.name)
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct TaiSuiPosition {
+    direction: Direction,
+    description: &'static str,
+}
+
+impl TaiSuiPosition {
+    pub const fn new(direction: Direction, description: &'static str) -> Self {
+        Self { direction, description }
+    }
+
+    pub const fn direction(&self) -> Direction {
+        self.direction
+    }
+
+    pub const fn description(&self) -> &'static str {
+        self.description
+    }
+}
+
+impl fmt::Display for TaiSuiPosition {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}({})", self.direction.name(), self.description)
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct TaiPosition {
+    name: &'static str,
+}
+
+impl TaiPosition {
+    pub const fn new(name: &'static str) -> Self {
+        Self { name }
+    }
+
+    pub const fn name(&self) -> &'static str {
+        self.name
+    }
+}
+
+impl fmt::Display for TaiPosition {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.name)
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct FetusHeavenStem {
+    index: usize,
+}
+
+impl FetusHeavenStem {
+    pub const fn from_index(index: usize) -> Self {
+        Self { index }
+    }
+
+    pub const fn index(&self) -> usize {
+        self.index
+    }
+
+    pub fn name(&self) -> &'static str {
+        FETUS_HEAVEN_STEM_NAMES[self.index % FETUS_HEAVEN_STEM_NAMES.len()]
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct FetusEarthBranch {
+    index: usize,
+}
+
+impl FetusEarthBranch {
+    pub const fn from_index(index: usize) -> Self {
+        Self { index }
+    }
+
+    pub const fn index(&self) -> usize {
+        self.index
+    }
+
+    pub fn name(&self) -> &'static str {
+        FETUS_EARTH_BRANCH_NAMES[self.index % FETUS_EARTH_BRANCH_NAMES.len()]
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct FetusDay {
+    cycle: SixtyCycleDay,
+    heaven_stem: FetusHeavenStem,
+    earth_branch: FetusEarthBranch,
+    position: TaiPosition,
+}
+
+impl FetusDay {
+    pub fn new(cycle: SixtyCycleDay) -> Self {
+        let stem_index = cycle.heaven_stem().index() % FETUS_HEAVEN_STEM_NAMES.len();
+        let branch_index = cycle.earth_branch().index() % FETUS_EARTH_BRANCH_NAMES.len();
+        let position = TaiPosition::new(lunar_util::tables::POSITION_TAI_DAY[cycle.cycle().index()]);
+        Self {
+            cycle,
+            heaven_stem: FetusHeavenStem::from_index(stem_index),
+            earth_branch: FetusEarthBranch::from_index(branch_index),
+            position,
+        }
+    }
+
+    pub const fn cycle(&self) -> SixtyCycleDay {
+        self.cycle
+    }
+
+    pub const fn heaven_stem(&self) -> FetusHeavenStem {
+        self.heaven_stem
+    }
+
+    pub const fn earth_branch(&self) -> FetusEarthBranch {
+        self.earth_branch
+    }
+
+    pub const fn position(&self) -> TaiPosition {
+        self.position
+    }
+
+    pub fn name(&self) -> &str {
+        self.position.name()
+    }
+}
+
+impl fmt::Display for FetusDay {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.name())
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct FetusMonth {
+    month_index: usize,
+    position: TaiPosition,
+}
+
+impl FetusMonth {
+    pub fn from_month(month: i32) -> Option<Self> {
+        if !(1..=12).contains(&month) {
+            return None;
+        }
+        let month_index = (month - 1) as usize;
+        Some(Self { month_index, position: TaiPosition::new(lunar_util::tables::POSITION_TAI_MONTH[month_index]) })
+    }
+
+    pub const fn month_index(&self) -> usize {
+        self.month_index
+    }
+
+    pub const fn position(&self) -> TaiPosition {
+        self.position
+    }
+
+    pub fn name(&self) -> &str {
+        self.position.name()
+    }
+}
+
+impl fmt::Display for FetusMonth {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.name())
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct MinorRen {
+    index: usize,
+}
+
+impl MinorRen {
+    pub const fn from_index(index: usize) -> Self {
+        Self { index }
+    }
+
+    pub fn from_name(name: &str) -> Option<Self> {
+        MINOR_REN_NAMES.iter().position(|value| *value == name).map(Self::from_index)
+    }
+
+    pub const fn index(&self) -> usize {
+        self.index
+    }
+
+    pub fn name(&self) -> &'static str {
+        MINOR_REN_NAMES[self.index % MINOR_REN_NAMES.len()]
+    }
+
+    pub fn luck(&self) -> GodLuck {
+        if self.index % 2 == 0 { GodLuck::Auspicious } else { GodLuck::Inauspicious }
+    }
+
+    pub fn element(&self) -> Element {
+        Element::new(MINOR_REN_ELEMENTS[self.index % MINOR_REN_ELEMENTS.len()])
+    }
+}
+
+impl fmt::Display for MinorRen {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.name())
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct Nayin {
+    name: &'static str,
+}
+
+impl Nayin {
+    pub const fn new(name: &'static str) -> Self {
+        Self { name }
+    }
+
+    pub const fn name(&self) -> &'static str {
+        self.name
+    }
+
+    pub fn element(&self) -> Element {
+        match self.name.chars().last() {
+            Some('木') => Element::new("木"),
+            Some('火') => Element::new("火"),
+            Some('土') => Element::new("土"),
+            Some('金') => Element::new("金"),
+            Some('水') => Element::new("水"),
+            _ => Element::new(""),
+        }
+    }
+}
+
+impl fmt::Display for Nayin {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.name)
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct Season {
+    name: &'static str,
+}
+
+impl Season {
+    pub const fn new(name: &'static str) -> Self {
+        Self { name }
+    }
+
+    pub const fn name(&self) -> &'static str {
+        self.name
+    }
+}
+
+impl fmt::Display for Season {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.name)
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct LiuYao {
+    name: &'static str,
+}
+
+impl LiuYao {
+    pub const fn new(name: &'static str) -> Self {
+        Self { name }
+    }
+
+    pub const fn name(&self) -> &'static str {
+        self.name
+    }
+}
+
+impl fmt::Display for LiuYao {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.name)
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub struct YuanCycle {
+    name: String,
+}
+
+impl YuanCycle {
+    pub fn new(name: impl Into<String>) -> Self {
+        Self { name: name.into() }
+    }
+
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+}
+
+impl fmt::Display for YuanCycle {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(&self.name)
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub struct YunCycle {
+    name: String,
+}
+
+impl YunCycle {
+    pub fn new(name: impl Into<String>) -> Self {
+        Self { name: name.into() }
+    }
+
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+}
+
+impl fmt::Display for YunCycle {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(&self.name)
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum YearFortuneKind {
+    TouLiang,
+    CaoZi,
+    GengTian,
+    HuaShou,
+    ZhiShui,
+    TuoGu,
+    QiangMi,
+    KanCan,
+    GongZhu,
+    JiaTian,
+    FenBing,
+    DeJin,
+    RenBing,
+    RenChu,
+}
+
+impl YearFortuneKind {
+    pub const fn label(&self) -> &'static str {
+        match self {
+            Self::TouLiang => "鼠偷粮",
+            Self::CaoZi => "草子",
+            Self::GengTian => "牛耕田",
+            Self::HuaShou => "花收",
+            Self::ZhiShui => "龙治水",
+            Self::TuoGu => "马驮谷",
+            Self::QiangMi => "鸡抢米",
+            Self::KanCan => "姑看蚕",
+            Self::GongZhu => "屠共猪",
+            Self::JiaTian => "甲田",
+            Self::FenBing => "人分饼",
+            Self::DeJin => "日得金",
+            Self::RenBing => "人几丙",
+            Self::RenChu => "人几锄",
+        }
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub struct YearFortune {
+    kind: YearFortuneKind,
+    text: String,
+}
+
+impl YearFortune {
+    pub fn new(kind: YearFortuneKind, text: impl Into<String>) -> Self {
+        Self { kind, text: text.into() }
+    }
+
+    pub const fn kind(&self) -> YearFortuneKind {
+        self.kind
+    }
+
+    pub fn text(&self) -> &str {
+        &self.text
+    }
+}
+
+impl fmt::Display for YearFortune {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(&self.text)
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub struct DogDay {
+    name: String,
+    day_index: i32,
+}
+
+impl DogDay {
+    pub fn new(name: impl Into<String>, day_index: i32) -> Self {
+        Self { name: name.into(), day_index }
+    }
+
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub const fn day_index(&self) -> i32 {
+        self.day_index
+    }
+}
+
+impl fmt::Display for DogDay {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}第{}天", self.name, self.day_index)
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum PlumRainKind {
+    Entering,
+    Leaving,
+}
+
+impl PlumRainKind {
+    pub const fn name(&self) -> &'static str {
+        match self {
+            Self::Entering => "入梅",
+            Self::Leaving => "出梅",
+        }
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct PlumRainDay {
+    kind: PlumRainKind,
+    day_index: Option<i32>,
+}
+
+impl PlumRainDay {
+    pub const fn entering(day_index: i32) -> Self {
+        Self { kind: PlumRainKind::Entering, day_index: Some(day_index) }
+    }
+
+    pub const fn leaving() -> Self {
+        Self { kind: PlumRainKind::Leaving, day_index: None }
+    }
+
+    pub const fn kind(&self) -> PlumRainKind {
+        self.kind
+    }
+
+    pub const fn name(&self) -> &'static str {
+        self.kind.name()
+    }
+
+    pub const fn day_index(&self) -> Option<i32> {
+        self.day_index
+    }
+}
+
+impl fmt::Display for PlumRainDay {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self.day_index {
+            Some(day_index) => write!(f, "{}第{}天", self.name(), day_index),
+            None => f.write_str(self.name()),
+        }
+    }
+}
+
+macro_rules! impl_named_culture {
+    ($($ty:ty),+ $(,)?) => {
+        $(
+            impl NamedCulture for $ty {
+                fn name(&self) -> &str {
+                    self.name()
+                }
+            }
+        )+
+    };
+}
+
+impl_named_culture!(
+    Direction,
+    Element,
+    Zodiac,
+    Constellation,
+    Duty,
+    Phase,
+    HeavenStem,
+    EarthBranch,
+    SixtyCycle,
+    God,
+    Taboo,
+    TianShen,
+    XiuAnimal,
+    Shou,
+    Xiu,
+    XunKong,
+    Xun,
+    TaiPosition,
+    FetusHeavenStem,
+    FetusEarthBranch,
+    FetusDay,
+    FetusMonth,
+    MinorRen,
+    Nayin,
+    Season,
+    SolarTermDay,
+    PhenologyDay,
+    PhaseDay,
+    LiuYao,
+    YuanCycle,
+    YunCycle,
+    DogDay,
+    PlumRainDay,
+);
+
+impl CycleItem for Constellation {
+    fn from_cycle_index(index: usize) -> Self {
+        Self::from_index(index)
+    }
+
+    fn index(&self) -> usize {
+        self.index()
+    }
+
+    fn size() -> usize {
+        solar_util::XINGZUO.len()
+    }
+}
+
+impl CycleItem for Zodiac {
+    fn from_cycle_index(index: usize) -> Self {
+        Self::new(lunar_util::tables::SHENG_XIAO[index % Self::size() + 1])
+    }
+
+    fn index(&self) -> usize {
+        lunar_util::tables::SHENG_XIAO[1..].iter().position(|value| *value == self.name()).unwrap_or(0)
+    }
+
+    fn size() -> usize {
+        12
+    }
+}
+
+impl CycleItem for HeavenStem {
+    fn from_cycle_index(index: usize) -> Self {
+        Self::from_index(index % Self::size())
+    }
+
+    fn index(&self) -> usize {
+        self.index()
+    }
+
+    fn size() -> usize {
+        10
+    }
+}
+
+impl CycleItem for EarthBranch {
+    fn from_cycle_index(index: usize) -> Self {
+        Self::from_index(index % Self::size())
+    }
+
+    fn index(&self) -> usize {
+        self.index()
+    }
+
+    fn size() -> usize {
+        12
+    }
+}
+
+impl CycleItem for SixtyCycle {
+    fn from_cycle_index(index: usize) -> Self {
+        Self::from_index(index % Self::size())
+    }
+
+    fn index(&self) -> usize {
+        self.index()
+    }
+
+    fn size() -> usize {
+        60
+    }
+}
+
+impl CycleItem for FetusHeavenStem {
+    fn from_cycle_index(index: usize) -> Self {
+        Self::from_index(index % Self::size())
+    }
+
+    fn index(&self) -> usize {
+        self.index()
+    }
+
+    fn size() -> usize {
+        FETUS_HEAVEN_STEM_NAMES.len()
+    }
+}
+
+impl CycleItem for FetusEarthBranch {
+    fn from_cycle_index(index: usize) -> Self {
+        Self::from_index(index % Self::size())
+    }
+
+    fn index(&self) -> usize {
+        self.index()
+    }
+
+    fn size() -> usize {
+        FETUS_EARTH_BRANCH_NAMES.len()
+    }
+}
+
+impl CycleItem for MinorRen {
+    fn from_cycle_index(index: usize) -> Self {
+        Self::from_index(index % Self::size())
+    }
+
+    fn index(&self) -> usize {
+        self.index()
+    }
+
+    fn size() -> usize {
+        MINOR_REN_NAMES.len()
+    }
+}
+
+impl CultureDay for DogDay {
+    fn day_index(&self) -> Option<i32> {
+        Some(self.day_index())
+    }
+}
+
+impl CultureDay for PlumRainDay {
+    fn day_index(&self) -> Option<i32> {
+        self.day_index()
+    }
+}
+
+impl CultureDay for SolarTermDay {
+    fn day_index(&self) -> Option<i32> {
+        Some(self.day_index_value())
+    }
+}
+
+impl CultureDay for PhenologyDay {
+    fn day_index(&self) -> Option<i32> {
+        Some(self.day_index_value())
+    }
+}
+
+impl CultureDay for PhaseDay {
+    fn day_index(&self) -> Option<i32> {
+        Some(self.day_index_value())
     }
 }

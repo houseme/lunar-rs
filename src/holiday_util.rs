@@ -70,6 +70,11 @@ pub fn set_holidays(names: Vec<String>, raw_data: impl Into<String>) -> Result<(
     Ok(())
 }
 
+/// `set_holidays(...)` 的语义化别名。
+pub fn replace_holidays(names: Vec<String>, raw_data: impl Into<String>) -> Result<(), LunarError> {
+    set_holidays(names, raw_data)
+}
+
 /// 仅替换原始节假日数据，保留当前名称表。
 pub fn set_holiday_data(raw_data: impl Into<String>) -> Result<(), LunarError> {
     let raw_data = raw_data.into();
@@ -78,6 +83,21 @@ pub fn set_holiday_data(raw_data: impl Into<String>) -> Result<(), LunarError> {
     *DATA_IN_USE.write().unwrap() = raw_data;
     crate::event::clear_event_index_cache();
     Ok(())
+}
+
+/// `set_holiday_data(...)` 的语义化别名。
+pub fn replace_holiday_data(raw_data: impl Into<String>) -> Result<(), LunarError> {
+    set_holiday_data(raw_data)
+}
+
+/// 兼容“load”命名的完整节假日快照加载入口。
+pub fn load_holidays(names: Vec<String>, raw_data: impl Into<String>) -> Result<(), LunarError> {
+    set_holidays(names, raw_data)
+}
+
+/// 兼容“load”命名的原始节假日数据加载入口。
+pub fn load_holiday_data(raw_data: impl Into<String>) -> Result<(), LunarError> {
+    set_holiday_data(raw_data)
 }
 
 fn build_holiday_forward(s: &str) -> Holiday {

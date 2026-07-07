@@ -5,8 +5,13 @@
 use std::collections::HashMap;
 use std::sync::{Arc, LazyLock, RwLock};
 
+use crate::culture::{
+    Direction, EarthBranch, HeavenStem, Nayin, SixtyCycle, TaiSuiPosition, Xun, YearFortune, YearFortuneKind,
+    YuanCycle, YunCycle,
+};
 use crate::lunar_month::LunarMonth;
 use crate::lunar_util;
+use crate::multi_calendar::CalendarSpan;
 use crate::nine_star::NineStar;
 use crate::shou_xing;
 use crate::solar::Solar;
@@ -221,11 +226,35 @@ impl LunarYear {
     pub fn gan(&self) -> &'static str {
         lunar_util::tables::GAN[(self.gan_index + 1) as usize]
     }
+    pub fn heaven_stem(&self) -> HeavenStem {
+        HeavenStem::from_index(self.gan_index as usize)
+    }
     pub fn zhi(&self) -> &'static str {
         lunar_util::tables::ZHI[(self.zhi_index + 1) as usize]
     }
+    pub fn earth_branch(&self) -> EarthBranch {
+        EarthBranch::from_index(self.zhi_index as usize)
+    }
     pub fn gan_zhi(&self) -> String {
         format!("{}{}", self.gan(), self.zhi())
+    }
+    pub fn sixty_cycle(&self) -> SixtyCycle {
+        SixtyCycle::from_name(&self.gan_zhi()).expect("year ganzhi must map to sixty-cycle")
+    }
+    pub fn nayin(&self) -> &'static str {
+        lunar_util::nayin(&self.gan_zhi())
+    }
+    pub fn nayin_info(&self) -> Nayin {
+        Nayin::new(self.nayin())
+    }
+    pub fn xun(&self) -> &'static str {
+        lunar_util::get_xun(&self.gan_zhi())
+    }
+    pub fn xun_kong(&self) -> &'static str {
+        lunar_util::get_xun_kong(&self.gan_zhi())
+    }
+    pub fn xun_info(&self) -> Xun {
+        Xun::new(self.xun(), self.xun_kong())
     }
 
     /// 全部 15 个月（含跨年边界）。
@@ -239,6 +268,14 @@ impl LunarYear {
     /// 当年总天数。
     pub fn day_count(&self) -> i32 {
         self.months.iter().filter(|m| m.year == self.year).map(|m| m.day_count).sum()
+    }
+
+    pub fn first_solar_day(&self) -> Solar {
+        self.months_in_year().next().unwrap().first_solar_day()
+    }
+
+    pub fn last_solar_day(&self) -> Solar {
+        self.months_in_year().last().unwrap().last_solar_day()
     }
     /// 31 个节气儒略日。
     pub const fn jie_qi_julian_days(&self) -> &[f64; 31] {
@@ -263,10 +300,16 @@ impl LunarYear {
         let i = (((self.year + 2696) / 60) % 3) as usize;
         format!("{}元", YUAN[i])
     }
+    pub fn yuan_cycle(&self) -> YuanCycle {
+        YuanCycle::new(self.yuan())
+    }
     /// 运。
     pub fn yun(&self) -> String {
         let i = (((self.year + 2696) / 20) % 9) as usize;
         format!("{}运", YUN[i])
+    }
+    pub fn yun_cycle(&self) -> YunCycle {
+        YunCycle::new(self.yun())
     }
     /// 年九星。
     pub fn nine_star(&self) -> NineStar {
@@ -282,11 +325,17 @@ impl LunarYear {
     pub fn position_xi(&self) -> &'static str {
         lunar_util::tables::POSITION_XI[(self.gan_index + 1) as usize]
     }
+    pub fn position_xi_direction(&self) -> Direction {
+        Direction::new(self.position_xi())
+    }
     pub fn position_xi_desc(&self) -> &'static str {
         lunar_util::position_desc(self.position_xi())
     }
     pub fn position_yang_gui(&self) -> &'static str {
         lunar_util::tables::POSITION_YANG_GUI[(self.gan_index + 1) as usize]
+    }
+    pub fn position_yang_gui_direction(&self) -> Direction {
+        Direction::new(self.position_yang_gui())
     }
     pub fn position_yang_gui_desc(&self) -> &'static str {
         lunar_util::position_desc(self.position_yang_gui())
@@ -294,11 +343,17 @@ impl LunarYear {
     pub fn position_yin_gui(&self) -> &'static str {
         lunar_util::tables::POSITION_YIN_GUI[(self.gan_index + 1) as usize]
     }
+    pub fn position_yin_gui_direction(&self) -> Direction {
+        Direction::new(self.position_yin_gui())
+    }
     pub fn position_yin_gui_desc(&self) -> &'static str {
         lunar_util::position_desc(self.position_yin_gui())
     }
     pub fn position_fu(&self) -> &'static str {
         self.position_fu_by_sect(2)
+    }
+    pub fn position_fu_direction(&self) -> Direction {
+        Direction::new(self.position_fu())
     }
     pub fn position_fu_by_sect(&self, sect: u8) -> &'static str {
         let offset = (self.gan_index + 1) as usize;
@@ -313,11 +368,17 @@ impl LunarYear {
     pub fn position_cai(&self) -> &'static str {
         lunar_util::tables::POSITION_CAI[(self.gan_index + 1) as usize]
     }
+    pub fn position_cai_direction(&self) -> Direction {
+        Direction::new(self.position_cai())
+    }
     pub fn position_cai_desc(&self) -> &'static str {
         lunar_util::position_desc(self.position_cai())
     }
     pub fn position_tai_sui(&self) -> &'static str {
         lunar_util::tables::POSITION_TAI_SUI_YEAR[self.zhi_index as usize]
+    }
+    pub fn tai_sui_position(&self) -> TaiSuiPosition {
+        TaiSuiPosition::new(Direction::new(self.position_tai_sui()), self.position_tai_sui_desc())
     }
     pub fn position_tai_sui_desc(&self) -> &'static str {
         lunar_util::position_desc(self.position_tai_sui())
@@ -353,45 +414,116 @@ impl LunarYear {
     pub fn tou_liang(&self) -> String {
         self.zao_by_zhi(0, "几鼠偷粮")
     }
+    pub fn tou_liang_info(&self) -> YearFortune {
+        YearFortune::new(YearFortuneKind::TouLiang, self.tou_liang())
+    }
     pub fn cao_zi(&self) -> String {
         self.zao_by_zhi(0, "草子几分")
+    }
+    pub fn cao_zi_info(&self) -> YearFortune {
+        YearFortune::new(YearFortuneKind::CaoZi, self.cao_zi())
     }
     pub fn geng_tian(&self) -> String {
         self.zao_by_zhi(1, "几牛耕田")
     }
+    pub fn geng_tian_info(&self) -> YearFortune {
+        YearFortune::new(YearFortuneKind::GengTian, self.geng_tian())
+    }
     pub fn hua_shou(&self) -> String {
         self.zao_by_zhi(3, "花收几分")
+    }
+    pub fn hua_shou_info(&self) -> YearFortune {
+        YearFortune::new(YearFortuneKind::HuaShou, self.hua_shou())
     }
     pub fn zhi_shui(&self) -> String {
         self.zao_by_zhi(4, "几龙治水")
     }
+    pub fn zhi_shui_info(&self) -> YearFortune {
+        YearFortune::new(YearFortuneKind::ZhiShui, self.zhi_shui())
+    }
     pub fn tuo_gu(&self) -> String {
         self.zao_by_zhi(6, "几马驮谷")
+    }
+    pub fn tuo_gu_info(&self) -> YearFortune {
+        YearFortune::new(YearFortuneKind::TuoGu, self.tuo_gu())
     }
     pub fn qiang_mi(&self) -> String {
         self.zao_by_zhi(9, "几鸡抢米")
     }
+    pub fn qiang_mi_info(&self) -> YearFortune {
+        YearFortune::new(YearFortuneKind::QiangMi, self.qiang_mi())
+    }
     pub fn kan_can(&self) -> String {
         self.zao_by_zhi(9, "几姑看蚕")
+    }
+    pub fn kan_can_info(&self) -> YearFortune {
+        YearFortune::new(YearFortuneKind::KanCan, self.kan_can())
     }
     pub fn gong_zhu(&self) -> String {
         self.zao_by_zhi(11, "几屠共猪")
     }
+    pub fn gong_zhu_info(&self) -> YearFortune {
+        YearFortune::new(YearFortuneKind::GongZhu, self.gong_zhu())
+    }
     pub fn jia_tian(&self) -> String {
         self.zao_by_gan(0, "甲田几分")
+    }
+    pub fn jia_tian_info(&self) -> YearFortune {
+        YearFortune::new(YearFortuneKind::JiaTian, self.jia_tian())
     }
     pub fn fen_bing(&self) -> String {
         self.zao_by_gan(2, "几人分饼")
     }
+    pub fn fen_bing_info(&self) -> YearFortune {
+        YearFortune::new(YearFortuneKind::FenBing, self.fen_bing())
+    }
     pub fn de_jin(&self) -> String {
         self.zao_by_gan(7, "几日得金")
+    }
+    pub fn de_jin_info(&self) -> YearFortune {
+        YearFortune::new(YearFortuneKind::DeJin, self.de_jin())
     }
     pub fn ren_bing(&self) -> String {
         let inner = self.zao_by_zhi(2, "几人几丙");
         self.zao_by_gan(2, &inner)
     }
+    pub fn ren_bing_info(&self) -> YearFortune {
+        YearFortune::new(YearFortuneKind::RenBing, self.ren_bing())
+    }
     pub fn ren_chu(&self) -> String {
         let inner = self.zao_by_zhi(2, "几人几锄");
         self.zao_by_gan(3, &inner)
+    }
+    pub fn ren_chu_info(&self) -> YearFortune {
+        YearFortune::new(YearFortuneKind::RenChu, self.ren_chu())
+    }
+
+    pub fn year_fortunes(&self) -> Vec<YearFortune> {
+        vec![
+            self.tou_liang_info(),
+            self.cao_zi_info(),
+            self.geng_tian_info(),
+            self.hua_shou_info(),
+            self.zhi_shui_info(),
+            self.tuo_gu_info(),
+            self.qiang_mi_info(),
+            self.kan_can_info(),
+            self.gong_zhu_info(),
+            self.jia_tian_info(),
+            self.fen_bing_info(),
+            self.de_jin_info(),
+            self.ren_bing_info(),
+            self.ren_chu_info(),
+        ]
+    }
+}
+
+impl CalendarSpan for LunarYear {
+    fn first_solar_day(&self) -> Solar {
+        LunarYear::first_solar_day(self)
+    }
+
+    fn last_solar_day(&self) -> Solar {
+        LunarYear::last_solar_day(self)
     }
 }
