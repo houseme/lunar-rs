@@ -1,7 +1,7 @@
 use lunar_rs::{
     Constellation, CultureDay, CycleItem, Direction, Duty, EarthBranch, Element, GodLuck, HeavenStem,
     HideHeavenStemType, Land, Lunar, LunarMonth, LunarYear, MinorRen, NamedCulture, Nayin, NineStar, Phase,
-    PlumRainKind, SixtyCycle, Solar, TabooKind, Zodiac,
+    PlumRainKind, SixtyCycle, Solar, TabooKind, Xun, Zodiac,
 };
 
 #[test]
@@ -353,6 +353,9 @@ fn typed_xun_and_tai_positions_match_legacy_getters() {
     let day_xun = lunar.day_xun_info();
     assert_eq!(day_xun.name(), lunar.day_xun());
     assert_eq!(day_xun.kong().name(), lunar.day_xun_kong());
+    assert_eq!(Xun::from_name(day_xun.name()).unwrap(), day_xun);
+    assert_eq!(Xun::from_index(day_xun.index()).kong().name(), day_xun.kong().name());
+    assert_eq!(Xun::from_name("甲寅").unwrap().next(1).name(), "甲子");
     let (first, second) = day_xun.kong().branches().unwrap();
     assert_eq!(format!("{}{}", first.name(), second.name()), lunar.day_xun_kong());
 

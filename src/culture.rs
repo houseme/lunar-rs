@@ -1226,6 +1226,19 @@ impl Xun {
         Self { name, kong: XunKong::new(kong) }
     }
 
+    pub fn from_index(index: usize) -> Self {
+        let index = index % lunar_util::tables::XUN.len();
+        Self::new(lunar_util::tables::XUN[index], lunar_util::tables::XUN_KONG[index])
+    }
+
+    pub fn from_name(name: &str) -> Option<Self> {
+        lunar_util::tables::XUN.iter().position(|value| *value == name).map(Self::from_index)
+    }
+
+    pub fn index(&self) -> usize {
+        lunar_util::tables::XUN.iter().position(|value| *value == self.name).unwrap_or(0)
+    }
+
     pub const fn name(&self) -> &'static str {
         self.name
     }
@@ -2059,6 +2072,20 @@ impl CycleItem for SixtyCycle {
 
     fn size() -> usize {
         60
+    }
+}
+
+impl CycleItem for Xun {
+    fn from_cycle_index(index: usize) -> Self {
+        Self::from_index(index % Self::size())
+    }
+
+    fn index(&self) -> usize {
+        self.index()
+    }
+
+    fn size() -> usize {
+        lunar_util::tables::XUN.len()
     }
 }
 
