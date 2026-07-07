@@ -781,6 +781,29 @@ impl Taboo {
         Self { name: name.into(), kind }
     }
 
+    pub fn from_index(index: usize, kind: TabooKind) -> Self {
+        Self::new(lunar_util::tables::YI_JI[index % Self::size()], kind)
+    }
+
+    pub fn from_name(name: &str, kind: TabooKind) -> Option<Self> {
+        lunar_util::tables::YI_JI.iter().position(|value| *value == name).map(|index| Self::from_index(index, kind))
+    }
+
+    pub fn index(&self) -> Option<usize> {
+        lunar_util::tables::YI_JI.iter().position(|value| *value == self.name())
+    }
+
+    pub fn next(&self, offset: isize) -> Option<Self> {
+        let index = self.index()?;
+        let size = Self::size() as isize;
+        let next_index = (index as isize + offset).rem_euclid(size) as usize;
+        Some(Self::from_index(next_index, self.kind()))
+    }
+
+    pub const fn size() -> usize {
+        lunar_util::tables::YI_JI.len()
+    }
+
     pub fn name(&self) -> &str {
         &self.name
     }

@@ -1,7 +1,7 @@
 use lunar_rs::{
     Constellation, CultureDay, CycleItem, Direction, Duty, EarthBranch, Element, God, GodLuck, HeavenStem,
     HideHeavenStemType, Land, Lunar, LunarMonth, LunarYear, MinorRen, NamedCulture, Nayin, NineStar, Phase,
-    PlumRainKind, SixtyCycle, Solar, TabooKind, Xun, YuanCycle, YunCycle, Zodiac,
+    PlumRainKind, SixtyCycle, Solar, Taboo, TabooKind, Xun, YuanCycle, YunCycle, Zodiac,
 };
 
 #[test]
@@ -259,11 +259,18 @@ fn typed_god_and_taboo_api_wrap_existing_almanac_data() {
     );
     assert!(recommends.iter().all(|taboo| taboo.kind() == TabooKind::Recommend));
 
+    let engagement = Taboo::from_name("订婚", TabooKind::Recommend).unwrap();
+    assert_eq!(engagement.index(), Some(16));
+    assert_eq!(engagement.kind(), TabooKind::Recommend);
+    assert_eq!(engagement.next(1).unwrap().name(), "纳采");
+    assert_eq!(engagement.next(1).unwrap().kind(), TabooKind::Recommend);
+
     assert_eq!(
         avoids.iter().map(|taboo| taboo.name().to_string()).collect::<Vec<_>>(),
         vec!["赴任", "修造", "移徙", "出行", "词讼", "祈福", "求嗣"]
     );
     assert!(avoids.iter().all(|taboo| taboo.kind() == TabooKind::Avoid));
+    assert_eq!(Taboo::new("自定义", TabooKind::Avoid).index(), None);
 }
 
 #[test]
