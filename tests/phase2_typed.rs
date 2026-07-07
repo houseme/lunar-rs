@@ -18,6 +18,10 @@ fn typed_primitives_map_names_and_relationships() {
     assert_eq!(chen.zodiac().name(), "龙");
     assert_eq!(chen.element().name(), "土");
 
+    let dragon = Zodiac::from_name("龙").unwrap();
+    assert_eq!(dragon.index(), 4);
+    assert_eq!(Zodiac::from_index(11).next(1).name(), "鼠");
+
     let cycle = SixtyCycle::from_name("甲辰").unwrap();
     assert_eq!(cycle.index(), 40);
     assert_eq!(cycle.heaven_stem().name(), "甲");
@@ -76,7 +80,7 @@ fn common_culture_traits_unify_names_cycles_and_day_indices() {
     assert_eq!(next_name(HeavenStem::from_name("癸").unwrap(), 1), "甲");
     assert_eq!(next_name(EarthBranch::from_name("亥").unwrap(), 1), "子");
     assert_eq!(next_name(SixtyCycle::from_name("癸亥").unwrap(), 1), "甲子");
-    assert_eq!(next_name(Zodiac::new("猪"), 1), "鼠");
+    assert_eq!(next_name(Zodiac::from_name("猪").unwrap(), 1), "鼠");
     assert_eq!(next_name(Element::from_name("水").unwrap(), 1), "木");
     assert_eq!(next_name(Duty::from_name("闭").unwrap(), 1), "建");
     assert_eq!(next_name(GodLuck::Inauspicious, 1), "吉");

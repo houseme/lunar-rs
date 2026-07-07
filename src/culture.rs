@@ -188,6 +188,18 @@ impl Zodiac {
         Self { name }
     }
 
+    pub fn from_index(index: usize) -> Self {
+        Self::new(lunar_util::tables::SHENG_XIAO[index % 12 + 1])
+    }
+
+    pub fn from_name(name: &str) -> Option<Self> {
+        lunar_util::tables::SHENG_XIAO[1..].iter().position(|value| *value == name).map(Self::from_index)
+    }
+
+    pub fn index(&self) -> usize {
+        lunar_util::tables::SHENG_XIAO[1..].iter().position(|value| *value == self.name).unwrap_or(0)
+    }
+
     pub const fn name(&self) -> &'static str {
         self.name
     }
@@ -2118,11 +2130,11 @@ impl CycleItem for Element {
 
 impl CycleItem for Zodiac {
     fn from_cycle_index(index: usize) -> Self {
-        Self::new(lunar_util::tables::SHENG_XIAO[index % Self::size() + 1])
+        Self::from_index(index)
     }
 
     fn index(&self) -> usize {
-        lunar_util::tables::SHENG_XIAO[1..].iter().position(|value| *value == self.name()).unwrap_or(0)
+        self.index()
     }
 
     fn size() -> usize {
