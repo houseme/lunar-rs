@@ -23,6 +23,38 @@ const XIU_ANIMAL_NAMES: [&str; 28] = [
 const BEAST_NAMES: [&str; 4] = ["青龙", "玄武", "白虎", "朱雀"];
 const ZONE_NAMES: [&str; 4] = ["东", "北", "西", "南"];
 const TERRAIN_NAMES: [&str; 12] = ["长生", "沐浴", "冠带", "临官", "帝旺", "衰", "病", "死", "墓", "绝", "胎", "养"];
+const NAYIN_NAMES: [&str; 30] = [
+    "海中金",
+    "炉中火",
+    "大林木",
+    "路旁土",
+    "剑锋金",
+    "山头火",
+    "涧下水",
+    "城头土",
+    "白蜡金",
+    "杨柳木",
+    "泉中水",
+    "屋上土",
+    "霹雳火",
+    "松柏木",
+    "长流水",
+    "沙中金",
+    "山下火",
+    "平地木",
+    "壁上土",
+    "金箔金",
+    "覆灯火",
+    "天河水",
+    "大驿土",
+    "钗钏金",
+    "桑柘木",
+    "大溪水",
+    "沙中土",
+    "天上火",
+    "石榴木",
+    "大海水",
+];
 
 pub trait NamedCulture {
     fn name(&self) -> &str;
@@ -1570,6 +1602,18 @@ impl Nayin {
         Self { name }
     }
 
+    pub const fn from_index(index: usize) -> Self {
+        Self { name: NAYIN_NAMES[index % NAYIN_NAMES.len()] }
+    }
+
+    pub fn from_name(name: &str) -> Option<Self> {
+        NAYIN_NAMES.iter().position(|value| *value == name).map(Self::from_index)
+    }
+
+    pub fn index(&self) -> usize {
+        NAYIN_NAMES.iter().position(|value| *value == self.name).unwrap_or(0)
+    }
+
     pub const fn name(&self) -> &'static str {
         self.name
     }
@@ -2106,6 +2150,20 @@ impl CycleItem for Nine {
 
     fn size() -> usize {
         NINE_NAMES.len()
+    }
+}
+
+impl CycleItem for Nayin {
+    fn from_cycle_index(index: usize) -> Self {
+        Self::from_index(index % Self::size())
+    }
+
+    fn index(&self) -> usize {
+        self.index()
+    }
+
+    fn size() -> usize {
+        NAYIN_NAMES.len()
     }
 }
 

@@ -228,5 +228,6 @@
 | `P2` | `Task 72` | Terrain 十二长生 typed API | `已完成` | [docs/tasks/72-phase-next-terrain-typed-api.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/72-phase-next-terrain-typed-api.md) |
 | `P3` | `Task 73` | Week typed API | `已完成` | [docs/tasks/73-phase-next-week-typed-api.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/73-phase-next-week-typed-api.md) |
 | `P3` | `Task 74` | Zone 四宫 typed API | `已完成` | [docs/tasks/74-phase-next-zone-typed-api.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/74-phase-next-zone-typed-api.md) |
+| `P3` | `Task 75` | Nayin 纳音循环对象补强 | `已完成` | [docs/tasks/75-phase-next-nayin-cycle-api.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/75-phase-next-nayin-cycle-api.md) |
 
-后续建议继续按新对标文档和本索引中的 `Task 59` - `Task 74` 推进，不再把已经完成的 Phase 4 多历法工作重复列为待办。
+后续建议继续按新对标文档和本索引中的 `Task 59` - `Task 75` 推进，不再把已经完成的 Phase 4 多历法工作重复列为待办。

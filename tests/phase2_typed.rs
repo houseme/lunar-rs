@@ -1,6 +1,6 @@
 use lunar_rs::{
     Constellation, CultureDay, CycleItem, Direction, Duty, EarthBranch, Element, GodLuck, HeavenStem,
-    HideHeavenStemType, Lunar, LunarMonth, LunarYear, MinorRen, NamedCulture, NineStar, Phase, PlumRainKind,
+    HideHeavenStemType, Lunar, LunarMonth, LunarYear, MinorRen, NamedCulture, Nayin, NineStar, Phase, PlumRainKind,
     SixtyCycle, Solar, TabooKind, Zodiac,
 };
 
@@ -463,4 +463,9 @@ fn typed_liu_yao_season_and_nayin_companions_reduce_string_parsing() {
     assert_eq!(lunar.day_nayin_info().name(), lunar.day_nayin());
     assert_eq!(lunar.time_nayin_info().name(), lunar.time_nayin());
     assert_eq!(lunar.day_nayin_info().element().name(), "土");
+
+    let day_nayin = lunar.day_nayin_info();
+    assert_eq!(Nayin::from_name(day_nayin.name()).unwrap(), day_nayin);
+    assert_eq!(Nayin::from_index(day_nayin.index()).name(), day_nayin.name());
+    assert_eq!(day_nayin.next(1).steps_back_to(day_nayin.index()), -1);
 }
