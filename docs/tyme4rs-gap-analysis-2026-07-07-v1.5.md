@@ -39,11 +39,12 @@
 | `P3` | `Task 99` | Foto/Tao wrapper 生命周期与 getter 兼容补强 | `已完成` | 本地扩展项；`tyme4rs v1.5` 无独立佛历/道历模块，本任务补齐本地 wrapper 的 owned 快照与 `get_*` 迁移入口。 |
 | `P3` | `Task 100` | Foto/Tao 布尔规则 get_* 兼容补强 | `已完成` | 为 `Foto/Tao` 仍保留 `is_*` 的布尔规则补齐 `get_*` 兼容别名。 |
 | `P3` | `Task 101` | README/API 迁移示例同步 | `已完成` | 在 `README.md` / `README_CN.md` 中补充 tyme4rs 风格迁移示例与语义差异说明。 |
-| `P2` | `Task 102` | 差分协议与样例矩阵扩容 | `已完成` | 将差分协议扩展到当前 `v3`，并把节日 wrapper、闰月、星期、星座与法定假日字段纳入 sample matrix。 |
+| `P2` | `Task 102` | 差分协议与样例矩阵扩容 | `已完成` | 将差分协议扩展到当前 `v5`，并把节日 wrapper、闰月、星期、星座、法定假日与文化日对象字段纳入 sample matrix。 |
 | `P3` | `Task 103` | 日期键查找与时辰索引优化 | `已完成` | 收拢日期 key 查找与时辰索引热路径，降低字符串拼接分散度，作为兼容层落地后的本地优化。 |
 | `P3` | `Task 104` | Foto/Tao Year/Month companion getter 兼容 | `已完成` | 为 `FotoYear/FotoMonth/TaoYear/TaoMonth` 补齐常用 `get_*` companion 入口。 |
-| `P2` | `Task 105` | tyme4rs 外部 reference bridge 落地 | `已完成` | 新增可执行脚本并实际跑通 `tyme4rs` `v3` 差分；同时补齐月份中文同义归一化与节气节日年份基准。 |
+| `P2` | `Task 105` | tyme4rs 外部 reference bridge 落地 | `已完成` | 新增可执行脚本并实际跑通 `tyme4rs` `v5` 差分；同时补齐月份中文同义归一化与节气节日年份基准。 |
 | `P3` | `Task 106` | 节日与假日存储归一化 | `已完成` | 将 `FotoFestival` / `TaoFestival` 收敛为静态字符串承载，并规范 `Holiday` 的固定日期存储。 |
+| `P2` | `Task 107` | 差分文化字段继续扩容 | `已完成` | 将差分协议扩展到 `v5`，新增九星、小六壬、六曜、十二神、二十八宿以及文化日对象字符串字段。 |
 
 ## 实施顺序
 
@@ -53,7 +54,7 @@
 
 ## 当前建议
 
-`Task 86`、`Task 87`、`Task 88`、`Task 89`、`Task 90`、`Task 91`、`Task 92`、`Task 93`、`Task 94`、`Task 95`、`Task 96`、`Task 97`、`Task 98`、`Task 99`、`Task 100`、`Task 101`、`Task 102`、`Task 103`、`Task 104`、`Task 105` 与 `Task 106` 已完成。本地继续保留 `phase()` 的旧含义，并通过 `moon_phase()` / `moon_phase_day()` 暴露对标 `tyme4rs::Phase` 的 8 相天文月相；年月周差异已补 `Unit` 对象族与 `LunarWeek`；事件规则侧已补 `EventType` 与 `EventBuilder` 兼容层；公开类型名迁移侧已补 `Dipper` 和轻量 type alias；核心日时入口侧已补 `JulianDay` 与 `SolarDay/SolarTime/LunarDay/LunarHour/SolarTerm/LegalHoliday/HijriDay` 兼容别名，且 `SolarTerm` 已补对象构造与步进 API，`SolarDay/SolarTime/SolarYear/SolarHalfYear/SolarSeason/SolarMonth/SolarWeek/LunarDay/LunarHour/LunarYear/LunarMonth` 已补常用 `get_*` 迁移入口；节日对象侧已补 `SolarFestival/LunarFestival` wrapper；基础枚举侧已补 `Gender/Side/YinYang`，并保留旧整数性别入口；本地扩展的 `Foto/Tao` wrapper 已改为 owned 快照，并继续补齐 `get_*`、布尔规则别名以及 `FotoYear/FotoMonth/TaoYear/TaoMonth` companion getter，同时在 README 中补了可复制的迁移示例；差分协议现已升级到 `v3`，开始覆盖节日 wrapper、闰月元数据、星期、星座和法定假日，本地日期键查找与时辰索引热路径也已完成收拢，并且 `tyme4rs` 外部 bridge 已能直接喂给 ignored 差分测试，当前 `v3` 样例矩阵已跑通；节日与假日对象的内部承载也进一步完成了归一化。后续如继续推进，应进入 bridge 字段继续扩容和更严格的外部样例矩阵。
+`Task 86`、`Task 87`、`Task 88`、`Task 89`、`Task 90`、`Task 91`、`Task 92`、`Task 93`、`Task 94`、`Task 95`、`Task 96`、`Task 97`、`Task 98`、`Task 99`、`Task 100`、`Task 101`、`Task 102`、`Task 103`、`Task 104`、`Task 105`、`Task 106` 与 `Task 107` 已完成。本地继续保留 `phase()` 的旧含义，并通过 `moon_phase()` / `moon_phase_day()` 暴露对标 `tyme4rs::Phase` 的 8 相天文月相；年月周差异已补 `Unit` 对象族与 `LunarWeek`；事件规则侧已补 `EventType` 与 `EventBuilder` 兼容层；公开类型名迁移侧已补 `Dipper` 和轻量 type alias；核心日时入口侧已补 `JulianDay` 与 `SolarDay/SolarTime/LunarDay/LunarHour/SolarTerm/LegalHoliday/HijriDay` 兼容别名，且 `SolarTerm` 已补对象构造与步进 API，`SolarDay/SolarTime/SolarYear/SolarHalfYear/SolarSeason/SolarMonth/SolarWeek/LunarDay/LunarHour/LunarYear/LunarMonth` 已补常用 `get_*` 迁移入口；节日对象侧已补 `SolarFestival/LunarFestival` wrapper；基础枚举侧已补 `Gender/Side/YinYang`，并保留旧整数性别入口；本地扩展的 `Foto/Tao` wrapper 已改为 owned 快照，并继续补齐 `get_*`、布尔规则别名以及 `FotoYear/FotoMonth/TaoYear/TaoMonth` companion getter，同时在 README 中补了可复制的迁移示例；差分协议现已升级到 `v5`，开始覆盖节日 wrapper、闰月元数据、星期、星座、法定假日以及文化日对象字符串字段，本地日期键查找与时辰索引热路径也已完成收拢，并且 `tyme4rs` 外部 bridge 已能直接喂给 ignored 差分测试，当前 `v5` 样例矩阵已跑通；对已确认存在实现口径差异的文化字段，外部 `tyme4rs` flavor 仅保留本地协议覆盖。后续如继续推进，应进入 `LunarHour` / `LunarMonth` 级别文化字段和更严格的外部样例矩阵。
 
 ## 2026-07-07 重新拉取复核
 

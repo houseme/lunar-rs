@@ -260,5 +260,6 @@
 | `P3` | `Task 104` | Foto/Tao Year/Month companion getter 兼容 | `已完成` | [docs/tasks/104-phase-next-foto-tao-year-month-getter-compatibility.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/104-phase-next-foto-tao-year-month-getter-compatibility.md) |
 | `P2` | `Task 105` | tyme4rs 外部 reference bridge 落地 | `已完成` | [docs/tasks/105-phase-next-tyme4rs-reference-bridge.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/105-phase-next-tyme4rs-reference-bridge.md) |
 | `P3` | `Task 106` | 节日与假日存储归一化 | `已完成` | [docs/tasks/106-phase-next-festival-holiday-storage-normalization.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/106-phase-next-festival-holiday-storage-normalization.md) |
+| `P2` | `Task 107` | 差分文化字段继续扩容 | `已完成` | [docs/tasks/107-phase-next-diff-cultural-field-expansion.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/107-phase-next-diff-cultural-field-expansion.md) |
 
-后续建议继续按新对标文档和本索引中的 `Task 59` - `Task 106` 推进，不再把已经完成的 Phase 4 多历法工作重复列为待办。
+后续建议继续按新对标文档和本索引中的 `Task 59` - `Task 107` 推进，不再把已经完成的 Phase 4 多历法工作重复列为待办。

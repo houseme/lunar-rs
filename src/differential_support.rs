@@ -5,8 +5,12 @@
 
 use crate::Solar;
 
+fn render_nine_star(star: crate::NineStar) -> String {
+    format!("{}{}{}", star.number(), star.color(), star.wu_xing())
+}
+
 /// Snapshot protocol version for differential-testing tooling.
-pub const PROTOCOL_VERSION: &str = "3";
+pub const PROTOCOL_VERSION: &str = "5";
 
 /// Stable newline key names emitted by the sample reference driver.
 pub const SOLAR_SNAPSHOT_KEYS: &[&str] = &[
@@ -26,6 +30,13 @@ pub const SOLAR_SNAPSHOT_KEYS: &[&str] = &[
     "constellation",
     "legal_holiday",
     "legal_holiday_work",
+    "solar_nine_star",
+    "phenology_day",
+    "phase_day",
+    "nine_day",
+    "hide_heaven_stem_day",
+    "dog_day",
+    "plum_rain_day",
     "year_ganzhi",
     "month_ganzhi",
     "day_ganzhi",
@@ -36,6 +47,11 @@ pub const SOLAR_SNAPSHOT_KEYS: &[&str] = &[
     "lunar_month_with_leap",
     "lunar_month_day_count",
     "lunar_month_index_in_year",
+    "lunar_six_star",
+    "lunar_minor_ren",
+    "lunar_twelve_star",
+    "lunar_twenty_eight_star",
+    "lunar_nine_star",
 ];
 
 /// Render a stable ordered key-value snapshot for a solar datetime input.
@@ -71,6 +87,13 @@ pub fn solar_snapshot(solar: Solar) -> Vec<(&'static str, String)> {
             "legal_holiday_work",
             legal_holiday.as_ref().map_or_else(String::new, |holiday| holiday.is_work().to_string()),
         ),
+        ("solar_nine_star", render_nine_star(solar.get_nine_star())),
+        ("phenology_day", solar.get_phenology_day().map_or_else(String::new, |day| day.to_string())),
+        ("phase_day", solar.get_phase_day().to_string()),
+        ("nine_day", solar.get_nine_day().map_or_else(String::new, |day| day.to_string())),
+        ("hide_heaven_stem_day", solar.get_hide_heaven_stem_day().map_or_else(String::new, |day| day.to_string())),
+        ("dog_day", solar.get_dog_day().map_or_else(String::new, |day| day.to_string())),
+        ("plum_rain_day", solar.get_plum_rain_day().map_or_else(String::new, |day| day.to_string())),
         ("year_ganzhi", lunar.year_in_gan_zhi()),
         ("month_ganzhi", lunar.month_in_gan_zhi()),
         ("day_ganzhi", lunar.day_in_gan_zhi()),
@@ -87,5 +110,10 @@ pub fn solar_snapshot(solar: Solar) -> Vec<(&'static str, String)> {
             "lunar_month_index_in_year",
             lunar_month.map_or_else(String::new, |month| month.get_index_in_year().to_string()),
         ),
+        ("lunar_six_star", lunar.get_six_star().name().to_string()),
+        ("lunar_minor_ren", lunar.get_minor_ren().name().to_string()),
+        ("lunar_twelve_star", lunar.get_twelve_star().name().to_string()),
+        ("lunar_twenty_eight_star", lunar.get_twenty_eight_star().name().to_string()),
+        ("lunar_nine_star", render_nine_star(lunar.get_nine_star())),
     ]
 }

@@ -39,7 +39,7 @@ pub struct NineStar {
 
 impl NineStar {
     pub const fn from_index(index: i64) -> Self {
-        Self { index }
+        Self { index: index.rem_euclid(9) }
     }
     #[inline]
     pub const fn index(&self) -> i64 {

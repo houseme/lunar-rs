@@ -36,7 +36,7 @@ use tyme4rs::tyme::festival::{LunarFestival, SolarFestival};
 use tyme4rs::tyme::lunar::{LunarDay, LunarHour, LunarMonth, LunarYear};
 use tyme4rs::tyme::solar::{SolarDay, SolarTime};
 
-const PROTOCOL_VERSION: &str = "3";
+const PROTOCOL_VERSION: &str = "5";
 const DIGITS: [&str; 10] = ["〇", "一", "二", "三", "四", "五", "六", "七", "八", "九"];
 
 fn usage(program: &str) -> String {
@@ -150,8 +150,27 @@ fn snapshot(solar_time: SolarTime) -> Vec<(&'static str, String)> {
             "legal_holiday_work",
             solar_day.get_legal_holiday().map_or_else(String::new, |holiday| holiday.is_work().to_string()),
         ),
-        ("year_ganzhi", lunar_day.get_year_sixty_cycle().get_name()),
-        ("month_ganzhi", lunar_day.get_month_sixty_cycle().get_name()),
+        ("solar_nine_star", solar_day.get_nine_star().to_string()),
+        (
+            "phenology_day",
+            solar_day.get_phenology_day().to_string(),
+        ),
+        ("phase_day", solar_day.get_phase_day().to_string()),
+        (
+            "nine_day",
+            solar_day.get_nine_day().map_or_else(String::new, |day| day.to_string()),
+        ),
+        ("hide_heaven_stem_day", solar_day.get_hide_heaven_stem_day().to_string()),
+        (
+            "dog_day",
+            solar_day.get_dog_day().map_or_else(String::new, |day| day.to_string()),
+        ),
+        (
+            "plum_rain_day",
+            solar_day.get_plum_rain_day().map_or_else(String::new, |day| day.to_string()),
+        ),
+        ("year_ganzhi", lunar_day.get_sixty_cycle_day().get_year().get_name()),
+        ("month_ganzhi", lunar_day.get_sixty_cycle_day().get_month().get_name()),
         ("day_ganzhi", lunar_day.get_sixty_cycle().get_name()),
         ("time_ganzhi", lunar_hour.get_sixty_cycle().get_name()),
         ("lunar_year_month_count", lunar_year.get_month_count().to_string()),
@@ -166,6 +185,14 @@ fn snapshot(solar_time: SolarTime) -> Vec<(&'static str, String)> {
             "lunar_month_index_in_year",
             lunar_month.get_index_in_year().to_string(),
         ),
+        ("lunar_six_star", lunar_day.get_six_star().get_name()),
+        ("lunar_minor_ren", lunar_day.get_minor_ren().get_name()),
+        ("lunar_twelve_star", lunar_day.get_twelve_star().get_name()),
+        (
+            "lunar_twenty_eight_star",
+            lunar_day.get_twenty_eight_star().get_name(),
+        ),
+        ("lunar_nine_star", lunar_day.get_nine_star().to_string()),
     ]
 }
 

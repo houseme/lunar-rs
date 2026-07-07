@@ -132,12 +132,26 @@ impl<'a> EightChar<'a> {
         Terrain::from_name(self.di_shi(zhi_index)).unwrap_or_else(|| Terrain::from_index(0))
     }
 
+    fn sixty_cycle_from_indices(&self, gan_index: i64, zhi_index: i64) -> SixtyCycle {
+        let gan_index = gan_index.rem_euclid(10);
+        let zhi_index = zhi_index.rem_euclid(12);
+        for index in 0..60 {
+            let index = index as i64;
+            if index % 10 == gan_index && index % 12 == zhi_index {
+                return SixtyCycle::from_index(index as usize);
+            }
+        }
+        SixtyCycle::from_index(0)
+    }
+
     // ---- 年柱 ----
     pub fn year(&self) -> String {
         self.lunar.year_in_gan_zhi_exact()
     }
     pub fn year_pillar(&self) -> SixtyCycleYear {
-        SixtyCycleYear::new(SixtyCycle::from_name(&self.year()).unwrap_or_else(|| SixtyCycle::from_index(0)))
+        SixtyCycleYear::new(
+            self.sixty_cycle_from_indices(self.lunar.year_gan_index_exact(), self.lunar.year_zhi_index_exact()),
+        )
     }
     pub fn year_gan(&self) -> &'static str {
         self.lunar.year_gan_exact()
@@ -152,7 +166,7 @@ impl<'a> EightChar<'a> {
         format!("{}{}", lunar_util::wu_xing_gan(self.year_gan()), lunar_util::wu_xing_zhi(self.year_zhi()))
     }
     pub fn year_na_yin(&self) -> &'static str {
-        lunar_util::nayin(&self.year())
+        self.year_pillar().nayin().name()
     }
     pub fn year_shi_shen_gan(&self) -> &'static str {
         lunar_util::shi_shen(&format!("{}{}", self.day_gan(), self.year_gan()))
@@ -172,7 +186,9 @@ impl<'a> EightChar<'a> {
         self.lunar.month_in_gan_zhi_exact()
     }
     pub fn month_pillar(&self) -> SixtyCycleMonth {
-        SixtyCycleMonth::new(SixtyCycle::from_name(&self.month()).unwrap_or_else(|| SixtyCycle::from_index(0)))
+        SixtyCycleMonth::new(
+            self.sixty_cycle_from_indices(self.lunar.month_gan_index_exact(), self.lunar.month_zhi_index_exact()),
+        )
     }
     pub fn month_gan(&self) -> &'static str {
         self.lunar.month_gan_exact()
@@ -187,7 +203,7 @@ impl<'a> EightChar<'a> {
         format!("{}{}", lunar_util::wu_xing_gan(self.month_gan()), lunar_util::wu_xing_zhi(self.month_zhi()))
     }
     pub fn month_na_yin(&self) -> &'static str {
-        lunar_util::nayin(&self.month())
+        self.month_pillar().nayin().name()
     }
     pub fn month_shi_shen_gan(&self) -> &'static str {
         lunar_util::shi_shen(&format!("{}{}", self.day_gan(), self.month_gan()))
@@ -207,7 +223,12 @@ impl<'a> EightChar<'a> {
         if self.sect == 2 { self.lunar.day_in_gan_zhi_exact2() } else { self.lunar.day_in_gan_zhi_exact() }
     }
     pub fn day_pillar(&self) -> SixtyCycleDay {
-        SixtyCycleDay::new(SixtyCycle::from_name(&self.day()).unwrap_or_else(|| SixtyCycle::from_index(0)))
+        let (gan_index, zhi_index) = if self.sect == 2 {
+            (self.lunar.day_gan_index_exact2(), self.lunar.day_zhi_index_exact2())
+        } else {
+            (self.lunar.day_gan_index_exact(), self.lunar.day_zhi_index_exact())
+        };
+        SixtyCycleDay::new(self.sixty_cycle_from_indices(gan_index, zhi_index))
     }
     pub fn day_gan(&self) -> &'static str {
         if self.sect == 2 { self.lunar.day_gan_exact2() } else { self.lunar.day_gan_exact() }
@@ -222,7 +243,7 @@ impl<'a> EightChar<'a> {
         format!("{}{}", lunar_util::wu_xing_gan(self.day_gan()), lunar_util::wu_xing_zhi(self.day_zhi()))
     }
     pub fn day_na_yin(&self) -> &'static str {
-        lunar_util::nayin(&self.day())
+        self.day_pillar().nayin().name()
     }
     pub const fn day_shi_shen_gan(&self) -> &'static str {
         "日主"
@@ -242,7 +263,7 @@ impl<'a> EightChar<'a> {
         self.lunar.time_in_gan_zhi()
     }
     pub fn time_pillar(&self) -> SixtyCycleHour {
-        SixtyCycleHour::new(SixtyCycle::from_name(&self.time()).unwrap_or_else(|| SixtyCycle::from_index(0)))
+        SixtyCycleHour::new(self.sixty_cycle_from_indices(self.lunar.time_gan_index(), self.lunar.time_zhi_index()))
     }
     pub fn time_gan(&self) -> &'static str {
         self.lunar.time_gan()
@@ -257,7 +278,7 @@ impl<'a> EightChar<'a> {
         format!("{}{}", lunar_util::wu_xing_gan(self.time_gan()), lunar_util::wu_xing_zhi(self.time_zhi()))
     }
     pub fn time_na_yin(&self) -> &'static str {
-        lunar_util::nayin(&self.time())
+        self.time_pillar().nayin().name()
     }
     pub fn time_shi_shen_gan(&self) -> &'static str {
         lunar_util::shi_shen(&format!("{}{}", self.day_gan(), self.time_gan()))

@@ -6,7 +6,8 @@ use std::sync::OnceLock;
 
 use crate::LunarError;
 use crate::culture::{
-    ChongSha, Direction, DogDay, Duty, EarthBranch, FetusDay, FetusMonth, God, GodLuck, HeavenStem, LiuYao, Lu,
+    ChongSha, CycleItem, Direction, DogDay, Duty, EarthBranch, FetusDay, FetusMonth, God, GodLuck, HeavenStem,
+    LiuYao, Lu,
     MinorRen, MoonPhase, MoonPhaseDay, Nayin, PengZu, Phase, PhaseDay, Phenology, PhenologyDay, PlumRainDay, Season,
     SixStar, SixtyCycle, SixtyCycleDay, SixtyCycleHour, SixtyCycleMonth, SixtyCycleYear, SolarTermDay, Taboo,
     TabooKind, TaiPosition, TaiSuiPosition, ThreePillars, TianShen, TwelveStar, Week, Xiu, Xun, Zodiac,
@@ -128,6 +129,18 @@ fn is_before_mode(a: Solar, b: Solar, whole_day: bool) -> bool {
 
 fn is_after_mode(a: Solar, b: Solar, whole_day: bool) -> bool {
     if whole_day { day_after(a, b) } else { a.is_after(&b) }
+}
+
+fn sixty_cycle_from_indices(gan_index: i64, zhi_index: i64) -> SixtyCycle {
+    let gan_index = gan_index.rem_euclid(10);
+    let zhi_index = zhi_index.rem_euclid(12);
+    for index in 0..60 {
+        let index = index as i64;
+        if index % 10 == gan_index && index % 12 == zhi_index {
+            return SixtyCycle::from_index(index as usize);
+        }
+    }
+    SixtyCycle::from_index(0)
 }
 
 fn jie_qi_index(key: &str) -> Option<usize> {
@@ -556,7 +569,7 @@ impl Lunar {
         format!("{}{}", self.year_gan(), self.year_zhi())
     }
     pub fn year_sixty_cycle(&self) -> SixtyCycle {
-        SixtyCycle::from_name(&self.year_in_gan_zhi()).expect("year ganzhi must map to sixty-cycle")
+        sixty_cycle_from_indices(self.year_gan_index, self.year_zhi_index)
     }
     pub fn get_year_sixty_cycle(&self) -> SixtyCycle {
         self.year_sixty_cycle()
@@ -597,7 +610,7 @@ impl Lunar {
         format!("{}{}", self.month_gan(), self.month_zhi())
     }
     pub fn month_sixty_cycle(&self) -> SixtyCycle {
-        SixtyCycle::from_name(&self.month_in_gan_zhi()).expect("month ganzhi must map to sixty-cycle")
+        sixty_cycle_from_indices(self.month_gan_index, self.month_zhi_index)
     }
     pub fn get_month_sixty_cycle(&self) -> SixtyCycle {
         self.month_sixty_cycle()
@@ -641,7 +654,7 @@ impl Lunar {
         format!("{}{}", self.day_gan(), self.day_zhi())
     }
     pub fn day_sixty_cycle(&self) -> SixtyCycle {
-        SixtyCycle::from_name(&self.day_in_gan_zhi()).expect("day ganzhi must map to sixty-cycle")
+        sixty_cycle_from_indices(self.day_gan_index, self.day_zhi_index)
     }
     pub fn get_sixty_cycle(&self) -> SixtyCycle {
         self.day_sixty_cycle()
@@ -679,7 +692,7 @@ impl Lunar {
         format!("{}{}", self.time_gan(), self.time_zhi())
     }
     pub fn time_sixty_cycle(&self) -> SixtyCycle {
-        SixtyCycle::from_name(&self.time_in_gan_zhi()).expect("time ganzhi must map to sixty-cycle")
+        sixty_cycle_from_indices(self.time_gan_index, self.time_zhi_index)
     }
     pub fn get_time_sixty_cycle(&self) -> SixtyCycle {
         self.time_sixty_cycle()
@@ -697,7 +710,7 @@ impl Lunar {
 
     // ---- 纳音 ----
     pub fn year_nayin(&self) -> &'static str {
-        lunar_util::nayin(&self.year_in_gan_zhi())
+        self.sixty_cycle_year().nayin().name()
     }
     pub fn year_nayin_info(&self) -> Nayin {
         Nayin::new(self.year_nayin())
@@ -707,7 +720,7 @@ impl Lunar {
         crate::i18n::nayin(self.year_nayin(), language)
     }
     pub fn month_nayin(&self) -> &'static str {
-        lunar_util::nayin(&self.month_in_gan_zhi())
+        self.sixty_cycle_month().nayin().name()
     }
     pub fn month_nayin_info(&self) -> Nayin {
         Nayin::new(self.month_nayin())
@@ -717,7 +730,7 @@ impl Lunar {
         crate::i18n::nayin(self.month_nayin(), language)
     }
     pub fn day_nayin(&self) -> &'static str {
-        lunar_util::nayin(&self.day_in_gan_zhi())
+        self.sixty_cycle_day().nayin().name()
     }
     pub fn day_nayin_info(&self) -> Nayin {
         Nayin::new(self.day_nayin())
@@ -727,7 +740,7 @@ impl Lunar {
         crate::i18n::nayin(self.day_nayin(), language)
     }
     pub fn time_nayin(&self) -> &'static str {
-        lunar_util::nayin(&self.time_in_gan_zhi())
+        self.sixty_cycle_hour().nayin().name()
     }
     pub fn time_nayin_info(&self) -> Nayin {
         Nayin::new(self.time_nayin())
@@ -1296,20 +1309,20 @@ impl Lunar {
 
     // ---- 天神 ----
     pub fn day_tian_shen(&self) -> &'static str {
-        let off =
-            lunar_util::ZHI_TIAN_SHEN_OFFSET[lunar_util::find(self.month_zhi(), lunar_util::tables::ZHI, 0) as usize];
+        let off = lunar_util::ZHI_TIAN_SHEN_OFFSET[self.month_zhi_index_exact as usize];
         lunar_util::tables::TIAN_SHEN[((self.day_zhi_index + off) % 12 + 1) as usize]
     }
     pub fn time_tian_shen(&self) -> &'static str {
-        let off = lunar_util::ZHI_TIAN_SHEN_OFFSET
-            [lunar_util::find(self.day_zhi_exact(), lunar_util::tables::ZHI, 0) as usize];
+        let off = lunar_util::ZHI_TIAN_SHEN_OFFSET[self.day_zhi_index_exact as usize];
         lunar_util::tables::TIAN_SHEN[((self.time_zhi_index + off) % 12 + 1) as usize]
     }
     pub fn day_tian_shen_info(&self) -> TianShen {
         TianShen::new(self.day_tian_shen())
     }
     pub fn get_twelve_star(&self) -> TwelveStar {
-        TwelveStar::from_name(self.day_tian_shen()).unwrap_or_else(|| TwelveStar::from_index(0))
+        let day_branch = self.get_sixty_cycle().earth_branch().index() as i64;
+        let month_branch = self.get_month_sixty_cycle().earth_branch().index() as i64;
+        TwelveStar::from_index((day_branch + (8 - month_branch.rem_euclid(6)) * 2).rem_euclid(12) as usize)
     }
     pub fn time_tian_shen_info(&self) -> TianShen {
         TianShen::new(self.time_tian_shen())
@@ -1504,7 +1517,8 @@ impl Lunar {
         LiuYao::new(self.liu_yao())
     }
     pub fn get_six_star(&self) -> SixStar {
-        SixStar::from_name(self.liu_yao()).unwrap_or_else(|| SixStar::from_index(0))
+        let index = (self.month + self.day - 2).rem_euclid(6) as usize;
+        SixStar::from_index(index)
     }
     pub const fn week(&self) -> i32 {
         self.week_index
@@ -1862,43 +1876,26 @@ impl Lunar {
         Self::month_nine_star_inner(yzi, mzi)
     }
     pub fn day_nine_star(&self) -> NineStar {
-        let solar_ymd = self.solar.to_ymd();
-        let dong_zhi = self.jq("冬至");
-        let dong_zhi2 = self.jq("DONG_ZHI");
-        let xia_zhi = self.jq("夏至");
-        let dong_zhi_index = lunar_util::get_jia_zi_index(&dong_zhi.lunar().day_in_gan_zhi());
-        let dong_zhi_index2 = lunar_util::get_jia_zi_index(&dong_zhi2.lunar().day_in_gan_zhi());
-        let xia_zhi_index = lunar_util::get_jia_zi_index(&xia_zhi.lunar().day_in_gan_zhi());
-        let solar_shun_bai = if dong_zhi_index > 29 {
-            dong_zhi.next_day((60 - dong_zhi_index) as i32)
-        } else {
-            dong_zhi.next_day((-dong_zhi_index) as i32)
-        };
-        let solar_shun_bai_ymd = solar_shun_bai.to_ymd();
-        let solar_shun_bai2 = if dong_zhi_index2 > 29 {
-            dong_zhi2.next_day((60 - dong_zhi_index2) as i32)
-        } else {
-            dong_zhi2.next_day((-dong_zhi_index2) as i32)
-        };
-        let solar_shun_bai_ymd2 = solar_shun_bai2.to_ymd();
-        let solar_ni_zi = if xia_zhi_index > 29 {
-            xia_zhi.next_day((60 - xia_zhi_index) as i32)
-        } else {
-            xia_zhi.next_day((-xia_zhi_index) as i32)
-        };
-        let solar_ni_zi_ymd = solar_ni_zi.to_ymd();
-        let offset = if solar_ymd >= solar_shun_bai_ymd && solar_ymd < solar_ni_zi_ymd {
-            self.solar.subtract(&solar_shun_bai) % 9
-        } else if solar_ymd >= solar_ni_zi_ymd && solar_ymd < solar_shun_bai_ymd2 {
-            8 - (self.solar.subtract(&solar_ni_zi) % 9)
-        } else if solar_ymd >= solar_shun_bai_ymd2 {
-            self.solar.subtract(&solar_shun_bai2) % 9
-        } else if solar_ymd < solar_shun_bai_ymd {
-            (8 + solar_shun_bai.subtract(&self.solar)) % 9
-        } else {
-            0
-        };
-        NineStar::from_index(i64::from(offset))
+        let year = self.solar.year();
+        let winter_solstice = JieQi::from_index(year, 0).solar_day();
+        let summer_solstice = JieQi::from_index(year, 12).solar_day();
+        let next_winter_solstice = JieQi::from_index(year + 1, 0).solar_day();
+
+        let winter_anchor = winter_solstice.next_day(winter_solstice.lunar().get_sixty_cycle().steps_close_to(0) as i32);
+        let summer_anchor = summer_solstice.next_day(summer_solstice.lunar().get_sixty_cycle().steps_close_to(0) as i32);
+        let next_winter_anchor =
+            next_winter_solstice.next_day(next_winter_solstice.lunar().get_sixty_cycle().steps_close_to(0) as i32);
+
+        if self.solar.is_before(&winter_anchor) {
+            return NineStar::from_index(i64::from(winter_anchor.subtract(&self.solar) - 1));
+        }
+        if self.solar.is_before(&summer_anchor) {
+            return NineStar::from_index(i64::from(self.solar.subtract(&winter_anchor)));
+        }
+        if self.solar.is_before(&next_winter_anchor) {
+            return NineStar::from_index(i64::from(next_winter_anchor.subtract(&self.solar) - 1));
+        }
+        NineStar::from_index(i64::from(self.solar.subtract(&next_winter_anchor)))
     }
     pub fn get_nine_star(&self) -> NineStar {
         self.day_nine_star()

@@ -31,6 +31,7 @@
   - 允许 `tyme4rs` flavor 跳过 `solar_full` / `lunar_full` 的严格断言
   - 为 `tyme4rs` flavor 增加农历月份中文同义归一化：`冬月 -> 十一月`、`腊月 -> 十二月`
   - 现已支持 `week_name`、`week_index`、`constellation`、`legal_holiday`、`legal_holiday_work` 的 `v3` 字段比较
+  - 在后续 `v4/v5` 扩容中，对已确认与 `tyme4rs` 存在口径差异的文化字段仅保留本地协议覆盖
 - [scripts/run_tyme4rs_diff_check.sh](/Users/zhi/Documents/code/rust/houseme/lunar-rs/scripts/run_tyme4rs_diff_check.sh)
   - 自动生成并构建 `tyme4rs_ref_bridge`
   - 复用现有 ignored differential test
@@ -43,7 +44,7 @@
 - `bash scripts/run_tyme4rs_diff_check.sh`
 - `cargo test`
 
-结果：通过；`tyme4rs` 外部 bridge 已能够真正驱动 ignored 的 `diff_reference_sample_matrix` 跑通当前 `v3` 样例矩阵。
+结果：通过；`tyme4rs` 外部 bridge 已能够真正驱动 ignored 的 `diff_reference_sample_matrix` 跑通当前 `v5` 样例矩阵。
 
 ## 后续
 

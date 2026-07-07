@@ -874,6 +874,7 @@ fn lunar_year_and_month_strict_getters_match_tyme_names() {
     assert_eq!(leap_month.get_nine_star().to_string(), leap_month.nine_star().to_string());
     assert_eq!(leap_month.get_fetus().unwrap().name(), leap_month.get_fetus().unwrap().position().name());
     assert_eq!(leap_month.get_minor_ren().name(), leap_month.minor_ren().name());
+    assert_eq!(Solar::from_ymd(2020, 5, 24).unwrap().lunar().get_six_star().name(), "先负");
 }
 
 #[test]

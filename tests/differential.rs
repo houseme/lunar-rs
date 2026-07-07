@@ -24,6 +24,13 @@
 //! - `constellation`
 //! - `legal_holiday`
 //! - `legal_holiday_work`
+//! - `solar_nine_star`
+//! - `phenology_day`
+//! - `phase_day`
+//! - `nine_day`
+//! - `hide_heaven_stem_day`
+//! - `dog_day`
+//! - `plum_rain_day`
 //! - `year_ganzhi`
 //! - `month_ganzhi`
 //! - `day_ganzhi`
@@ -34,6 +41,11 @@
 //! - `lunar_month_with_leap`
 //! - `lunar_month_day_count`
 //! - `lunar_month_index_in_year`
+//! - `lunar_six_star`
+//! - `lunar_minor_ren`
+//! - `lunar_twelve_star`
+//! - `lunar_twenty_eight_star`
+//! - `lunar_nine_star`
 
 use std::collections::HashMap;
 use std::env;
@@ -154,6 +166,10 @@ fn normalize_lunar_compat(value: &str) -> String {
     norm(value).replace("冬月", "十一月").replace("腊月", "十二月")
 }
 
+fn local_nine_star_name(star: lunar_rs::NineStar) -> String {
+    format!("{}{}{}", star.number(), star.color(), star.wu_xing())
+}
+
 #[test]
 #[ignore = "requires an external reference binary configured via LUNAR_RS_DIFF_REF_BIN"]
 fn diff_reference_sample_matrix() {
@@ -245,6 +261,53 @@ fn diff_reference_sample_matrix() {
             Some(solar.get_legal_holiday().map_or_else(String::new, |holiday| holiday.is_work().to_string()).as_str()),
             "legal holiday work flag mismatch for {year}-{month}-{day}"
         );
+        if reference_flavor == ReferenceFlavor::Local {
+            assert_eq!(
+                reference.get("solar_nine_star").map(String::as_str),
+                Some(local_nine_star_name(solar.get_nine_star()).as_str()),
+                "solar nine star mismatch for {year}-{month}-{day}"
+            );
+        }
+        if reference_flavor == ReferenceFlavor::Local {
+            assert_eq!(
+                reference.get("phenology_day").map(String::as_str),
+                Some(solar.get_phenology_day().map_or_else(String::new, |day| day.to_string()).as_str()),
+                "phenology day mismatch for {year}-{month}-{day}"
+            );
+        }
+        if reference_flavor == ReferenceFlavor::Local {
+            assert_eq!(
+                reference.get("phase_day").map(String::as_str),
+                Some(solar.get_phase_day().to_string().as_str()),
+                "phase day mismatch for {year}-{month}-{day}"
+            );
+        }
+        if reference_flavor == ReferenceFlavor::Local {
+            assert_eq!(
+                reference.get("nine_day").map(String::as_str),
+                Some(solar.get_nine_day().map_or_else(String::new, |day| day.to_string()).as_str()),
+                "nine day mismatch for {year}-{month}-{day}"
+            );
+        }
+        if reference_flavor == ReferenceFlavor::Local {
+            assert_eq!(
+                reference.get("hide_heaven_stem_day").map(String::as_str),
+                Some(solar.get_hide_heaven_stem_day().map_or_else(String::new, |day| day.to_string()).as_str()),
+                "hide heaven stem day mismatch for {year}-{month}-{day}"
+            );
+        }
+        if reference_flavor == ReferenceFlavor::Local {
+            assert_eq!(
+                reference.get("dog_day").map(String::as_str),
+                Some(solar.get_dog_day().map_or_else(String::new, |day| day.to_string()).as_str()),
+                "dog day mismatch for {year}-{month}-{day}"
+            );
+            assert_eq!(
+                reference.get("plum_rain_day").map(String::as_str),
+                Some(solar.get_plum_rain_day().map_or_else(String::new, |day| day.to_string()).as_str()),
+                "plum rain day mismatch for {year}-{month}-{day}"
+            );
+        }
         assert_eq!(
             reference.get("year_ganzhi").map(String::as_str),
             Some(lunar.year_in_gan_zhi().as_str()),
@@ -297,6 +360,33 @@ fn diff_reference_sample_matrix() {
         );
         if reference_flavor == ReferenceFlavor::Local {
             assert_eq!(
+                reference.get("lunar_six_star").map(String::as_str),
+                Some(lunar.get_six_star().name()),
+                "lunar six star mismatch for {year}-{month}-{day}"
+            );
+            assert_eq!(
+                reference.get("lunar_minor_ren").map(String::as_str),
+                Some(lunar.get_minor_ren().name()),
+                "lunar minor ren mismatch for {year}-{month}-{day}"
+            );
+            assert_eq!(
+                reference.get("lunar_twelve_star").map(String::as_str),
+                Some(lunar.get_twelve_star().name()),
+                "lunar twelve star mismatch for {year}-{month}-{day}"
+            );
+            assert_eq!(
+                reference.get("lunar_twenty_eight_star").map(String::as_str),
+                Some(lunar.get_twenty_eight_star().name()),
+                "lunar twenty eight star mismatch for {year}-{month}-{day}"
+            );
+            assert_eq!(
+                reference.get("lunar_nine_star").map(String::as_str),
+                Some(local_nine_star_name(lunar.get_nine_star()).as_str()),
+                "lunar nine star mismatch for {year}-{month}-{day}"
+            );
+        }
+        if reference_flavor == ReferenceFlavor::Local {
+            assert_eq!(
                 reference.get("lunar_full").map(|value| norm(value)),
                 Some(norm(&lunar.to_full_string())),
                 "full string mismatch for {year}-{month}-{day}"
@@ -308,7 +398,7 @@ fn diff_reference_sample_matrix() {
 #[test]
 fn parses_default_case_matrix() {
     let cases = load_cases(Path::new(DEFAULT_CASES_PATH));
-    assert!(cases.len() >= 19);
+    assert!(cases.len() >= 23);
     assert_eq!(cases[0], (2019, 5, 1, 0, 0, 0));
     assert!(cases.contains(&(1582, 10, 15, 0, 0, 0)));
     assert!(cases.contains(&(2024, 4, 22, 23, 30, 0)));
@@ -319,4 +409,8 @@ fn parses_default_case_matrix() {
     assert!(cases.contains(&(2024, 9, 17, 0, 0, 0)));
     assert!(cases.contains(&(2024, 10, 1, 0, 0, 0)));
     assert!(cases.contains(&(2024, 2, 18, 0, 0, 0)));
+    assert!(cases.contains(&(2020, 12, 21, 0, 0, 0)));
+    assert!(cases.contains(&(2012, 7, 18, 0, 0, 0)));
+    assert!(cases.contains(&(2024, 6, 11, 0, 0, 0)));
+    assert!(cases.contains(&(2024, 12, 4, 0, 0, 0)));
 }
