@@ -186,8 +186,8 @@ pub use thai_buddhist::{ThaiBuddhist, ThaiBuddhistMonth, ThaiBuddhistYear};
 pub use thai_solar::{ThaiSolar, ThaiSolarMonth, ThaiSolarYear};
 pub use venetian::{Venetian, VenetianMonth, VenetianYear};
 pub use yun::{
-    ChildLimit, ChildLimitInfo, ChildLimitProvider, China95ChildLimitProvider, DefaultChildLimitProvider,
-    LunarSect1ChildLimitProvider, LunarSect2ChildLimitProvider,
+    ChildLimit, ChildLimitInfo, ChildLimitProvider, China95ChildLimitProvider, DecadeFortune,
+    DefaultChildLimitProvider, Fortune, LunarSect1ChildLimitProvider, LunarSect2ChildLimitProvider,
 };
 pub use yun::{DaYun, LiuNian, LiuYue, XiaoYun, Yun};
 

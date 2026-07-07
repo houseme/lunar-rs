@@ -109,6 +109,29 @@ fn child_limit_default_and_china95_providers_expose_distinct_counts() {
 }
 
 #[test]
+fn child_limit_decade_fortune_and_fortune_match_existing_yun_layers() {
+    let lunar = Lunar::from_ymd_hms(2019, 12, 12, 11, 22, 0).unwrap();
+    let ec = lunar.eight_char();
+    let gender = 1;
+    let child_limit = ec.child_limit_with_provider(gender, &LunarSect1ChildLimitProvider::new());
+    let yun = ec.yun_by_sect(gender, 1);
+    let da_yun = yun.da_yun_by(3);
+
+    let decade = child_limit.start_decade_fortune();
+    assert_eq!(decade.index(), 0);
+    assert_eq!(decade.start_year(), yun.start_solar().year());
+    assert_eq!(decade.end_year(), decade.start_year() + 9);
+    assert_eq!(decade.name(), da_yun[1].gan_zhi());
+    assert_eq!(decade.next(1).name(), da_yun[2].gan_zhi());
+
+    let fortune = decade.start_fortune();
+    assert_eq!(fortune.index(), 0);
+    assert_eq!(fortune.year(), decade.start_year());
+    assert_eq!(fortune.name(), da_yun[1].xiao_yun()[0].gan_zhi());
+    assert_eq!(fortune.next(1).year(), fortune.year() + 1);
+}
+
+#[test]
 fn lunar_and_lunar_time_expose_typed_sixty_cycle_layers() {
     let lunar = Lunar::from_ymd_hms(2024, 3, 14, 0, 30, 0).unwrap();
 

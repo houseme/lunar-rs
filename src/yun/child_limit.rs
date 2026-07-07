@@ -1,7 +1,9 @@
 //! 童限（出生到起运）provider 与 typed 信息。
 
 use crate::Gender;
+use crate::culture::{SixtyCycle, SixtyCycleYear};
 use crate::lunar::Lunar;
+use crate::lunar_util;
 use crate::solar::Solar;
 use crate::yun::Yun;
 
@@ -127,6 +129,136 @@ impl<'a> ChildLimit<'a> {
     pub const fn minute_count(&self) -> i32 {
         self.info.minute_count()
     }
+
+    pub const fn start_age(&self) -> i32 {
+        1
+    }
+
+    pub fn end_age(&self) -> i32 {
+        (self.end_solar().year() - self.start_solar().year()).max(1)
+    }
+
+    pub fn start_sixty_cycle_year(&self) -> SixtyCycleYear {
+        sixty_cycle_year_from_solar_year(self.start_solar().year())
+    }
+
+    pub fn end_sixty_cycle_year(&self) -> SixtyCycleYear {
+        sixty_cycle_year_from_solar_year(self.end_solar().year())
+    }
+
+    pub fn start_decade_fortune(&self) -> DecadeFortune<'a> {
+        DecadeFortune::new(self.clone(), 0)
+    }
+
+    pub fn decade_fortune(&self) -> DecadeFortune<'a> {
+        DecadeFortune::new(self.clone(), -1)
+    }
+
+    pub fn start_fortune(&self) -> Fortune<'a> {
+        Fortune::new(self.clone(), 0)
+    }
+}
+
+#[derive(Clone)]
+pub struct DecadeFortune<'a> {
+    child_limit: ChildLimit<'a>,
+    index: i32,
+}
+
+impl<'a> DecadeFortune<'a> {
+    pub const fn new(child_limit: ChildLimit<'a>, index: i32) -> Self {
+        Self { child_limit, index }
+    }
+
+    pub fn next(&self, offset: i32) -> Self {
+        Self::new(self.child_limit.clone(), self.index + offset)
+    }
+
+    pub const fn child_limit(&self) -> &ChildLimit<'a> {
+        &self.child_limit
+    }
+
+    pub const fn index(&self) -> i32 {
+        self.index
+    }
+
+    pub fn start_age(&self) -> i32 {
+        self.child_limit.end_solar().year() - self.child_limit.start_solar().year() + 1 + self.index * 10
+    }
+
+    pub fn end_age(&self) -> i32 {
+        self.start_age() + 9
+    }
+
+    pub fn start_year(&self) -> i32 {
+        self.child_limit.end_solar().year() + self.index * 10
+    }
+
+    pub fn end_year(&self) -> i32 {
+        self.start_year() + 9
+    }
+
+    pub fn sixty_cycle(&self) -> SixtyCycle {
+        let month = SixtyCycle::from_name(&self.child_limit.lunar().month_in_gan_zhi_exact())
+            .unwrap_or_else(|| SixtyCycle::from_index(0));
+        let offset = (self.index + 1) as isize;
+        month.next(if self.child_limit.is_forward() { offset } else { -offset })
+    }
+
+    pub fn name(&self) -> &'static str {
+        self.sixty_cycle().name()
+    }
+
+    pub fn start_fortune(&self) -> Fortune<'a> {
+        Fortune::new(self.child_limit.clone(), self.index * 10)
+    }
+}
+
+#[derive(Clone)]
+pub struct Fortune<'a> {
+    child_limit: ChildLimit<'a>,
+    index: i32,
+}
+
+impl<'a> Fortune<'a> {
+    pub const fn new(child_limit: ChildLimit<'a>, index: i32) -> Self {
+        Self { child_limit, index }
+    }
+
+    pub fn next(&self, offset: i32) -> Self {
+        Self::new(self.child_limit.clone(), self.index + offset)
+    }
+
+    pub const fn child_limit(&self) -> &ChildLimit<'a> {
+        &self.child_limit
+    }
+
+    pub const fn index(&self) -> i32 {
+        self.index
+    }
+
+    pub fn age(&self) -> i32 {
+        self.child_limit.end_solar().year() - self.child_limit.start_solar().year() + 1 + self.index
+    }
+
+    pub fn year(&self) -> i32 {
+        self.child_limit.end_solar().year() + self.index
+    }
+
+    pub fn sixty_cycle_year(&self) -> SixtyCycleYear {
+        sixty_cycle_year_from_solar_year(self.year())
+    }
+
+    pub fn sixty_cycle(&self) -> SixtyCycle {
+        let hour = SixtyCycle::from_name(&self.child_limit.lunar().time_in_gan_zhi())
+            .unwrap_or_else(|| SixtyCycle::from_index(0));
+        let offset = self.age() as isize;
+        hour.next(if self.child_limit.is_forward() { offset } else { -offset })
+    }
+
+    pub fn name(&self) -> &'static str {
+        self.sixty_cycle().name()
+    }
 }
 
 pub trait ChildLimitProvider {
@@ -241,4 +373,14 @@ fn add_minutes(start: Solar, minutes: i32) -> Solar {
     let shifted = start.next_hour(hour_offset);
     Solar::from_ymd_hms(shifted.year(), shifted.month(), shifted.day(), shifted.hour(), minute, shifted.second())
         .unwrap_or(shifted)
+}
+
+fn sixty_cycle_year_from_solar_year(year: i32) -> SixtyCycleYear {
+    let name = format!(
+        "{}{}",
+        lunar_util::tables::GAN[((year - 4).rem_euclid(10) + 1) as usize],
+        lunar_util::tables::ZHI[((year - 4).rem_euclid(12) + 1) as usize]
+    );
+    let index = lunar_util::get_jia_zi_index(&name);
+    SixtyCycleYear::new(SixtyCycle::from_index(index as usize))
 }

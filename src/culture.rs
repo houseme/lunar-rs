@@ -429,6 +429,12 @@ impl SixtyCycle {
         EarthBranch::from_index(self.index % 12)
     }
 
+    pub fn next(&self, offset: isize) -> Self {
+        let size = lunar_util::tables::JIA_ZI.len() as isize;
+        let index = (self.index as isize + offset).rem_euclid(size) as usize;
+        Self::from_index(index)
+    }
+
     #[cfg(feature = "i18n")]
     pub fn name_in_lang(&self, language: crate::i18n::Language) -> String {
         crate::i18n::ganzhi(self.heaven_stem().name(), self.earth_branch().name(), language)

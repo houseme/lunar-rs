@@ -9,8 +9,8 @@ mod liu_yue;
 mod xiao_yun;
 
 pub use child_limit::{
-    ChildLimit, ChildLimitInfo, ChildLimitProvider, China95ChildLimitProvider, DefaultChildLimitProvider,
-    LunarSect1ChildLimitProvider, LunarSect2ChildLimitProvider,
+    ChildLimit, ChildLimitInfo, ChildLimitProvider, China95ChildLimitProvider, DecadeFortune,
+    DefaultChildLimitProvider, Fortune, LunarSect1ChildLimitProvider, LunarSect2ChildLimitProvider,
 };
 pub use da_yun::DaYun;
 pub use liu_nian::LiuNian;
