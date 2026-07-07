@@ -245,19 +245,19 @@ impl fmt::Display for TaoMonth {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Debug)]
 pub struct TaoFestival {
-    name: String,
-    remark: String,
+    name: &'static str,
+    remark: &'static str,
 }
 
 impl TaoFestival {
-    pub(crate) fn new(name: &str, remark: &str) -> Self {
-        Self { name: name.to_string(), remark: remark.to_string() }
+    pub(crate) fn new(name: &'static str, remark: &'static str) -> Self {
+        Self { name, remark }
     }
     pub fn name(&self) -> &str {
-        &self.name
+        self.name
     }
     pub fn remark(&self) -> &str {
-        &self.remark
+        self.remark
     }
 
     pub fn to_event(&self, solar: crate::Solar) -> Event {
@@ -266,7 +266,7 @@ impl TaoFestival {
                 EventKind::TaoFestival,
                 CalendarKind::Tao,
                 EventSource::BuiltInFestival,
-                self.name().to_string(),
+                self.name,
                 solar,
                 None::<crate::event::EventDetail>,
                 90,
@@ -280,9 +280,9 @@ impl TaoFestival {
                 EventKind::TaoFestival,
                 CalendarKind::Tao,
                 EventSource::BuiltInFestival,
-                self.name().to_string(),
+                self.name,
                 solar,
-                Some(crate::event::EventDetail::Remark { remark: self.remark.clone().into_boxed_str().into() }),
+                Some(crate::event::EventDetail::Remark { remark: self.remark.into() }),
                 90,
                 Some(crate::event::EventSourceId::NamedSolar { prefix: "tao", solar }),
                 true,

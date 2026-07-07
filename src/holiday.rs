@@ -10,15 +10,15 @@ use crate::solar::Solar;
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Debug)]
 pub struct Holiday {
-    day: String,
-    name: String,
+    day: FixedYmd,
+    name: Box<str>,
     work: bool,
-    target: String,
+    target: FixedYmd,
 }
 
 impl Holiday {
     pub(crate) fn new(day: &str, name: &str, work: bool, target: &str) -> Self {
-        Self { day: fmt_dash(day), name: name.to_string(), work, target: fmt_dash(target) }
+        Self { day: FixedYmd::new(day), name: name.into(), work, target: FixedYmd::new(target) }
     }
 
     pub fn from_ymd(year: i32, month: i32, day: i32) -> Option<Self> {
@@ -27,7 +27,7 @@ impl Holiday {
 
     #[inline]
     pub fn day(&self) -> &str {
-        &self.day
+        self.day.as_str()
     }
     #[inline]
     pub fn name(&self) -> &str {
@@ -39,19 +39,19 @@ impl Holiday {
     }
     #[inline]
     pub fn target(&self) -> &str {
-        &self.target
+        self.target.as_str()
     }
 
     pub fn get_day(&self) -> Solar {
-        parse_ymd(&self.day)
+        parse_ymd(self.day())
     }
 
     pub fn get_name(&self) -> String {
-        self.name.clone()
+        self.name.to_string()
     }
 
     pub fn get_target(&self) -> Solar {
-        parse_ymd(&self.target)
+        parse_ymd(self.target())
     }
 
     pub fn to_event(&self, solar: Solar, calendar_kind: CalendarKind) -> Event {
@@ -84,22 +84,43 @@ impl Holiday {
 impl fmt::Display for Holiday {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let work_desc = if self.work { "调休" } else { "" };
-        write!(f, "{} {}{} {}", self.day, self.name, work_desc, self.target)
+        write!(f, "{} {}{} {}", self.day(), self.name(), work_desc, self.target())
     }
 }
 
-/// 把 `YYYYMMDD` 格式化为 `YYYY-MM-DD`（已含 `-` 则原样返回）。
-fn fmt_dash(s: &str) -> String {
-    if s.contains('-') || s.len() < 8 {
-        return s.to_string();
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Debug)]
+struct FixedYmd {
+    bytes: [u8; 10],
+}
+
+impl FixedYmd {
+    fn new(input: &str) -> Self {
+        let normalized = normalize_ymd(input);
+        let mut bytes = [b'0'; 10];
+        bytes.copy_from_slice(normalized.as_bytes());
+        Self { bytes }
     }
-    let mut normalized = String::with_capacity(10);
-    normalized.push_str(&s[0..4]);
-    normalized.push('-');
-    normalized.push_str(&s[4..6]);
-    normalized.push('-');
-    normalized.push_str(&s[6..8]);
-    normalized
+
+    fn as_str(&self) -> &str {
+        std::str::from_utf8(&self.bytes).unwrap_or("0000-00-00")
+    }
+}
+
+fn normalize_ymd(s: &str) -> String {
+    if s.len() >= 10 && s.as_bytes().get(4) == Some(&b'-') && s.as_bytes().get(7) == Some(&b'-') {
+        return s[0..10].to_string();
+    }
+    if s.len() >= 8 {
+        let mut normalized = String::with_capacity(10);
+        normalized.push_str(&s[0..4]);
+        normalized.push('-');
+        normalized.push_str(&s[4..6]);
+        normalized.push('-');
+        normalized.push_str(&s[6..8]);
+        return normalized;
+    }
+    "0000-00-00".to_string()
 }
 
 fn parse_ymd(s: &str) -> Solar {

@@ -29,14 +29,20 @@
 - [tests/differential.rs](/Users/zhi/Documents/code/rust/houseme/lunar-rs/tests/differential.rs)
   - 增加 `ReferenceFlavor`
   - 允许 `tyme4rs` flavor 跳过 `solar_full` / `lunar_full` 的严格断言
+  - 为 `tyme4rs` flavor 增加农历月份中文同义归一化：`冬月 -> 十一月`、`腊月 -> 十二月`
 - [scripts/run_tyme4rs_diff_check.sh](/Users/zhi/Documents/code/rust/houseme/lunar-rs/scripts/run_tyme4rs_diff_check.sh)
   - 自动生成并构建 `tyme4rs_ref_bridge`
   - 复用现有 ignored differential test
+  - 增加 `use tyme4rs::tyme::Culture;`，修复 bridge 中 `get_name()` trait 未导入的编译问题
+- [src/festival.rs](/Users/zhi/Documents/code/rust/houseme/lunar-rs/src/festival.rs)
+  - 修正 `LunarFestival::from_ymd(...)` 在节气节日上的年份基准，确保 `冬至节/清明节` 可被 `get_festival()` 正确命中
 
 ## 验证
 
 - `bash scripts/run_tyme4rs_diff_check.sh`
 - `cargo test`
+
+结果：通过；`tyme4rs` 外部 bridge 已能够真正驱动 ignored 的 `diff_reference_sample_matrix` 跑通现有 v2 样例矩阵。
 
 ## 后续
 

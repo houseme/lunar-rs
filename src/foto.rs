@@ -246,31 +246,31 @@ impl fmt::Display for FotoMonth {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Debug)]
 pub struct FotoFestival {
-    name: String,
-    result: String,
+    name: &'static str,
+    result: &'static str,
     every_month: bool,
-    remark: String,
+    remark: &'static str,
 }
 
 impl FotoFestival {
-    fn from_record(o: &[&str]) -> Self {
-        let name = o.first().unwrap_or(&"").to_string();
-        let result = o.get(1).unwrap_or(&"").to_string();
+    fn from_record(o: &[&'static str]) -> Self {
+        let name = o.first().copied().unwrap_or("");
+        let result = o.get(1).copied().unwrap_or("");
         let every_month = o.get(2).is_some_and(|x| *x == "true");
-        let remark = o.get(3).unwrap_or(&"").to_string();
+        let remark = o.get(3).copied().unwrap_or("");
         Self { name, result, every_month, remark }
     }
     pub fn name(&self) -> &str {
-        &self.name
+        self.name
     }
     pub fn result(&self) -> &str {
-        &self.result
+        self.result
     }
     pub const fn every_month(&self) -> bool {
         self.every_month
     }
     pub fn remark(&self) -> &str {
-        &self.remark
+        self.remark
     }
 
     pub fn to_event(&self, solar: crate::Solar) -> Event {
@@ -278,11 +278,11 @@ impl FotoFestival {
             EventKind::FotoFestival,
             CalendarKind::Foto,
             EventSource::BuiltInFestival,
-            self.name().to_string(),
+            self.name,
             solar,
             Some(crate::event::EventDetail::FotoFestival {
-                result: self.result.clone().into_boxed_str().into(),
-                remark: (!self.remark.is_empty()).then(|| self.remark.clone().into_boxed_str().into()),
+                result: self.result.into(),
+                remark: (!self.remark.is_empty()).then(|| self.remark.into()),
                 every_month: self.every_month(),
             }),
             70,
