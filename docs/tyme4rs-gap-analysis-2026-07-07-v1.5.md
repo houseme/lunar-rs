@@ -26,7 +26,7 @@
 | `P2` | `Task 86` | 星曜循环对象一次性补齐 | `已完成` | 新增 `SixStar`、`SevenStar`、`Ecliptic`、`TwelveStar`、`TenStar` typed API。 |
 | `P2` | `Task 87` | 8 相天文月相对象设计与实现 | `已完成` | 新增独立 `MoonPhase` / `MoonPhaseDay`，避免破坏现有农历日月相 `Phase`。 |
 | `P3` | `Task 88` | 年月周单位对象 API 差异补齐 | `已完成` | 新增 `YearUnit/MonthUnit/DayUnit/SecondUnit/WeekUnit` 与 `LunarWeek`。 |
-| `P3` | `Task 89` | 事件/节日 v1.5 API 兼容层评估 | `未开始` | 明确 `EventType` 与本地 `EventKind` 的关系。 |
+| `P3` | `Task 89` | 事件/节日 v1.5 API 兼容层评估 | `已完成` | 新增 `EventType` 并映射到本地 `EventRule`。 |
 
 ## 实施顺序
 
@@ -36,4 +36,4 @@
 
 ## 当前建议
 
-`Task 86`、`Task 87` 与 `Task 88` 已完成。本地继续保留 `phase()` 的旧含义，并通过 `moon_phase()` / `moon_phase_day()` 暴露对标 `tyme4rs::Phase` 的 8 相天文月相；年月周差异已补 `Unit` 对象族与 `LunarWeek`。后续进入 `Task 89`，重点是事件/节日 v1.5 API 兼容评估。
+`Task 86`、`Task 87`、`Task 88` 与 `Task 89` 已完成。本地继续保留 `phase()` 的旧含义，并通过 `moon_phase()` / `moon_phase_day()` 暴露对标 `tyme4rs::Phase` 的 8 相天文月相；年月周差异已补 `Unit` 对象族与 `LunarWeek`；事件规则侧已补 `EventType` 兼容层。后续如继续推进，应进入更细的命名兼容与差分测试矩阵。

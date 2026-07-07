@@ -1,7 +1,7 @@
 use lunar_rs::{
     CalendarKind, EarthBranch, Event, EventKind, EventManager, EventQuery, EventRangeKind, EventRule, EventSource,
-    EventSourceFamily, HeavenStem, Lunar, Solar, SolarMonth, SolarWeek, group_event_days_by_week, group_events_by_day,
-    holiday_util, scan_event_days_in_range, scan_event_weeks_in_range, scan_events_in_range,
+    EventSourceFamily, EventType, HeavenStem, Lunar, Solar, SolarMonth, SolarWeek, group_event_days_by_week,
+    group_events_by_day, holiday_util, scan_event_days_in_range, scan_event_weeks_in_range, scan_events_in_range,
     scan_events_in_range_filtered,
 };
 
@@ -196,6 +196,23 @@ fn event_range_kind_models_moment_and_multi_day_events() {
     assert!(travel.spans_multiple_days());
     assert!(travel.covers_solar(Solar::from_ymd(2024, 5, 2).unwrap()));
     assert!(!travel.covers_solar(Solar::from_ymd(2024, 5, 4).unwrap()));
+}
+
+#[test]
+fn event_type_matches_tyme_rule_codes_and_names() {
+    assert_eq!(EventType::from_code(0), Some(EventType::SolarDay));
+    assert_eq!(EventType::from_code(5), Some(EventType::TermEb));
+    assert_eq!(EventType::from_code(6), None);
+    assert_eq!(EventType::from_name("节气天干"), Some(EventType::TermHs));
+    assert_eq!(EventType::TermEb.code(), 5);
+    assert_eq!(EventType::SolarWeek.to_string(), "几月第几个星期几");
+
+    assert_eq!(EventRule::solar_day(6, 1).event_type(), EventType::SolarDay);
+    assert_eq!(EventRule::solar_week(5, 2, 0).event_type(), EventType::SolarWeek);
+    assert_eq!(EventRule::lunar_day(1, 1).event_type(), EventType::LunarDay);
+    assert_eq!(EventRule::solar_term_offset("清明", -1).event_type(), EventType::TermDay);
+    assert_eq!(EventRule::solar_term_heaven_stem("夏至", 6, 20).event_type(), EventType::TermHs);
+    assert_eq!(EventRule::solar_term_earth_branch("小暑", 7, 0).event_type(), EventType::TermEb);
 }
 
 #[test]

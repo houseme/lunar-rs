@@ -4,6 +4,7 @@
 //! and JieQi into a single typed read-only API.
 
 use std::collections::{BTreeMap, HashMap};
+use std::fmt;
 use std::sync::{Arc, LazyLock, RwLock};
 
 use crate::culture::{CycleItem, EarthBranch, HeavenStem};
@@ -49,6 +50,71 @@ pub enum EventKind {
     Holiday,
     HolidayPeriod,
     JieQi,
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum EventType {
+    SolarDay,
+    SolarWeek,
+    LunarDay,
+    TermDay,
+    TermHs,
+    TermEb,
+}
+
+impl EventType {
+    pub const fn from_code(code: usize) -> Option<Self> {
+        match code {
+            0 => Some(Self::SolarDay),
+            1 => Some(Self::SolarWeek),
+            2 => Some(Self::LunarDay),
+            3 => Some(Self::TermDay),
+            4 => Some(Self::TermHs),
+            5 => Some(Self::TermEb),
+            _ => None,
+        }
+    }
+
+    pub fn from_name(name: &str) -> Option<Self> {
+        match name {
+            "公历日期" => Some(Self::SolarDay),
+            "几月第几个星期几" => Some(Self::SolarWeek),
+            "农历日期" => Some(Self::LunarDay),
+            "节气日期" => Some(Self::TermDay),
+            "节气天干" => Some(Self::TermHs),
+            "节气地支" => Some(Self::TermEb),
+            _ => None,
+        }
+    }
+
+    pub const fn code(&self) -> usize {
+        match self {
+            Self::SolarDay => 0,
+            Self::SolarWeek => 1,
+            Self::LunarDay => 2,
+            Self::TermDay => 3,
+            Self::TermHs => 4,
+            Self::TermEb => 5,
+        }
+    }
+
+    pub const fn name(&self) -> &'static str {
+        match self {
+            Self::SolarDay => "公历日期",
+            Self::SolarWeek => "几月第几个星期几",
+            Self::LunarDay => "农历日期",
+            Self::TermDay => "节气日期",
+            Self::TermHs => "节气天干",
+            Self::TermEb => "节气地支",
+        }
+    }
+}
+
+impl fmt::Display for EventType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.name())
+    }
 }
 
 impl EventKind {
@@ -1023,6 +1089,17 @@ impl EventRule {
             Self::SolarTermOffset { .. } => "solar_term_offset",
             Self::SolarTermHeavenStem { .. } => "solar_term_heaven_stem",
             Self::SolarTermEarthBranch { .. } => "solar_term_earth_branch",
+        }
+    }
+
+    pub const fn event_type(&self) -> EventType {
+        match self {
+            Self::SolarDay { .. } => EventType::SolarDay,
+            Self::LunarDay { .. } => EventType::LunarDay,
+            Self::SolarWeek { .. } => EventType::SolarWeek,
+            Self::SolarTermOffset { .. } => EventType::TermDay,
+            Self::SolarTermHeavenStem { .. } => EventType::TermHs,
+            Self::SolarTermEarthBranch { .. } => EventType::TermEb,
         }
     }
 }
