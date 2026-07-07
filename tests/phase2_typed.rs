@@ -48,6 +48,11 @@ fn typed_primitives_map_names_and_relationships() {
     assert_eq!(luck.index(), 1);
     assert_eq!(luck.name(), "凶");
     assert_eq!(luck.next(1), GodLuck::Auspicious);
+
+    let avoid = TabooKind::from_name("忌").unwrap();
+    assert_eq!(avoid.index(), 1);
+    assert_eq!(avoid.name(), "忌");
+    assert_eq!(avoid.next(1), TabooKind::Recommend);
 }
 
 #[test]
@@ -77,6 +82,7 @@ fn common_culture_traits_unify_names_cycles_and_day_indices() {
     assert_eq!(culture_name(&Element::new("火")), "火");
     assert_eq!(culture_name(&Duty::new("建")), "建");
     assert_eq!(culture_name(&GodLuck::Auspicious), "吉");
+    assert_eq!(culture_name(&TabooKind::Recommend), "宜");
     assert_eq!(next_name(HeavenStem::from_name("癸").unwrap(), 1), "甲");
     assert_eq!(next_name(EarthBranch::from_name("亥").unwrap(), 1), "子");
     assert_eq!(next_name(SixtyCycle::from_name("癸亥").unwrap(), 1), "甲子");
@@ -84,6 +90,7 @@ fn common_culture_traits_unify_names_cycles_and_day_indices() {
     assert_eq!(next_name(Element::from_name("水").unwrap(), 1), "木");
     assert_eq!(next_name(Duty::from_name("闭").unwrap(), 1), "建");
     assert_eq!(next_name(GodLuck::Inauspicious, 1), "吉");
+    assert_eq!(next_name(TabooKind::Avoid, 1), "宜");
     assert_eq!(next_name(MinorRen::from_name("空亡").unwrap(), 1), "大安");
     assert_eq!(Constellation::from_name("白羊").unwrap().steps_to(1), 1);
     assert_eq!(Constellation::from_name("白羊").unwrap().steps_back_to(11), -1);

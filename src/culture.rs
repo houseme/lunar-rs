@@ -708,11 +708,37 @@ pub enum TabooKind {
 }
 
 impl TabooKind {
+    pub fn from_index(index: usize) -> Self {
+        match index % 2 {
+            0 => Self::Recommend,
+            _ => Self::Avoid,
+        }
+    }
+
+    pub fn from_name(name: &str) -> Option<Self> {
+        match name {
+            "宜" => Some(Self::Recommend),
+            "忌" => Some(Self::Avoid),
+            _ => None,
+        }
+    }
+
+    pub const fn index(&self) -> usize {
+        match self {
+            Self::Recommend => 0,
+            Self::Avoid => 1,
+        }
+    }
+
     pub const fn label(&self) -> &'static str {
         match self {
             Self::Recommend => "宜",
             Self::Avoid => "忌",
         }
+    }
+
+    pub const fn name(&self) -> &'static str {
+        self.label()
     }
 }
 
@@ -2051,6 +2077,7 @@ impl_named_culture!(
     SixtyCycle,
     GodLuck,
     God,
+    TabooKind,
     Taboo,
     PengZuHeavenStem,
     PengZuEarthBranch,
@@ -2199,6 +2226,20 @@ impl CycleItem for SixtyCycle {
 }
 
 impl CycleItem for GodLuck {
+    fn from_cycle_index(index: usize) -> Self {
+        Self::from_index(index % Self::size())
+    }
+
+    fn index(&self) -> usize {
+        self.index()
+    }
+
+    fn size() -> usize {
+        2
+    }
+}
+
+impl CycleItem for TabooKind {
     fn from_cycle_index(index: usize) -> Self {
         Self::from_index(index % Self::size())
     }
