@@ -46,6 +46,7 @@
 | `P3` | `Task 106` | 节日与假日存储归一化 | `已完成` | 将 `FotoFestival` / `TaoFestival` 收敛为静态字符串承载，并规范 `Holiday` 的固定日期存储。 |
 | `P2` | `Task 107` | 差分文化字段继续扩容 | `已完成` | 将差分协议扩展到 `v6`，新增九星、小六壬、六曜、十二神、二十八宿、文化日对象字符串以及 `LunarHour` 稳定字段。 |
 | `P2` | `Task 108` | 差分中的 LunarYear/LunarMonth 文化字段扩容 | `已完成` | 将差分协议继续扩展到当前 `v8`，新增 `LunarYear/LunarMonth` 稳定文化字段。 |
+| `P2` | `Task 109` | LunarHour 稳定字段外部硬对齐 | `已完成` | 修正 `LunarHour::get_twelve_star()` 公式，并将 `LunarHour` 稳定字段升级成外部 hard diff。 |
 
 ## 实施顺序
 
@@ -55,7 +56,7 @@
 
 ## 当前建议
 
-`Task 86`、`Task 87`、`Task 88`、`Task 89`、`Task 90`、`Task 91`、`Task 92`、`Task 93`、`Task 94`、`Task 95`、`Task 96`、`Task 97`、`Task 98`、`Task 99`、`Task 100`、`Task 101`、`Task 102`、`Task 103`、`Task 104`、`Task 105`、`Task 106`、`Task 107` 与 `Task 108` 已完成。本地继续保留 `phase()` 的旧含义，并通过 `moon_phase()` / `moon_phase_day()` 暴露对标 `tyme4rs::Phase` 的 8 相天文月相；年月周差异已补 `Unit` 对象族与 `LunarWeek`；事件规则侧已补 `EventType` 与 `EventBuilder` 兼容层；公开类型名迁移侧已补 `Dipper` 和轻量 type alias；核心日时入口侧已补 `JulianDay` 与 `SolarDay/SolarTime/LunarDay/LunarHour/SolarTerm/LegalHoliday/HijriDay` 兼容别名，且 `SolarTerm` 已补对象构造与步进 API，`SolarDay/SolarTime/SolarYear/SolarHalfYear/SolarSeason/SolarMonth/SolarWeek/LunarDay/LunarHour/LunarYear/LunarMonth` 已补常用 `get_*` 迁移入口；节日对象侧已补 `SolarFestival/LunarFestival` wrapper；基础枚举侧已补 `Gender/Side/YinYang`，并保留旧整数性别入口；本地扩展的 `Foto/Tao` wrapper 已改为 owned 快照，并继续补齐 `get_*`、布尔规则别名以及 `FotoYear/FotoMonth/TaoYear/TaoMonth` companion getter，同时在 README 中补了可复制的迁移示例；差分协议现已升级到 `v8`，开始覆盖节日 wrapper、闰月元数据、星期、星座、法定假日、文化日对象字符串、`LunarHour` 稳定字段以及 `LunarYear/LunarMonth` 稳定文化字段，本地日期键查找与时辰索引热路径也已完成收拢，并且 `tyme4rs` 外部 bridge 已能直接喂给 ignored 差分测试，当前 `v8` 样例矩阵已跑通；对已确认存在实现口径差异的文化字段，外部 `tyme4rs` flavor 仅保留本地协议覆盖。后续如继续推进，应进入 `LunarHour` / `LunarMonth` 更深层文化字段和更严格的外部样例矩阵。
+`Task 86`、`Task 87`、`Task 88`、`Task 89`、`Task 90`、`Task 91`、`Task 92`、`Task 93`、`Task 94`、`Task 95`、`Task 96`、`Task 97`、`Task 98`、`Task 99`、`Task 100`、`Task 101`、`Task 102`、`Task 103`、`Task 104`、`Task 105`、`Task 106`、`Task 107`、`Task 108` 与 `Task 109` 已完成。本地继续保留 `phase()` 的旧含义，并通过 `moon_phase()` / `moon_phase_day()` 暴露对标 `tyme4rs::Phase` 的 8 相天文月相；年月周差异已补 `Unit` 对象族与 `LunarWeek`；事件规则侧已补 `EventType` 与 `EventBuilder` 兼容层；公开类型名迁移侧已补 `Dipper` 和轻量 type alias；核心日时入口侧已补 `JulianDay` 与 `SolarDay/SolarTime/LunarDay/LunarHour/SolarTerm/LegalHoliday/HijriDay` 兼容别名，且 `SolarTerm` 已补对象构造与步进 API，`SolarDay/SolarTime/SolarYear/SolarHalfYear/SolarSeason/SolarMonth/SolarWeek/LunarDay/LunarHour/LunarYear/LunarMonth` 已补常用 `get_*` 迁移入口；节日对象侧已补 `SolarFestival/LunarFestival` wrapper；基础枚举侧已补 `Gender/Side/YinYang`，并保留旧整数性别入口；本地扩展的 `Foto/Tao` wrapper 已改为 owned 快照，并继续补齐 `get_*`、布尔规则别名以及 `FotoYear/FotoMonth/TaoYear/TaoMonth` companion getter，同时在 README 中补了可复制的迁移示例；差分协议现已升级到 `v8`，开始覆盖节日 wrapper、闰月元数据、星期、星座、法定假日、文化日对象字符串、`LunarHour` 稳定字段以及 `LunarYear/LunarMonth` 稳定文化字段，本地日期键查找与时辰索引热路径也已完成收拢，并且 `tyme4rs` 外部 bridge 已能直接喂给 ignored 差分测试，当前 `v8` 样例矩阵已跑通；`LunarHour` 稳定字段现已升级成外部 hard diff。后续如继续推进，应进入 `LunarMonth` / `LunarYear` 更深层文化字段和更严格的外部样例矩阵。
 
 ## 2026-07-07 重新拉取复核
 

@@ -209,7 +209,9 @@ impl<'a> LunarTime<'a> {
         TianShen::new(self.tian_shen())
     }
     pub fn get_twelve_star(&self) -> TwelveStar {
-        TwelveStar::from_name(self.tian_shen()).unwrap_or_else(|| TwelveStar::from_index(0))
+        let hour_branch = self.get_sixty_cycle().earth_branch().index() as i64;
+        let day_branch = self.get_sixty_cycle_day().earth_branch().index() as i64;
+        TwelveStar::from_index((hour_branch + (8 - day_branch.rem_euclid(6)) * 2).rem_euclid(12) as usize)
     }
     pub fn tian_shen_type(&self) -> &'static str {
         lunar_util::tian_shen_type(self.tian_shen())

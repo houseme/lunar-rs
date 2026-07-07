@@ -417,34 +417,32 @@ fn diff_reference_sample_matrix() {
             Some(lunar_month.map_or_else(String::new, |month| month.get_fetus().map_or_else(String::new, |fetus| fetus.name().to_string())).as_str()),
             "lunar month fetus mismatch for {year}-{month}-{day}"
         );
-        if reference_flavor == ReferenceFlavor::Local {
-            let lunar_hour = solar.get_lunar_hour();
-            assert_eq!(
-                reference.get("lunar_hour_name").map(String::as_str),
-                Some(lunar_hour.get_name().as_str()),
-                "lunar hour name mismatch for {year}-{month}-{day}"
-            );
-            assert_eq!(
-                reference.get("lunar_hour_index_in_day").map(String::as_str),
-                Some(lunar_hour.get_index_in_day().to_string().as_str()),
-                "lunar hour index in day mismatch for {year}-{month}-{day}"
-            );
-            assert_eq!(
-                reference.get("lunar_hour_minor_ren").map(String::as_str),
-                Some(lunar_hour.get_minor_ren().name()),
-                "lunar hour minor ren mismatch for {year}-{month}-{day}"
-            );
-            assert_eq!(
-                reference.get("lunar_hour_twelve_star").map(String::as_str),
-                Some(lunar_hour.get_twelve_star().name()),
-                "lunar hour twelve star mismatch for {year}-{month}-{day}"
-            );
-            assert_eq!(
-                reference.get("lunar_hour_nine_star").map(String::as_str),
-                Some(local_nine_star_name(lunar_hour.get_nine_star()).as_str()),
-                "lunar hour nine star mismatch for {year}-{month}-{day}"
-            );
-        }
+        let lunar_hour = solar.get_lunar_hour();
+        assert_eq!(
+            reference.get("lunar_hour_name").map(String::as_str),
+            Some(lunar_hour.get_name().as_str()),
+            "lunar hour name mismatch for {year}-{month}-{day}"
+        );
+        assert_eq!(
+            reference.get("lunar_hour_index_in_day").map(String::as_str),
+            Some(lunar_hour.get_index_in_day().to_string().as_str()),
+            "lunar hour index in day mismatch for {year}-{month}-{day}"
+        );
+        assert_eq!(
+            reference.get("lunar_hour_minor_ren").map(String::as_str),
+            Some(lunar_hour.get_minor_ren().name()),
+            "lunar hour minor ren mismatch for {year}-{month}-{day}"
+        );
+        assert_eq!(
+            reference.get("lunar_hour_twelve_star").map(String::as_str),
+            Some(lunar_hour.get_twelve_star().name()),
+            "lunar hour twelve star mismatch for {year}-{month}-{day}"
+        );
+        assert_eq!(
+            reference.get("lunar_hour_nine_star").map(String::as_str),
+            Some(local_nine_star_name(lunar_hour.get_nine_star()).as_str()),
+            "lunar hour nine star mismatch for {year}-{month}-{day}"
+        );
         if reference_flavor == ReferenceFlavor::Local {
             assert_eq!(
                 reference.get("lunar_six_star").map(String::as_str),
