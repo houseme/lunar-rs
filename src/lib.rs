@@ -129,8 +129,8 @@ pub use bengali::{Bengali, BengaliMonth, BengaliYear};
 pub use byzantine::{Byzantine, ByzantineMonth, ByzantineYear};
 pub use coptic::{Coptic, CopticMonth, CopticYear};
 pub use culture::{
-    Beast, ChongSha, Constellation, CultureDay, CycleItem, Direction, DogDay, Duty, EarthBranch, Ecliptic, Element,
-    FetusDay, FetusEarthBranch, FetusHeavenStem, FetusMonth, God, GodLuck, HeavenStem, HideHeavenStem,
+    Beast, ChongSha, Constellation, CultureDay, CycleItem, Dipper, Direction, DogDay, Duty, EarthBranch, Ecliptic,
+    Element, FetusDay, FetusEarthBranch, FetusHeavenStem, FetusMonth, God, GodLuck, HeavenStem, HideHeavenStem,
     HideHeavenStemDay, HideHeavenStemType, KitchenGodSteed, Land, LiuYao, Lu, MinorRen, MoonPhase, MoonPhaseDay,
     NamedCulture, Nayin, Nine, NineDay, PengZu, PengZuEarthBranch, PengZuHeavenStem, Phase, PhaseDay, Phenology,
     PhenologyDay, PlumRainDay, PlumRainKind, Season, SevenStar, Shou, SixStar, SixtyCycle, SixtyCycleDay,
@@ -138,6 +138,14 @@ pub use culture::{
     TenStar, Terrain, ThreePillars, TianShen, TianShenType, TwelveStar, Week, Xiu, XiuAnimal, Xun, XunKong,
     YearFortune, YearFortuneKind, YuanCycle, YunCycle, Zodiac, Zone,
 };
+
+pub type Animal = XiuAnimal;
+pub type Luck = GodLuck;
+pub type Sixty = YuanCycle;
+pub type Sound = Nayin;
+pub type Ten = Xun;
+pub type Twenty = YunCycle;
+
 pub use dangi::{Dangi, DangiMonth, DangiYear};
 pub use eight_char::{
     DefaultEightCharProvider, EightChar, EightCharProvider, LunarSect1EightCharProvider, LunarSect2EightCharProvider,

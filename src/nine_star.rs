@@ -2,7 +2,7 @@
 
 use std::fmt;
 
-use crate::culture::{Direction, Element};
+use crate::culture::{Dipper, Direction, Element};
 use crate::lunar_util;
 
 const NUMBER: &[&str; 9] = &["一", "二", "三", "四", "五", "六", "七", "八", "九"];
@@ -71,6 +71,9 @@ impl NineStar {
     }
     pub const fn name_in_bei_dou(&self) -> &'static str {
         NAME_BEI_DOU[self.index as usize]
+    }
+    pub const fn dipper(&self) -> Dipper {
+        Dipper::from_index(self.index as usize)
     }
     pub const fn name_in_qi_men(&self) -> &'static str {
         NAME_QI_MEN[self.index as usize]

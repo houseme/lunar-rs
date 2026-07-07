@@ -27,6 +27,7 @@
 | `P2` | `Task 87` | 8 相天文月相对象设计与实现 | `已完成` | 新增独立 `MoonPhase` / `MoonPhaseDay`，避免破坏现有农历日月相 `Phase`。 |
 | `P3` | `Task 88` | 年月周单位对象 API 差异补齐 | `已完成` | 新增 `YearUnit/MonthUnit/DayUnit/SecondUnit/WeekUnit` 与 `LunarWeek`。 |
 | `P3` | `Task 89` | 事件/节日 v1.5 API 兼容层评估 | `已完成` | 新增 `EventType` 并映射到本地 `EventRule`。 |
+| `P3` | `Task 90` | tyme4rs 公开类型名兼容补强 | `已完成` | 新增 `Dipper`，并提供 `Animal/Luck/Sixty/Sound/Ten/Twenty` 兼容别名。 |
 
 ## 实施顺序
 
@@ -36,4 +37,8 @@
 
 ## 当前建议
 
-`Task 86`、`Task 87`、`Task 88` 与 `Task 89` 已完成。本地继续保留 `phase()` 的旧含义，并通过 `moon_phase()` / `moon_phase_day()` 暴露对标 `tyme4rs::Phase` 的 8 相天文月相；年月周差异已补 `Unit` 对象族与 `LunarWeek`；事件规则侧已补 `EventType` 兼容层。后续如继续推进，应进入更细的命名兼容与差分测试矩阵。
+`Task 86`、`Task 87`、`Task 88`、`Task 89` 与 `Task 90` 已完成。本地继续保留 `phase()` 的旧含义，并通过 `moon_phase()` / `moon_phase_day()` 暴露对标 `tyme4rs::Phase` 的 8 相天文月相；年月周差异已补 `Unit` 对象族与 `LunarWeek`；事件规则侧已补 `EventType` 兼容层；公开类型名迁移侧已补 `Dipper` 和轻量 type alias。后续如继续推进，应进入更细的严格方法名兼容、README/API 文档和外部差分测试矩阵。
+
+## 2026-07-07 重新拉取复核
+
+本轮重新执行 `git fetch --depth 1 origin master` 后，`FETCH_HEAD` 仍为 `ba6ab75`，上游 v1.5 基准未变化。因此本文件中的核心对标结论仍有效；本轮新增的补强点是严格公开类型名兼容，而非新上游功能。

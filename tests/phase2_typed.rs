@@ -1,8 +1,9 @@
 use lunar_rs::{
-    Constellation, CultureDay, CycleItem, DayUnit, Direction, Duty, EarthBranch, Element, God, GodLuck, HeavenStem,
-    HideHeavenStemType, Land, Lunar, LunarMonth, LunarWeek, LunarYear, MinorRen, MonthUnit, MoonPhase, NamedCulture,
-    Nayin, NineStar, Phase, PlumRainKind, SecondUnit, SevenStar, SixStar, SixtyCycle, Solar, Taboo, TabooKind, TenStar,
-    TwelveStar, WeekUnit, Xun, YearUnit, YuanCycle, YunCycle, Zodiac,
+    Animal, Constellation, CultureDay, CycleItem, DayUnit, Dipper, Direction, Duty, EarthBranch, Element, God, GodLuck,
+    HeavenStem, HideHeavenStemType, Land, Luck, Lunar, LunarMonth, LunarWeek, LunarYear, MinorRen, MonthUnit,
+    MoonPhase, NamedCulture, Nayin, NineStar, Phase, PlumRainKind, SecondUnit, SevenStar, SixStar, Sixty, SixtyCycle,
+    Solar, Sound, Taboo, TabooKind, Ten, TenStar, TwelveStar, Twenty, WeekUnit, Xun, YearUnit, YuanCycle, YunCycle,
+    Zodiac,
 };
 
 #[test]
@@ -118,6 +119,7 @@ fn common_culture_traits_unify_names_cycles_and_day_indices() {
     assert_eq!(next_name(TabooKind::Avoid, 1), "宜");
     assert_eq!(next_name(SevenStar::from_name("土").unwrap(), 1), "日");
     assert_eq!(next_name(TenStar::from_name("正印").unwrap(), 1), "比肩");
+    assert_eq!(next_name(Dipper::from_name("隐元").unwrap(), 1), "天枢");
     assert_eq!(next_name(MinorRen::from_name("空亡").unwrap(), 1), "大安");
     assert_eq!(Constellation::from_name("白羊").unwrap().steps_to(1), 1);
     assert_eq!(Constellation::from_name("白羊").unwrap().steps_back_to(11), -1);
@@ -129,6 +131,21 @@ fn common_culture_traits_unify_names_cycles_and_day_indices() {
     let plum = Solar::from_ymd(2024, 7, 6).unwrap().lunar().plum_rain_day().unwrap();
     assert_eq!(CultureDay::day_index(&plum), None);
     assert!(plum.is_boundary());
+}
+
+#[test]
+fn tyme_compatibility_type_names_map_to_existing_objects() {
+    assert_eq!(Animal::from_name("蛟").unwrap().next(1).name(), "龙");
+    assert_eq!(Luck::from_name("吉").unwrap().next(1).name(), "凶");
+    assert_eq!(Sixty::from_name("上元").unwrap().next(1).name(), "中元");
+    assert_eq!(Sound::from_name("海中金").unwrap().next(1).name(), "炉中火");
+    assert_eq!(Ten::from_name("甲子").unwrap().next(1).name(), "甲戌");
+    assert_eq!(Twenty::from_name("九运").unwrap().next(1).name(), "一运");
+
+    let star = NineStar::from_index(8);
+    assert_eq!(star.dipper().name(), "隐元");
+    assert_eq!(star.dipper().next(1).name(), "天枢");
+    assert_eq!(star.dipper().name(), star.name_in_bei_dou());
 }
 
 #[test]

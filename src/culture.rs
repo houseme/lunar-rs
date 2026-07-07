@@ -32,6 +32,7 @@ const LAND_NAMES: [&str; 9] = ["玄天", "朱天", "苍天", "阳天", "钧天",
 const YUAN_CYCLE_NAMES: [&str; 3] = ["上元", "中元", "下元"];
 const YUN_CYCLE_NAMES: [&str; 9] = ["一运", "二运", "三运", "四运", "五运", "六运", "七运", "八运", "九运"];
 const MOON_PHASE_NAMES: [&str; 8] = ["新月", "蛾眉月", "上弦月", "盈凸月", "满月", "亏凸月", "下弦月", "残月"];
+const DIPPER_NAMES: [&str; 9] = ["天枢", "天璇", "天玑", "天权", "玉衡", "开阳", "摇光", "洞明", "隐元"];
 const SIX_STAR_NAMES: [&str; 6] = ["先胜", "友引", "先负", "佛灭", "大安", "赤口"];
 const SEVEN_STAR_NAMES: [&str; 7] = ["日", "月", "火", "水", "木", "金", "土"];
 const ECLIPTIC_NAMES: [&str; 2] = ["黄道", "黑道"];
@@ -2085,6 +2086,36 @@ impl fmt::Display for YunCycle {
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct Dipper {
+    index: usize,
+}
+
+impl Dipper {
+    pub const fn from_index(index: usize) -> Self {
+        Self { index }
+    }
+
+    pub fn from_name(name: &str) -> Option<Self> {
+        DIPPER_NAMES.iter().position(|value| *value == name).map(Self::from_index)
+    }
+
+    pub const fn index(&self) -> usize {
+        self.index
+    }
+
+    pub fn name(&self) -> &'static str {
+        DIPPER_NAMES[self.index % DIPPER_NAMES.len()]
+    }
+}
+
+impl fmt::Display for Dipper {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.name())
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct SixStar {
     index: usize,
 }
@@ -2550,6 +2581,7 @@ impl_named_culture!(
     LiuYao,
     YuanCycle,
     YunCycle,
+    Dipper,
     SixStar,
     SevenStar,
     Ecliptic,
@@ -2906,6 +2938,20 @@ impl CycleItem for YunCycle {
 
     fn size() -> usize {
         YUN_CYCLE_NAMES.len()
+    }
+}
+
+impl CycleItem for Dipper {
+    fn from_cycle_index(index: usize) -> Self {
+        Self::from_index(index % Self::size())
+    }
+
+    fn index(&self) -> usize {
+        self.index()
+    }
+
+    fn size() -> usize {
+        DIPPER_NAMES.len()
     }
 }
 
