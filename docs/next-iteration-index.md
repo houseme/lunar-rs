@@ -249,5 +249,6 @@
 | `P2` | `Task 93` | tyme4rs 基础枚举兼容 | `已完成` | [docs/tasks/93-phase-next-basic-enums-compatibility.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/93-phase-next-basic-enums-compatibility.md) |
 | `P2` | `Task 94` | SolarTerm 对象入口兼容 | `已完成` | [docs/tasks/94-phase-next-solar-term-object-compatibility.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/94-phase-next-solar-term-object-compatibility.md) |
 | `P3` | `Task 95` | SolarDay/SolarTime 核心 getter 兼容 | `已完成` | [docs/tasks/95-phase-next-solar-getter-compatibility.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/95-phase-next-solar-getter-compatibility.md) |
+| `P3` | `Task 96` | Solar 派生 getter 与公历聚合对象兼容 | `已完成` | [docs/tasks/96-phase-next-solar-derived-getter-compatibility.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/96-phase-next-solar-derived-getter-compatibility.md) |
 
-后续建议继续按新对标文档和本索引中的 `Task 59` - `Task 95` 推进，不再把已经完成的 Phase 4 多历法工作重复列为待办。
+后续建议继续按新对标文档和本索引中的 `Task 59` - `Task 96` 推进，不再把已经完成的 Phase 4 多历法工作重复列为待办。

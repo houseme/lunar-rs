@@ -229,6 +229,11 @@ impl Solar {
         self.week_info()
     }
 
+    #[inline]
+    pub fn get_solar_month(&self) -> crate::SolarMonth {
+        crate::SolarMonth::from_ym(self.year, self.month)
+    }
+
     /// 星期几（显式语言版本，需启用 `i18n` feature）。
     #[cfg(feature = "i18n")]
     pub fn week_in_lang(&self, language: crate::i18n::Language) -> &'static str {
@@ -275,6 +280,10 @@ impl Solar {
         Constellation::from_index(index)
     }
 
+    pub fn get_constellation(&self) -> Constellation {
+        self.constellation()
+    }
+
     /// 星座（显式语言版本，需启用 `i18n` feature）。
     #[cfg(feature = "i18n")]
     pub fn xing_zuo_in_lang(&self, language: crate::i18n::Language) -> &'static str {
@@ -301,6 +310,15 @@ impl Solar {
         Self::from_ymd(self.year, self.month, self.day).unwrap_or(*self)
     }
 
+    pub fn get_solar_week(&self, start: i32) -> crate::SolarWeek {
+        crate::SolarWeek::from_ymd(self.year, self.month, self.day, start)
+    }
+
+    pub fn get_index_in_year(&self) -> usize {
+        let first_day = Self::from_ymd(self.year, 1, 1).unwrap_or(*self);
+        self.subtract(&first_day) as usize
+    }
+
     /// 转农历。
     pub fn lunar(&self) -> Lunar {
         Lunar::from_solar(*self)
@@ -325,9 +343,25 @@ impl Solar {
         self.lunar().solar_term_day()
     }
 
+    pub fn get_phenology_day(&self) -> Option<crate::PhenologyDay> {
+        self.lunar().phenology_day()
+    }
+
+    pub fn get_phenology(&self) -> crate::Phenology {
+        self.lunar().phenology()
+    }
+
     /// 转回历（公历民用回历）。
     pub fn hijri(&self) -> Hijri {
         Hijri::from_solar(*self)
+    }
+
+    pub fn get_hijri_day(&self) -> crate::HijriDay {
+        self.hijri()
+    }
+
+    pub fn get_sixty_cycle_hour(&self) -> crate::SixtyCycleHour {
+        self.lunar().sixty_cycle_hour()
     }
 
     pub fn hijri_year(&self) -> crate::HijriYear {
@@ -757,6 +791,10 @@ impl Solar {
         Some(NineDay::new(nine, shu_jiu.day_index()))
     }
 
+    pub fn get_nine_day(&self) -> Option<NineDay> {
+        self.nine_day()
+    }
+
     pub fn hide_heaven_stem_day(&self) -> Option<HideHeavenStemDay> {
         let lunar = self.lunar();
         let current_jie = lunar.jie();
@@ -791,6 +829,34 @@ impl Solar {
 
         let kind = HideHeavenStemType::from_index(kind_index)?;
         Some(HideHeavenStemDay::new(HideHeavenStem::from_index(heaven_stem_index, kind), day_index as i32 + 1))
+    }
+
+    pub fn get_hide_heaven_stem_day(&self) -> Option<HideHeavenStemDay> {
+        self.hide_heaven_stem_day()
+    }
+
+    pub fn get_dog_day(&self) -> Option<crate::DogDay> {
+        self.lunar().dog_day()
+    }
+
+    pub fn get_plum_rain_day(&self) -> Option<crate::PlumRainDay> {
+        self.lunar().plum_rain_day()
+    }
+
+    pub fn get_legal_holiday(&self) -> Option<crate::Holiday> {
+        crate::Holiday::from_ymd(self.year, self.month, self.day)
+    }
+
+    pub fn get_sixty_cycle_day(&self) -> crate::SixtyCycleDay {
+        self.lunar().sixty_cycle_day()
+    }
+
+    pub fn get_nine_star(&self) -> crate::NineStar {
+        self.lunar().day_nine_star()
+    }
+
+    pub fn get_rab_byung_day(&self) -> Result<RabByungDay, LunarError> {
+        self.rab_byung_day()
     }
 
     /// Unified events for the current solar date.

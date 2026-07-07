@@ -208,6 +208,7 @@ pub use yun::{
 };
 pub use yun::{DaYun, LiuNian, LiuYue, XiaoYun, Yun};
 
+pub type HijriDay = Hijri;
 pub type LegalHoliday = Holiday;
 pub type LunarDay = Lunar;
 pub type LunarHour<'a> = LunarTime<'a>;

@@ -23,12 +23,45 @@ impl SolarMonth {
     pub const fn year(&self) -> i32 {
         self.year
     }
+
+    pub const fn get_year(&self) -> i32 {
+        self.year()
+    }
+
     pub const fn month(&self) -> i32 {
         self.month
     }
 
+    pub const fn get_month(&self) -> i32 {
+        self.month()
+    }
+
+    pub fn get_solar_year(&self) -> crate::SolarYear {
+        crate::SolarYear::from_year(self.year)
+    }
+
+    pub fn get_day_count(&self) -> i32 {
+        solar_util::days_of_month(self.year, self.month)
+    }
+
+    pub fn get_index_in_year(&self) -> usize {
+        (self.month - 1) as usize
+    }
+
+    pub fn get_week_count(&self, start: i32) -> usize {
+        self.weeks(start).len()
+    }
+
+    pub fn get_season(&self) -> crate::SolarSeason {
+        crate::SolarSeason::from_index(self.year, self.get_index_in_year() / 3)
+    }
+
     pub fn first_solar_day(&self) -> Solar {
         Solar::from_ymd(self.year, self.month, 1).unwrap()
+    }
+
+    pub fn get_first_day(&self) -> Solar {
+        self.first_solar_day()
     }
 
     pub fn last_solar_day(&self) -> Solar {
@@ -40,6 +73,10 @@ impl SolarMonth {
         let first = Solar::from_ymd(self.year, self.month, 1).unwrap();
         let total = solar_util::days_of_month(self.year, self.month);
         (0..total).map(|i| first.next_day(i)).collect()
+    }
+
+    pub fn get_days(&self) -> Vec<Solar> {
+        self.days()
     }
 
     /// 当月的周列表。
@@ -55,6 +92,10 @@ impl SolarMonth {
             }
         }
         out
+    }
+
+    pub fn get_weeks(&self, start: i32) -> Vec<SolarWeek> {
+        self.weeks(start)
     }
 
     /// 当月按日分组的事件视图。

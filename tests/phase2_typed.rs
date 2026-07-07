@@ -1,9 +1,10 @@
 use lunar_rs::{
     Animal, Constellation, CultureDay, CycleItem, DayUnit, Dipper, Direction, Duty, EarthBranch, Element, Gender, God,
-    GodLuck, HeavenStem, HideHeavenStemType, Holiday, JulianDay, Land, LegalHoliday, Luck, Lunar, LunarDay, LunarMonth,
-    LunarWeek, LunarYear, MinorRen, MonthUnit, MoonPhase, NamedCulture, Nayin, NineStar, Phase, PlumRainKind,
-    SecondUnit, SevenStar, Side, SixStar, Sixty, SixtyCycle, Solar, SolarDay, SolarTerm, SolarTime, Sound, Taboo,
-    TabooKind, Ten, TenStar, TwelveStar, Twenty, WeekUnit, Xun, YearUnit, YinYang, YuanCycle, YunCycle, Zodiac,
+    GodLuck, HeavenStem, HideHeavenStemType, HijriDay, Holiday, JulianDay, Land, LegalHoliday, Luck, Lunar, LunarDay,
+    LunarMonth, LunarWeek, LunarYear, MinorRen, MonthUnit, MoonPhase, NamedCulture, Nayin, NineStar, Phase,
+    PlumRainKind, SecondUnit, SevenStar, Side, SixStar, Sixty, SixtyCycle, Solar, SolarDay, SolarHalfYear, SolarMonth,
+    SolarSeason, SolarTerm, SolarTime, SolarWeek, SolarYear, Sound, Taboo, TabooKind, Ten, TenStar, TwelveStar, Twenty,
+    WeekUnit, Xun, YearUnit, YinYang, YuanCycle, YunCycle, Zodiac,
 };
 
 #[test]
@@ -185,11 +186,24 @@ fn tyme_core_day_time_and_term_names_are_available() {
     assert_eq!(solar_time.get_week().name(), "六");
     assert!(solar_time.is_after(&SolarTime::from_ymd_hms(2024, 2, 10, 8, 29, 59).unwrap()));
     assert!(solar_time.is_before(&SolarTime::from_ymd_hms(2024, 2, 10, 8, 30, 1).unwrap()));
+    assert_eq!(solar_day.get_solar_month().year(), 2024);
+    assert_eq!(solar_day.get_solar_month().month(), 2);
+    assert_eq!(solar_day.get_solar_week(0).first_day().to_ymd(), "2024-02-04");
+    assert_eq!(solar_day.get_index_in_year(), 40);
+    assert_eq!(solar_day.get_constellation(), Constellation::from_name("水瓶").unwrap());
+    let hijri_day: HijriDay = solar_day.get_hijri_day();
+    assert_eq!(hijri_day.solar().to_ymd(), "2024-02-10");
+    assert_eq!(solar_day.get_sixty_cycle_day().name(), solar_day.lunar().sixty_cycle_day().name());
+    assert_eq!(solar_time.get_sixty_cycle_hour().name(), solar_time.lunar().sixty_cycle_hour().name());
+    assert_eq!(solar_day.get_nine_star().to_string(), solar_day.lunar().day_nine_star().to_string());
+    assert_eq!(solar_day.get_rab_byung_day().unwrap().solar().to_ymd(), "2024-02-10");
 
     let jd = JulianDay::from_ymd_hms(2024, 2, 10, 0, 0, 0).unwrap();
     assert_eq!(jd.solar_day().to_ymd(), "2024-02-10");
     assert_eq!(jd.get_solar_day().to_ymd(), "2024-02-10");
     assert_eq!(jd.get_solar_time().to_ymd_hms(), "2024-02-10 00:00:00");
+    assert_eq!(jd.get_week().name(), "六");
+    assert_eq!(jd.next(1).subtract(jd), 1.0);
     assert_eq!(jd.next(1).solar_day().to_ymd(), "2024-02-11");
 
     let term: SolarTerm = Solar::from_ymd(2024, 2, 4).unwrap().lunar().current_jie_qi().unwrap();
@@ -218,6 +232,65 @@ fn tyme_core_day_time_and_term_names_are_available() {
     let term_time = SolarTime::from_ymd_hms(2023, 12, 7, 18, 0, 0).unwrap();
     assert_eq!(term_time.get_term().name(), "大雪");
     assert_eq!(term_time.get_term_day().unwrap().name(), "大雪");
+
+    let phenology_day = Solar::from_ymd(2021, 12, 21).unwrap();
+    assert_eq!(phenology_day.get_phenology().wu_hou(), "蚯蚓结");
+    assert_eq!(phenology_day.get_phenology_day().unwrap().name(), "蚯蚓结");
+
+    let plum_day = Solar::from_ymd(2024, 6, 11).unwrap();
+    assert_eq!(plum_day.get_plum_rain_day().unwrap().to_string(), "入梅第1天");
+
+    let holiday = Solar::from_ymd(2024, 10, 1).unwrap().get_legal_holiday().unwrap();
+    assert_eq!(holiday.get_name(), "国庆节");
+    assert_eq!(holiday.get_day().to_ymd(), "2024-10-01");
+
+    let alias_holiday = LegalHoliday::from_ymd(2024, 10, 1).unwrap();
+    assert_eq!(alias_holiday.get_target().to_ymd(), "2024-10-01");
+
+    let solar_year = SolarYear::from_year(2024);
+    assert!(solar_year.is_leap());
+    assert_eq!(solar_year.get_year(), 2024);
+    assert_eq!(solar_year.get_day_count(), 366);
+    assert_eq!(solar_year.get_months().len(), 12);
+    assert_eq!(solar_year.get_seasons().len(), 4);
+    assert_eq!(solar_year.get_half_years()[1].get_index(), 1);
+    assert_eq!(solar_year.get_rab_byung_year().unwrap().year(), 2024);
+
+    let half_year = SolarHalfYear::from_index(2024, 1);
+    assert_eq!(half_year.get_year(), 2024);
+    assert_eq!(half_year.get_index(), 1);
+    assert_eq!(half_year.get_solar_year().get_year(), 2024);
+    assert_eq!(half_year.get_months()[0].month(), 7);
+    assert_eq!(half_year.get_seasons()[0].get_index(), 2);
+
+    let season = SolarSeason::from_index(2024, 2);
+    assert_eq!(season.get_year(), 2024);
+    assert_eq!(season.get_index(), 2);
+    assert_eq!(season.get_solar_year().get_year(), 2024);
+    assert_eq!(season.get_months().iter().map(|month| month.month()).collect::<Vec<_>>(), vec![7, 8, 9]);
+
+    let month = SolarMonth::from_ym(2023, 1);
+    assert_eq!(month.get_year(), 2023);
+    assert_eq!(month.get_month(), 1);
+    assert_eq!(month.get_solar_year().get_year(), 2023);
+    assert_eq!(month.get_day_count(), 31);
+    assert_eq!(month.get_index_in_year(), 0);
+    assert_eq!(month.get_week_count(0), 5);
+    assert_eq!(month.get_week_count(1), 6);
+    assert_eq!(month.get_season().get_index(), 0);
+    assert_eq!(month.get_first_day().to_ymd(), "2023-01-01");
+    assert_eq!(month.get_days().len(), 31);
+    assert_eq!(month.get_weeks(0).len(), 5);
+
+    let week = SolarWeek::from_ym(2024, 2, 0, 0);
+    assert_eq!(week.get_year(), 2024);
+    assert_eq!(week.get_month(), 2);
+    assert_eq!(week.get_start(), 0);
+    assert_eq!(week.get_index(), 0);
+    assert_eq!(week.get_solar_month().month(), 2);
+    assert_eq!(week.get_first_day().to_ymd(), "2024-01-28");
+    assert_eq!(week.get_days().len(), 7);
+    assert_eq!(week.get_index_in_year(), 4);
 }
 
 #[test]

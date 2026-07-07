@@ -19,17 +19,40 @@ pub struct SolarWeek {
 }
 
 impl SolarWeek {
+    pub fn from_ym(year: i32, month: i32, index: usize, start: i32) -> Self {
+        let day = (1 + index as i32 * 7).min(solar_util::days_of_month(year, month));
+        Self::from_ymd(year, month, day, start)
+    }
+
     pub const fn from_ymd(year: i32, month: i32, day: i32, start: i32) -> Self {
         Self { year, month, day, start }
     }
     pub const fn year(&self) -> i32 {
         self.year
     }
+
+    pub const fn get_year(&self) -> i32 {
+        self.year()
+    }
+
     pub const fn month(&self) -> i32 {
         self.month
     }
+
+    pub const fn get_month(&self) -> i32 {
+        self.month()
+    }
+
     pub const fn day(&self) -> i32 {
         self.day
+    }
+
+    pub const fn start(&self) -> i32 {
+        self.start
+    }
+
+    pub const fn get_start(&self) -> i32 {
+        self.start()
     }
 
     /// 当月第几周。
@@ -41,6 +64,14 @@ impl SolarWeek {
         (f64::from(self.day + offset) / 7.0).ceil() as i32
     }
 
+    pub fn get_index(&self) -> usize {
+        (self.index() - 1) as usize
+    }
+
+    pub fn get_solar_month(&self) -> crate::SolarMonth {
+        crate::SolarMonth::from_ym(self.year, self.month)
+    }
+
     /// 当年第几周。
     pub fn index_in_year(&self) -> i32 {
         let mut offset = Solar::from_ymd(self.year, 1, 1).unwrap().week() - self.start;
@@ -48,6 +79,10 @@ impl SolarWeek {
             offset += 7;
         }
         (f64::from(solar_util::days_in_year(self.year, self.month, self.day) + offset) / 7.0).ceil() as i32
+    }
+
+    pub fn get_index_in_year(&self) -> usize {
+        (self.index_in_year() - 1) as usize
     }
 
     /// 周第一天。
@@ -60,10 +95,18 @@ impl SolarWeek {
         c.next_day(-prev)
     }
 
+    pub fn get_first_day(&self) -> Solar {
+        self.first_day()
+    }
+
     /// 当周 7 天。
     pub fn days(&self) -> Vec<Solar> {
         let first = self.first_day();
         (0..7).map(|i| first.next_day(i)).collect()
+    }
+
+    pub fn get_days(&self) -> Vec<Solar> {
+        self.days()
     }
 
     /// 当周在当月内的第一天。

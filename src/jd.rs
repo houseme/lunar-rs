@@ -33,6 +33,10 @@ impl JulianDay {
         Week::from_index(((self.day + 0.5) as i64 + 7_000_001).rem_euclid(7) as usize)
     }
 
+    pub fn get_week(&self) -> Week {
+        self.week()
+    }
+
     pub fn solar_time(&self) -> Solar {
         Solar::from_julian_day(self.day)
     }
@@ -52,6 +56,10 @@ impl JulianDay {
 
     pub fn next(&self, days: i32) -> Self {
         Self::from_julian_day(self.day + f64::from(days))
+    }
+
+    pub fn subtract(&self, other: Self) -> f64 {
+        self.day - other.day
     }
 }
 
