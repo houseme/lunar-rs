@@ -8,6 +8,7 @@ use std::fmt;
 use std::sync::{Arc, LazyLock, RwLock};
 
 use crate::culture::{CycleItem, EarthBranch, HeavenStem};
+use crate::lunar_year::JIE_QI;
 use crate::{Holiday, JieQi, Solar, foto::FotoFestival, tao::TaoFestival};
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -357,6 +358,10 @@ impl TaoFestivalEvent {
 }
 
 impl Event {
+    pub fn builder() -> EventBuilder {
+        EventBuilder::new()
+    }
+
     pub fn new(
         kind: EventKind,
         calendar_kind: CalendarKind,
@@ -1102,6 +1107,108 @@ impl EventRule {
             Self::SolarTermEarthBranch { .. } => EventType::TermEb,
         }
     }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct EventBuilder {
+    name: String,
+    rule: Option<EventRule>,
+    start_year: i32,
+    offset_days: Option<i32>,
+}
+
+impl EventBuilder {
+    pub const fn new() -> Self {
+        Self { name: String::new(), rule: None, start_year: 0, offset_days: None }
+    }
+
+    pub fn name(mut self, name: impl Into<String>) -> Self {
+        self.name = name.into();
+        self
+    }
+
+    pub fn solar_day(self, solar_month: i32, solar_day: i32, delay_days: i32) -> Self {
+        self.with_rule(EventRule::solar_day(solar_month, solar_day).with_offset_days(delay_days))
+    }
+
+    pub fn lunar_day(self, lunar_month: i32, lunar_day: i32, delay_days: i32) -> Self {
+        self.with_rule(EventRule::lunar_day(lunar_month, lunar_day).with_offset_days(delay_days))
+    }
+
+    pub fn solar_week(self, solar_month: i32, week_index: i32, week: i32) -> Self {
+        self.with_rule(EventRule::solar_week(solar_month, week_index, week))
+    }
+
+    pub fn term_day(self, term_index: usize, delay_days: i32) -> Self {
+        self.term_day_name(term_name_from_index(term_index), delay_days)
+    }
+
+    pub fn term_day_name(self, term: impl Into<String>, delay_days: i32) -> Self {
+        self.with_rule(EventRule::solar_term_offset(term, delay_days))
+    }
+
+    pub fn term_heaven_stem(self, term_index: usize, heaven_stem_index: usize, delay_days: i32) -> Self {
+        self.term_heaven_stem_name(term_name_from_index(term_index), heaven_stem_index, delay_days)
+    }
+
+    pub fn term_heaven_stem_name(self, term: impl Into<String>, heaven_stem_index: usize, delay_days: i32) -> Self {
+        self.with_rule(EventRule::solar_term_heaven_stem(term, heaven_stem_index, delay_days))
+    }
+
+    pub fn term_earth_branch(self, term_index: usize, earth_branch_index: usize, delay_days: i32) -> Self {
+        self.term_earth_branch_name(term_name_from_index(term_index), earth_branch_index, delay_days)
+    }
+
+    pub fn term_earth_branch_name(self, term: impl Into<String>, earth_branch_index: usize, delay_days: i32) -> Self {
+        self.with_rule(EventRule::solar_term_earth_branch(term, earth_branch_index, delay_days))
+    }
+
+    pub fn start_year(mut self, year: i32) -> Self {
+        self.start_year = year;
+        self.rule = self.rule.map(|rule| rule.with_start_year(year));
+        self
+    }
+
+    pub fn offset(mut self, days: i32) -> Self {
+        self.offset_days = Some(days);
+        self.rule = self.rule.map(|rule| rule.with_offset_days(days));
+        self
+    }
+
+    pub fn rule(&self) -> Option<&EventRule> {
+        self.rule.as_ref()
+    }
+
+    pub fn into_rule(self) -> Option<EventRule> {
+        self.rule
+    }
+
+    pub fn to_event(&self, year: i32) -> Option<Event> {
+        self.rule.as_ref()?.to_event(self.name.clone(), year)
+    }
+
+    pub fn build(self, year: i32) -> Option<Event> {
+        self.to_event(year)
+    }
+
+    pub fn update_manager(self) -> Option<()> {
+        EventManager::update(self.name, self.rule?);
+        Some(())
+    }
+
+    fn with_rule(mut self, rule: EventRule) -> Self {
+        let mut rule = rule.with_start_year(self.start_year);
+        if let Some(offset_days) = self.offset_days {
+            rule = rule.with_offset_days(offset_days);
+        }
+        self.rule = Some(rule);
+        self
+    }
+}
+
+fn term_name_from_index(index: usize) -> &'static str {
+    JIE_QI[index % JIE_QI.len()]
 }
 
 fn resolve_solar_week(year: i32, month: i32, week_index: i32, week: i32) -> Option<Solar> {

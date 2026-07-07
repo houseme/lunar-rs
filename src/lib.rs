@@ -154,11 +154,12 @@ pub use eight_char::{
 pub use error::LunarError;
 pub use ethiopian::{Ethiopian, EthiopianMonth, EthiopianYear};
 pub use event::{
-    CalendarKind, Event, EventDayGroup, EventKind, EventManager, EventQuery, EventRangeKind, EventRule, EventSource,
-    EventSourceFamily, EventType, EventWeekGroup, FotoFestivalEvent, HolidayEvent, HolidayPeriodEvent, JieQiEvent,
-    LunarFestivalEvent, SolarFestivalEvent, TaoFestivalEvent, dedup_events, filter_events, group_event_days_by_week,
-    group_events_by_day, scan_event_days_in_range, scan_event_days_in_range_filtered, scan_event_weeks_in_range,
-    scan_event_weeks_in_range_filtered, scan_events_in_range, scan_events_in_range_filtered, sort_events,
+    CalendarKind, Event, EventBuilder, EventDayGroup, EventKind, EventManager, EventQuery, EventRangeKind, EventRule,
+    EventSource, EventSourceFamily, EventType, EventWeekGroup, FotoFestivalEvent, HolidayEvent, HolidayPeriodEvent,
+    JieQiEvent, LunarFestivalEvent, SolarFestivalEvent, TaoFestivalEvent, dedup_events, filter_events,
+    group_event_days_by_week, group_events_by_day, scan_event_days_in_range, scan_event_days_in_range_filtered,
+    scan_event_weeks_in_range, scan_event_weeks_in_range_filtered, scan_events_in_range, scan_events_in_range_filtered,
+    sort_events,
 };
 pub use fasli::{Fasli, FasliMonth, FasliYear};
 pub use foto::{Foto, FotoMonth, FotoYear};

@@ -1,8 +1,8 @@
 use lunar_rs::{
-    CalendarKind, EarthBranch, Event, EventKind, EventManager, EventQuery, EventRangeKind, EventRule, EventSource,
-    EventSourceFamily, EventType, HeavenStem, Lunar, Solar, SolarMonth, SolarWeek, group_event_days_by_week,
-    group_events_by_day, holiday_util, scan_event_days_in_range, scan_event_weeks_in_range, scan_events_in_range,
-    scan_events_in_range_filtered,
+    CalendarKind, EarthBranch, Event, EventBuilder, EventKind, EventManager, EventQuery, EventRangeKind, EventRule,
+    EventSource, EventSourceFamily, EventType, HeavenStem, Lunar, Solar, SolarMonth, SolarWeek,
+    group_event_days_by_week, group_events_by_day, holiday_util, scan_event_days_in_range, scan_event_weeks_in_range,
+    scan_events_in_range, scan_events_in_range_filtered,
 };
 
 #[test]
@@ -311,11 +311,44 @@ fn event_manager_resolves_typed_rules_and_joins_day_events() {
     assert_eq!(first_wei_after_xiaoshu.solar().to_ymd(), "2024-07-06");
     assert_eq!(first_wei_after_xiaoshu.solar().lunar().day_earth_branch().name(), "未");
 
+    let builder_solar_event =
+        Event::builder().name("构造器儿童节").solar_day(6, 1, 0).start_year(2098).to_event(2098).unwrap();
+    assert_eq!(builder_solar_event.name(), "构造器儿童节");
+    assert_eq!(builder_solar_event.solar().to_ymd(), "2098-06-01");
+    assert_eq!(builder_solar_event.source_id(), Some("event-manager:solar_day:2098-06-01:构造器儿童节"));
+
+    let builder_lunar_event = EventBuilder::new().name("构造器春节").lunar_day(1, 1, 0).build(2024).unwrap();
+    assert_eq!(builder_lunar_event.solar().to_ymd(), "2024-02-10");
+
+    let builder_week_event = EventBuilder::new().name("构造器母亲节").solar_week(5, 2, 0).to_event(2024).unwrap();
+    assert_eq!(builder_week_event.solar().to_ymd(), "2024-05-12");
+
+    let builder_term_event = EventBuilder::new().name("构造器寒食节").term_day(7, -1).to_event(2024).unwrap();
+    assert_eq!(builder_term_event.solar().to_ymd(), "2024-04-03");
+
+    let builder_term_stem = EventBuilder::new()
+        .name("构造器入伏")
+        .term_heaven_stem(12, HeavenStem::from_name("庚").unwrap().index(), 20)
+        .to_event(2024)
+        .unwrap();
+    assert_eq!(builder_term_stem.solar().to_ymd(), "2024-07-15");
+
+    let builder_term_branch = EventBuilder::new()
+        .name("构造器出梅")
+        .term_earth_branch_name("小暑", EarthBranch::from_name("未").unwrap().index(), 0)
+        .to_event(2024)
+        .unwrap();
+    assert_eq!(builder_term_branch.solar().to_ymd(), "2024-07-06");
+    assert!(EventBuilder::new().name("空规则").to_event(2024).is_none());
+
     EventManager::update("规则儿童节", solar_rule);
+    EventBuilder::new().name("构造器儿童节").start_year(2098).solar_day(6, 1, 0).update_manager().unwrap();
     let events = Solar::from_ymd(2098, 6, 1).unwrap().find_events(&EventQuery::new().with_tag("event_manager"));
-    assert_eq!(events.len(), 1);
-    assert_eq!(events[0].name(), "规则儿童节");
-    assert_eq!(EventManager::event_for_year("规则儿童节", 2098).unwrap().source_id(), events[0].source_id());
+    assert_eq!(events.len(), 2);
+    assert!(events.iter().any(|event| event.name() == "规则儿童节"));
+    assert!(events.iter().any(|event| event.name() == "构造器儿童节"));
+    let rule_event = events.iter().find(|event| event.name() == "规则儿童节").unwrap();
+    assert_eq!(EventManager::event_for_year("规则儿童节", 2098).unwrap().source_id(), rule_event.source_id());
 }
 
 #[test]
