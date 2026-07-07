@@ -28,9 +28,14 @@ fn typed_primitives_map_names_and_relationships() {
 
     let element = Element::new("火");
     assert_eq!(element.direction().name(), "南");
+    assert_eq!(Element::from_name("水").unwrap().index(), 4);
+    assert_eq!(Element::from_index(4).next(1).name(), "木");
+    assert_eq!(Element::from_name("土").unwrap().direction().name(), "中");
 
     let duty = Duty::new("建");
     assert_eq!(duty.name(), "建");
+    assert_eq!(Duty::from_name("闭").unwrap().index(), 11);
+    assert_eq!(Duty::from_name("闭").unwrap().next(1).name(), "建");
 
     let phase = Phase::new("望");
     assert_eq!(phase.name(), "望");
@@ -66,6 +71,8 @@ fn common_culture_traits_unify_names_cycles_and_day_indices() {
     assert_eq!(next_name(EarthBranch::from_name("亥").unwrap(), 1), "子");
     assert_eq!(next_name(SixtyCycle::from_name("癸亥").unwrap(), 1), "甲子");
     assert_eq!(next_name(Zodiac::new("猪"), 1), "鼠");
+    assert_eq!(next_name(Element::from_name("水").unwrap(), 1), "木");
+    assert_eq!(next_name(Duty::from_name("闭").unwrap(), 1), "建");
     assert_eq!(next_name(MinorRen::from_name("空亡").unwrap(), 1), "大安");
     assert_eq!(Constellation::from_name("白羊").unwrap().steps_to(1), 1);
     assert_eq!(Constellation::from_name("白羊").unwrap().steps_back_to(11), -1);
@@ -142,6 +149,7 @@ fn lunar_typed_api_exposes_cycle_zodiac_and_direction_objects() {
     assert_eq!(lunar.year_earth_branch().name(), "辰");
     assert_eq!(lunar.year_sixty_cycle().name(), "甲辰");
     assert_eq!(lunar.year_zodiac().name(), "龙");
+    assert_eq!(lunar.zhi_xing_info(), Duty::from_name(lunar.zhi_xing()).unwrap());
 
     assert_eq!(lunar.month_heaven_stem().name(), "戊");
     assert_eq!(lunar.month_earth_branch().name(), "辰");

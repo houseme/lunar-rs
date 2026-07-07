@@ -11,6 +11,7 @@ use crate::solar_util;
 const DIRECTION_NAMES: [&str; 9] = ["北", "西南", "东", "东南", "中", "西北", "西", "东北", "南"];
 const STEM_ELEMENTS: [&str; 10] = ["木", "木", "火", "火", "土", "土", "金", "金", "水", "水"];
 const BRANCH_ELEMENTS: [&str; 12] = ["水", "土", "木", "木", "土", "火", "火", "土", "金", "金", "土", "水"];
+const ELEMENT_NAMES: [&str; 5] = ["木", "火", "土", "金", "水"];
 const ELEMENT_DIRECTIONS: [(&str, &str); 5] = [("木", "东"), ("火", "南"), ("土", "中"), ("金", "西"), ("水", "北")];
 const FETUS_HEAVEN_STEM_NAMES: [&str; 5] = ["门", "碓磨", "厨灶", "仓库", "房床"];
 const FETUS_EARTH_BRANCH_NAMES: [&str; 6] = ["碓", "厕", "炉", "门", "栖", "床"];
@@ -145,6 +146,18 @@ impl Element {
         Self { name }
     }
 
+    pub const fn from_index(index: usize) -> Self {
+        Self { name: ELEMENT_NAMES[index % ELEMENT_NAMES.len()] }
+    }
+
+    pub fn from_name(name: &str) -> Option<Self> {
+        ELEMENT_NAMES.iter().position(|value| *value == name).map(Self::from_index)
+    }
+
+    pub fn index(&self) -> usize {
+        ELEMENT_NAMES.iter().position(|value| *value == self.name).unwrap_or(0)
+    }
+
     pub const fn name(&self) -> &'static str {
         self.name
     }
@@ -229,6 +242,22 @@ pub struct Duty {
 impl Duty {
     pub const fn new(name: &'static str) -> Self {
         Self { name }
+    }
+
+    pub fn from_index(index: usize) -> Self {
+        Self { name: lunar_util::tables::ZHI_XING[index % Self::size() + 1] }
+    }
+
+    pub fn from_name(name: &str) -> Option<Self> {
+        lunar_util::tables::ZHI_XING[1..].iter().position(|value| *value == name).map(Self::from_index)
+    }
+
+    pub fn index(&self) -> usize {
+        lunar_util::tables::ZHI_XING[1..].iter().position(|value| *value == self.name).unwrap_or(0)
+    }
+
+    pub const fn size() -> usize {
+        12
     }
 
     pub const fn name(&self) -> &'static str {
@@ -2049,6 +2078,20 @@ impl CycleItem for Direction {
     }
 }
 
+impl CycleItem for Element {
+    fn from_cycle_index(index: usize) -> Self {
+        Self::from_index(index % Self::size())
+    }
+
+    fn index(&self) -> usize {
+        self.index()
+    }
+
+    fn size() -> usize {
+        ELEMENT_NAMES.len()
+    }
+}
+
 impl CycleItem for Zodiac {
     fn from_cycle_index(index: usize) -> Self {
         Self::new(lunar_util::tables::SHENG_XIAO[index % Self::size() + 1])
@@ -2060,6 +2103,20 @@ impl CycleItem for Zodiac {
 
     fn size() -> usize {
         12
+    }
+}
+
+impl CycleItem for Duty {
+    fn from_cycle_index(index: usize) -> Self {
+        Self::from_index(index % Self::size())
+    }
+
+    fn index(&self) -> usize {
+        self.index()
+    }
+
+    fn size() -> usize {
+        lunar_util::tables::ZHI_XING.len() - 1
     }
 }
 

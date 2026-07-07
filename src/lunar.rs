@@ -1267,8 +1267,11 @@ impl Lunar {
         }
         lunar_util::tables::ZHI_XING[(offset + 1) as usize]
     }
-    pub fn duty(&self) -> Duty {
+    pub fn zhi_xing_info(&self) -> Duty {
         Duty::new(self.zhi_xing())
+    }
+    pub fn duty(&self) -> Duty {
+        self.zhi_xing_info()
     }
     pub fn xiu(&self) -> &'static str {
         // 查找键为 `{dayZhi}{week}`（如 "戌3"）；表键可能被 CJK 排版工具写作 "戌 3"，故两种都试。
