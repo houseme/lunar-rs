@@ -23,8 +23,8 @@
 
 | 优先级 | 任务编号 | 任务名称 | 状态 | 说明 |
 | --- | --- | --- | --- | --- |
-| `P2` | `Task 86` | 星曜循环对象一次性补齐 | `进行中` | 新增 `SixStar`、`SevenStar`、`Ecliptic`、`TwelveStar`、`TenStar` typed API。 |
-| `P2` | `Task 87` | 8 相天文月相对象设计与实现 | `未开始` | 新增独立对象，避免破坏现有农历日月相 `Phase`。 |
+| `P2` | `Task 86` | 星曜循环对象一次性补齐 | `已完成` | 新增 `SixStar`、`SevenStar`、`Ecliptic`、`TwelveStar`、`TenStar` typed API。 |
+| `P2` | `Task 87` | 8 相天文月相对象设计与实现 | `已完成` | 新增独立 `MoonPhase` / `MoonPhaseDay`，避免破坏现有农历日月相 `Phase`。 |
 | `P3` | `Task 88` | 年月周单位对象 API 差异评估 | `未开始` | 评估是否补 `YearUnit/MonthUnit/...` 或仅补文档映射。 |
 | `P3` | `Task 89` | 事件/节日 v1.5 API 兼容层评估 | `未开始` | 明确 `EventType` 与本地 `EventKind` 的关系。 |
 
@@ -36,4 +36,4 @@
 
 ## 当前建议
 
-本轮先完成 `Task 86` 并提交。`Task 87` 不建议直接改现有 `Phase`，更稳妥的做法是新增独立类型，例如 `MoonPhase` / `MoonPhaseDay`，并让 `Lunar` 暴露新入口，同时保留 `phase()` 的旧含义。
+`Task 86` 与 `Task 87` 已完成。本地继续保留 `phase()` 的旧含义，并通过 `moon_phase()` / `moon_phase_day()` 暴露对标 `tyme4rs::Phase` 的 8 相天文月相。后续进入 `Task 88` / `Task 89`，重点是 API 形态兼容评估，而不是大面积算法缺口。

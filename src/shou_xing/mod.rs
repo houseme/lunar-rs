@@ -9,4 +9,4 @@
 mod data;
 mod engine;
 
-pub use engine::{J2000, calc_qi, calc_shuo, qi_accurate_2};
+pub use engine::{J2000, calc_qi, calc_shuo, moon_phase_julian_day, qi_accurate_2};

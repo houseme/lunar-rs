@@ -480,3 +480,15 @@ pub fn qi_accurate_2(jd: f64) -> f64 {
         a
     }
 }
+
+/// 计算指定农历年附近第 `cycle_offset` 个 8 相月相的儒略日。
+///
+/// `phase_index` 取值按 `新月、蛾眉月、上弦月、盈凸月、满月、亏凸月、下弦月、残月`，
+/// 奇数项会由调用方按 `tyme4rs` 规则顺延一天。
+pub fn moon_phase_julian_day(lunar_year: i32, cycle_offset: i32, phase_index: usize) -> f64 {
+    const PHASE_OFFSETS: [f64; 4] = [0.0, 0.25, 0.5, 0.75];
+    let base = ((f64::from(lunar_year - 2000) * 365.2422 / 29.530_588_86).floor() as i32) + cycle_offset;
+    let angle = (f64::from(base) + PHASE_OFFSETS[(phase_index % 8) / 2]) * PI_2;
+    let t = msa_lon_t(angle) * 36525.0;
+    J2000 + ONE_THIRD + t - dt_t(t)
+}

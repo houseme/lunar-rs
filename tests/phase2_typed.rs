@@ -1,6 +1,6 @@
 use lunar_rs::{
     Constellation, CultureDay, CycleItem, Direction, Duty, EarthBranch, Element, God, GodLuck, HeavenStem,
-    HideHeavenStemType, Land, Lunar, LunarMonth, LunarYear, MinorRen, NamedCulture, Nayin, NineStar, Phase,
+    HideHeavenStemType, Land, Lunar, LunarMonth, LunarYear, MinorRen, MoonPhase, NamedCulture, Nayin, NineStar, Phase,
     PlumRainKind, SevenStar, SixStar, SixtyCycle, Solar, Taboo, TabooKind, TenStar, TwelveStar, Xun, YuanCycle,
     YunCycle, Zodiac,
 };
@@ -44,6 +44,11 @@ fn typed_primitives_map_names_and_relationships() {
 
     let phase = Phase::new("望");
     assert_eq!(phase.name(), "望");
+
+    let moon_phase = MoonPhase::from_name(2023, 8, "新月").unwrap();
+    assert_eq!(moon_phase.index(), 0);
+    assert_eq!(moon_phase.name(), "新月");
+    assert_eq!(moon_phase.next(1).unwrap().name(), "蛾眉月");
 
     let luck = GodLuck::from_name("凶").unwrap();
     assert_eq!(luck.index(), 1);
@@ -233,6 +238,11 @@ fn lunar_typed_api_exposes_cycle_zodiac_and_direction_objects() {
     let phase_day = lunar.phase_day();
     assert_eq!(phase_day.name(), lunar.phase().name());
     assert_eq!(CultureDay::day_index(&phase_day), Some(lunar.day()));
+
+    let moon_phase_day = Solar::from_ymd(2023, 9, 17).unwrap().lunar().moon_phase_day().unwrap();
+    assert_eq!(moon_phase_day.to_string(), "蛾眉月第2天");
+    assert_eq!(moon_phase_day.phase(), MoonPhase::from_name(2023, 8, "蛾眉月").unwrap());
+    assert_eq!(CultureDay::day_index(&moon_phase_day), Some(2));
 
     let peng_zu = lunar.peng_zu();
     assert_eq!(peng_zu.heaven_stem(), lunar.peng_zu_gan());

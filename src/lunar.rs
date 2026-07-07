@@ -6,9 +6,9 @@ use std::fmt;
 use crate::LunarError;
 use crate::culture::{
     ChongSha, Direction, DogDay, Duty, EarthBranch, FetusDay, FetusMonth, God, GodLuck, HeavenStem, LiuYao, Lu,
-    MinorRen, Nayin, PengZu, Phase, PhaseDay, Phenology, PhenologyDay, PlumRainDay, Season, SixtyCycle, SixtyCycleDay,
-    SixtyCycleHour, SixtyCycleMonth, SixtyCycleYear, SolarTermDay, Taboo, TabooKind, TaiPosition, TaiSuiPosition,
-    TianShen, Xiu, Xun, Zodiac,
+    MinorRen, MoonPhase, MoonPhaseDay, Nayin, PengZu, Phase, PhaseDay, Phenology, PhenologyDay, PlumRainDay, Season,
+    SixtyCycle, SixtyCycleDay, SixtyCycleHour, SixtyCycleMonth, SixtyCycleYear, SolarTermDay, Taboo, TabooKind,
+    TaiPosition, TaiSuiPosition, TianShen, Xiu, Xun, Zodiac,
 };
 use crate::eight_char::{EightChar, EightCharProvider};
 use crate::event::{
@@ -17,6 +17,7 @@ use crate::event::{
 };
 use crate::fu::Fu;
 use crate::jieqi::JieQi;
+use crate::lunar_month::LunarMonth;
 use crate::lunar_time::LunarTime;
 use crate::lunar_util;
 use crate::lunar_year::{JIE_QI, JIE_QI_IN_USE, LunarYear};
@@ -1384,6 +1385,27 @@ impl Lunar {
     }
     pub fn phase_day(&self) -> PhaseDay {
         PhaseDay::new(self.phase(), self.day)
+    }
+    pub fn moon_phase(&self) -> Option<MoonPhase> {
+        self.moon_phase_day().map(|phase_day| phase_day.phase())
+    }
+    pub fn moon_phase_day(&self) -> Option<MoonPhaseDay> {
+        let month = LunarMonth::from_ym(self.year, self.month)?.next(1)?;
+        let mut phase = MoonPhase::from_index(month.year(), month.month(), 0)?;
+        loop {
+            let Some(solar_day) = phase.solar_day() else {
+                break;
+            };
+            if !solar_day.is_after(&self.solar) {
+                break;
+            }
+            let Some(previous) = phase.next(-1) else {
+                break;
+            };
+            phase = previous;
+        }
+        let solar_day = phase.solar_day()?;
+        Some(MoonPhaseDay::new(phase, self.solar.subtract(&solar_day) + 1))
     }
     pub fn liu_yao(&self) -> &'static str {
         let month = self.month.abs();

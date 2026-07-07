@@ -5,7 +5,10 @@
 
 use std::fmt;
 
+use crate::lunar_month::LunarMonth;
 use crate::lunar_util;
+use crate::shou_xing;
+use crate::solar::Solar;
 use crate::solar_util;
 
 const DIRECTION_NAMES: [&str; 9] = ["北", "西南", "东", "东南", "中", "西北", "西", "东北", "南"];
@@ -28,6 +31,7 @@ const TERRAIN_NAMES: [&str; 12] = ["长生", "沐浴", "冠带", "临官", "帝�
 const LAND_NAMES: [&str; 9] = ["玄天", "朱天", "苍天", "阳天", "钧天", "幽天", "颢天", "变天", "炎天"];
 const YUAN_CYCLE_NAMES: [&str; 3] = ["上元", "中元", "下元"];
 const YUN_CYCLE_NAMES: [&str; 9] = ["一运", "二运", "三运", "四运", "五运", "六运", "七运", "八运", "九运"];
+const MOON_PHASE_NAMES: [&str; 8] = ["新月", "蛾眉月", "上弦月", "盈凸月", "满月", "亏凸月", "下弦月", "残月"];
 const SIX_STAR_NAMES: [&str; 6] = ["先胜", "友引", "先负", "佛灭", "大安", "赤口"];
 const SEVEN_STAR_NAMES: [&str; 7] = ["日", "月", "火", "水", "木", "金", "土"];
 const ECLIPTIC_NAMES: [&str; 2] = ["黄道", "黑道"];
@@ -422,6 +426,123 @@ impl PhaseDay {
 }
 
 impl fmt::Display for PhaseDay {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}第{}天", self.name(), self.day_index)
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct MoonPhase {
+    lunar_year: i32,
+    lunar_month: i32,
+    index: usize,
+}
+
+impl MoonPhase {
+    pub fn from_index(lunar_year: i32, lunar_month: i32, index: usize) -> Option<Self> {
+        let month = LunarMonth::from_ym(lunar_year, lunar_month)?;
+        let target_month = month.next((index / MOON_PHASE_NAMES.len()) as i32)?;
+        Some(Self {
+            lunar_year: target_month.year(),
+            lunar_month: target_month.month(),
+            index: index % MOON_PHASE_NAMES.len(),
+        })
+    }
+
+    pub fn from_name(lunar_year: i32, lunar_month: i32, name: &str) -> Option<Self> {
+        MOON_PHASE_NAMES
+            .iter()
+            .position(|value| *value == name)
+            .and_then(|index| Self::from_index(lunar_year, lunar_month, index))
+    }
+
+    pub const fn index(&self) -> usize {
+        self.index
+    }
+
+    pub fn name(&self) -> &'static str {
+        MOON_PHASE_NAMES[self.index % MOON_PHASE_NAMES.len()]
+    }
+
+    pub const fn lunar_year(&self) -> i32 {
+        self.lunar_year
+    }
+
+    pub const fn lunar_month(&self) -> i32 {
+        self.lunar_month
+    }
+
+    pub fn next(&self, offset: isize) -> Option<Self> {
+        let month = LunarMonth::from_ym(self.lunar_year, self.lunar_month)?;
+        let mut index = self.index as isize + offset;
+        let size = MOON_PHASE_NAMES.len() as isize;
+        let month_offset = index.div_euclid(size);
+        index = index.rem_euclid(size);
+        let target_month = month.next(month_offset as i32)?;
+        Self::from_index(target_month.year(), target_month.month(), index as usize)
+    }
+
+    fn start_solar_time(&self) -> Option<Solar> {
+        let month = LunarMonth::from_ym(self.lunar_year, self.lunar_month)?;
+        let first_day = month.first_solar_day();
+        let first_solar_day = Solar::from_ymd(first_day.year(), first_day.month(), first_day.day()).ok()?;
+        let mut cycle_offset = 0;
+        loop {
+            let jd = shou_xing::moon_phase_julian_day(self.lunar_year, cycle_offset, 0);
+            let solar = Solar::from_julian_day(jd);
+            let solar_day = Solar::from_ymd(solar.year(), solar.month(), solar.day()).ok()?;
+            if !solar_day.is_before(&first_solar_day) {
+                break;
+            }
+            cycle_offset += 1;
+        }
+        Some(Solar::from_julian_day(shou_xing::moon_phase_julian_day(self.lunar_year, cycle_offset, self.index)))
+    }
+
+    pub fn solar_time(&self) -> Option<Solar> {
+        let solar = self.start_solar_time()?;
+        Some(if self.index % 2 == 1 { solar.next_day(1) } else { solar })
+    }
+
+    pub fn solar_day(&self) -> Option<Solar> {
+        let solar = self.solar_time()?;
+        Solar::from_ymd(solar.year(), solar.month(), solar.day()).ok()
+    }
+}
+
+impl fmt::Display for MoonPhase {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.name())
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct MoonPhaseDay {
+    phase: MoonPhase,
+    day_index: i32,
+}
+
+impl MoonPhaseDay {
+    pub const fn new(phase: MoonPhase, day_index: i32) -> Self {
+        Self { phase, day_index }
+    }
+
+    pub const fn phase(&self) -> MoonPhase {
+        self.phase
+    }
+
+    pub const fn day_index_value(&self) -> i32 {
+        self.day_index
+    }
+
+    pub fn name(&self) -> &'static str {
+        self.phase.name()
+    }
+}
+
+impl fmt::Display for MoonPhaseDay {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}第{}天", self.name(), self.day_index)
     }
@@ -2424,6 +2545,8 @@ impl_named_culture!(
     SolarTermDay,
     PhenologyDay,
     PhaseDay,
+    MoonPhase,
+    MoonPhaseDay,
     LiuYao,
     YuanCycle,
     YunCycle,
@@ -2895,6 +3018,12 @@ impl CultureDay for PhenologyDay {
 }
 
 impl CultureDay for PhaseDay {
+    fn day_index(&self) -> Option<i32> {
+        Some(self.day_index_value())
+    }
+}
+
+impl CultureDay for MoonPhaseDay {
     fn day_index(&self) -> Option<i32> {
         Some(self.day_index_value())
     }
