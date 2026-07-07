@@ -280,7 +280,7 @@ impl LunarMonth {
     }
 
     pub fn get_fetus(&self) -> Option<FetusMonth> {
-        FetusMonth::from_month(self.get_month() as i32)
+        if self.is_leap() { None } else { FetusMonth::from_month(self.get_month() as i32) }
     }
 
     pub fn minor_ren(&self) -> MinorRen {

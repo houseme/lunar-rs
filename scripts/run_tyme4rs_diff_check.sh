@@ -36,7 +36,7 @@ use tyme4rs::tyme::festival::{LunarFestival, SolarFestival};
 use tyme4rs::tyme::lunar::{LunarDay, LunarHour, LunarMonth, LunarYear};
 use tyme4rs::tyme::solar::{SolarDay, SolarTime};
 
-const PROTOCOL_VERSION: &str = "7";
+const PROTOCOL_VERSION: &str = "8";
 const DIGITS: [&str; 10] = ["〇", "一", "二", "三", "四", "五", "六", "七", "八", "九"];
 
 fn usage(program: &str) -> String {
@@ -175,6 +175,11 @@ fn snapshot(solar_time: SolarTime) -> Vec<(&'static str, String)> {
         ("time_ganzhi", lunar_hour.get_sixty_cycle().get_name()),
         ("lunar_year_month_count", lunar_year.get_month_count().to_string()),
         ("lunar_year_leap_month", lunar_year.get_leap_month().to_string()),
+        ("lunar_year_sixty_cycle", lunar_year.get_sixty_cycle().get_name()),
+        (
+            "lunar_year_jupiter_direction",
+            lunar_year.get_jupiter_direction().get_name(),
+        ),
         ("lunar_year_twenty", lunar_year.get_twenty().get_name()),
         ("lunar_year_nine_star", lunar_year.get_nine_star().to_string()),
         ("lunar_month", lunar_month.get_month().to_string()),
@@ -189,9 +194,14 @@ fn snapshot(solar_time: SolarTime) -> Vec<(&'static str, String)> {
         ),
         ("lunar_month_minor_ren", lunar_month.get_minor_ren().get_name()),
         ("lunar_month_nine_star", lunar_month.get_nine_star().to_string()),
+        ("lunar_month_sixty_cycle", lunar_month.get_sixty_cycle().get_name()),
+        ("lunar_month_jupiter_direction", lunar_month.get_jupiter_direction().get_name()),
+        ("lunar_month_fetus", lunar_month.get_fetus().map_or_else(String::new, |fetus| fetus.get_name())),
         ("lunar_hour_name", lunar_hour.get_name()),
         ("lunar_hour_index_in_day", lunar_hour.get_index_in_day().to_string()),
         ("lunar_hour_minor_ren", lunar_hour.get_minor_ren().get_name()),
+        ("lunar_hour_twelve_star", lunar_hour.get_twelve_star().get_name()),
+        ("lunar_hour_nine_star", lunar_hour.get_nine_star().to_string()),
         ("lunar_six_star", lunar_day.get_six_star().get_name()),
         ("lunar_minor_ren", lunar_day.get_minor_ren().get_name()),
         ("lunar_twelve_star", lunar_day.get_twelve_star().get_name()),

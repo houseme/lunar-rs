@@ -37,6 +37,8 @@
 //! - `time_ganzhi`
 //! - `lunar_year_month_count`
 //! - `lunar_year_leap_month`
+//! - `lunar_year_sixty_cycle`
+//! - `lunar_year_jupiter_direction`
 //! - `lunar_year_twenty`
 //! - `lunar_year_nine_star`
 //! - `lunar_month`
@@ -45,9 +47,14 @@
 //! - `lunar_month_index_in_year`
 //! - `lunar_month_minor_ren`
 //! - `lunar_month_nine_star`
+//! - `lunar_month_sixty_cycle`
+//! - `lunar_month_jupiter_direction`
+//! - `lunar_month_fetus`
 //! - `lunar_hour_name`
 //! - `lunar_hour_index_in_day`
 //! - `lunar_hour_minor_ren`
+//! - `lunar_hour_twelve_star`
+//! - `lunar_hour_nine_star`
 //! - `lunar_six_star`
 //! - `lunar_minor_ren`
 //! - `lunar_twelve_star`
@@ -346,6 +353,16 @@ fn diff_reference_sample_matrix() {
             "lunar year leap month mismatch for {year}-{month}-{day}"
         );
         assert_eq!(
+            reference.get("lunar_year_sixty_cycle").map(String::as_str),
+            Some(lunar_year.get_sixty_cycle().name()),
+            "lunar year sixty cycle mismatch for {year}-{month}-{day}"
+        );
+        assert_eq!(
+            reference.get("lunar_year_jupiter_direction").map(String::as_str),
+            Some(lunar_year.get_jupiter_direction().name()),
+            "lunar year jupiter direction mismatch for {year}-{month}-{day}"
+        );
+        assert_eq!(
             reference.get("lunar_year_twenty").map(String::as_str),
             Some(lunar_year.get_twenty().name()),
             "lunar year twenty mismatch for {year}-{month}-{day}"
@@ -385,6 +402,21 @@ fn diff_reference_sample_matrix() {
             Some(lunar_month.map_or_else(String::new, |month| local_nine_star_name(month.get_nine_star())).as_str()),
             "lunar month nine star mismatch for {year}-{month}-{day}"
         );
+        assert_eq!(
+            reference.get("lunar_month_sixty_cycle").map(String::as_str),
+            Some(lunar_month.map_or_else(String::new, |month| month.get_sixty_cycle().name().to_string()).as_str()),
+            "lunar month sixty cycle mismatch for {year}-{month}-{day}"
+        );
+        assert_eq!(
+            reference.get("lunar_month_jupiter_direction").map(String::as_str),
+            Some(lunar_month.map_or_else(String::new, |month| month.get_jupiter_direction().name().to_string()).as_str()),
+            "lunar month jupiter direction mismatch for {year}-{month}-{day}"
+        );
+        assert_eq!(
+            reference.get("lunar_month_fetus").map(String::as_str),
+            Some(lunar_month.map_or_else(String::new, |month| month.get_fetus().map_or_else(String::new, |fetus| fetus.name().to_string())).as_str()),
+            "lunar month fetus mismatch for {year}-{month}-{day}"
+        );
         if reference_flavor == ReferenceFlavor::Local {
             let lunar_hour = solar.get_lunar_hour();
             assert_eq!(
@@ -401,6 +433,16 @@ fn diff_reference_sample_matrix() {
                 reference.get("lunar_hour_minor_ren").map(String::as_str),
                 Some(lunar_hour.get_minor_ren().name()),
                 "lunar hour minor ren mismatch for {year}-{month}-{day}"
+            );
+            assert_eq!(
+                reference.get("lunar_hour_twelve_star").map(String::as_str),
+                Some(lunar_hour.get_twelve_star().name()),
+                "lunar hour twelve star mismatch for {year}-{month}-{day}"
+            );
+            assert_eq!(
+                reference.get("lunar_hour_nine_star").map(String::as_str),
+                Some(local_nine_star_name(lunar_hour.get_nine_star()).as_str()),
+                "lunar hour nine star mismatch for {year}-{month}-{day}"
             );
         }
         if reference_flavor == ReferenceFlavor::Local {

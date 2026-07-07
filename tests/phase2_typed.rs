@@ -872,9 +872,12 @@ fn lunar_year_and_month_strict_getters_match_tyme_names() {
     assert_eq!(leap_month.get_sixty_cycle().name(), leap_month.sixty_cycle().name());
     assert_eq!(leap_month.get_jupiter_direction().name(), Direction::from_index(3).name());
     assert_eq!(leap_month.get_nine_star().to_string(), leap_month.nine_star().to_string());
-    assert_eq!(leap_month.get_fetus().unwrap().name(), leap_month.get_fetus().unwrap().position().name());
+    assert!(leap_month.get_fetus().is_none());
     assert_eq!(leap_month.get_minor_ren().name(), leap_month.minor_ren().name());
     assert_eq!(Solar::from_ymd(2020, 5, 24).unwrap().lunar().get_six_star().name(), "先负");
+
+    let normal_month = LunarMonth::from_ym(2020, 4).unwrap();
+    assert_eq!(normal_month.get_fetus().unwrap().name(), normal_month.get_fetus().unwrap().position().name());
 }
 
 #[test]

@@ -8,8 +8,13 @@
 
 `Task 107` 已把差分协议扩到 `v6`，补进了一批日级与时级稳定文化字段。继续收口时，最自然的一步就是把同样稳定、而且已经完成兼容层实现的 `LunarYear` / `LunarMonth` 字段纳入外部差分：
 
+- `lunar_year_sixty_cycle`
+- `lunar_year_jupiter_direction`
 - `lunar_year_twenty`
 - `lunar_year_nine_star`
+- `lunar_month_sixty_cycle`
+- `lunar_month_jupiter_direction`
+- `lunar_month_fetus`
 - `lunar_month_minor_ren`
 - `lunar_month_nine_star`
 
@@ -17,7 +22,7 @@
 
 ## 子任务
 
-1. 将差分协议扩到 `v7`。
+1. 将差分协议扩到 `v7`，随后继续演进到当前 `v8`。
 2. 更新本地 `solar_snapshot`，输出 `LunarYear` / `LunarMonth` 稳定文化字段。
 3. 更新 `tyme4rs` bridge 输出同名字段。
 4. 更新 `tests/differential.rs` 与 `tests/differential_protocol.rs`。
@@ -29,10 +34,22 @@
 - `bash scripts/run_tyme4rs_diff_check.sh`
 - `cargo test`
 
+当前状态补充：
+
+- 这一层差分协议已从计划中的 `v7` 继续演进到当前 `v8`；
+- `tyme4rs` 外部 bridge 已能跑通当前 `v8` 样例矩阵；
+- 对 `LunarYear/LunarMonth` 级别已确认稳定的字段，目前已覆盖：
+  - `sixty_cycle`
+  - `jupiter_direction`
+  - `twenty`
+  - `nine_star`
+  - `minor_ren`
+  - `fetus`
+
 ## 后续
 
 后续继续扩容时，建议优先顺序：
 
 1. `LunarHour` 级别继续补 `twelve_star` / `nine_star`
-2. `LunarMonth` / `LunarYear` 级别继续补 `jupiter_direction`
+2. 若仍需要扩容，再挑 `LunarMonth/LunarYear` 上展示稳定、且不会与 `tyme4rs` 口径分叉的字段
 3. 继续把 `phase` / `phase_day` 这类已确认有定义分叉的字段留在本地协议，不做外部硬断言
