@@ -173,9 +173,23 @@ fn tyme_core_day_time_and_term_names_are_available() {
     assert_eq!(solar_day.to_ymd(), "2024-02-10");
     assert_eq!(solar_time.to_ymd_hms(), "2024-02-10 08:30:00");
     assert_eq!(lunar_day.solar().to_ymd(), "2024-02-10");
+    assert_eq!(solar_time.get_year(), 2024);
+    assert_eq!(solar_time.get_month(), 2);
+    assert_eq!(solar_time.get_day(), 10);
+    assert_eq!(solar_time.get_hour(), 8);
+    assert_eq!(solar_time.get_minute(), 30);
+    assert_eq!(solar_time.get_second(), 0);
+    assert_eq!(solar_time.get_solar_day().to_ymd_hms(), "2024-02-10 00:00:00");
+    assert_eq!(solar_time.get_solar_time(), solar_time);
+    assert_eq!(solar_time.get_lunar_day().solar().to_ymd(), "2024-02-10");
+    assert_eq!(solar_time.get_week().name(), "六");
+    assert!(solar_time.is_after(&SolarTime::from_ymd_hms(2024, 2, 10, 8, 29, 59).unwrap()));
+    assert!(solar_time.is_before(&SolarTime::from_ymd_hms(2024, 2, 10, 8, 30, 1).unwrap()));
 
     let jd = JulianDay::from_ymd_hms(2024, 2, 10, 0, 0, 0).unwrap();
     assert_eq!(jd.solar_day().to_ymd(), "2024-02-10");
+    assert_eq!(jd.get_solar_day().to_ymd(), "2024-02-10");
+    assert_eq!(jd.get_solar_time().to_ymd_hms(), "2024-02-10 00:00:00");
     assert_eq!(jd.next(1).solar_day().to_ymd(), "2024-02-11");
 
     let term: SolarTerm = Solar::from_ymd(2024, 2, 4).unwrap().lunar().current_jie_qi().unwrap();
@@ -200,6 +214,10 @@ fn tyme_core_day_time_and_term_names_are_available() {
     assert_eq!(da_xue.next(1).get_solar_day().to_ymd(), "2023-12-22");
     assert_eq!(SolarTerm::from_name(2023, "大雪").unwrap().get_solar_day().to_ymd(), "2023-12-07");
     assert_eq!(SolarTerm::new(2024, "未知"), None);
+
+    let term_time = SolarTime::from_ymd_hms(2023, 12, 7, 18, 0, 0).unwrap();
+    assert_eq!(term_time.get_term().name(), "大雪");
+    assert_eq!(term_time.get_term_day().unwrap().name(), "大雪");
 }
 
 #[test]

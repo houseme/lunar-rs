@@ -9,7 +9,7 @@ use crate::auc::Auc;
 use crate::bengali::Bengali;
 use crate::byzantine::Byzantine;
 use crate::coptic::Coptic;
-use crate::culture::{HideHeavenStem, HideHeavenStemDay, HideHeavenStemType, Nine, NineDay, Week};
+use crate::culture::{HideHeavenStem, HideHeavenStemDay, HideHeavenStemType, Nine, NineDay, SolarTermDay, Week};
 use crate::dangi::Dangi;
 use crate::ethiopian::Ethiopian;
 use crate::event::{
@@ -39,7 +39,7 @@ use crate::solar_util;
 use crate::thai_buddhist::ThaiBuddhist;
 use crate::thai_solar::ThaiSolar;
 use crate::venetian::Venetian;
-use crate::{Constellation, LunarError};
+use crate::{Constellation, JieQi, JulianDay, LunarError};
 
 const HIDE_HEAVEN_STEM_DAY_DATA: &str = "93705542220504xx1513904541632524533533105544806564xx7573304542018584xx95";
 const HIDE_HEAVEN_STEM_DAY_COUNTS: [usize; 6] = [3, 5, 7, 9, 10, 30];
@@ -158,24 +158,48 @@ impl Solar {
         self.year
     }
     #[inline]
+    pub const fn get_year(&self) -> i32 {
+        self.year()
+    }
+    #[inline]
     pub const fn month(&self) -> i32 {
         self.month
+    }
+    #[inline]
+    pub const fn get_month(&self) -> i32 {
+        self.month()
     }
     #[inline]
     pub const fn day(&self) -> i32 {
         self.day
     }
     #[inline]
+    pub const fn get_day(&self) -> i32 {
+        self.day()
+    }
+    #[inline]
     pub const fn hour(&self) -> i32 {
         self.hour
+    }
+    #[inline]
+    pub const fn get_hour(&self) -> i32 {
+        self.hour()
     }
     #[inline]
     pub const fn minute(&self) -> i32 {
         self.minute
     }
     #[inline]
+    pub const fn get_minute(&self) -> i32 {
+        self.minute()
+    }
+    #[inline]
     pub const fn second(&self) -> i32 {
         self.second
+    }
+    #[inline]
+    pub const fn get_second(&self) -> i32 {
+        self.second()
     }
 
     #[inline]
@@ -198,6 +222,11 @@ impl Solar {
     #[inline]
     pub fn week_info(&self) -> Week {
         Week::from_index(self.week() as usize)
+    }
+
+    #[inline]
+    pub fn get_week(&self) -> Week {
+        self.week_info()
     }
 
     /// 星期几（显式语言版本，需启用 `i18n` feature）。
@@ -258,9 +287,42 @@ impl Solar {
         solar_util::julian_day(self.year, self.month, self.day, self.hour, self.minute, self.second)
     }
 
+    #[inline]
+    pub fn get_julian_day(&self) -> JulianDay {
+        JulianDay::from_julian_day(self.julian_day())
+    }
+
+    #[inline]
+    pub fn get_solar_time(&self) -> Self {
+        *self
+    }
+
+    pub fn get_solar_day(&self) -> Self {
+        Self::from_ymd(self.year, self.month, self.day).unwrap_or(*self)
+    }
+
     /// 转农历。
     pub fn lunar(&self) -> Lunar {
         Lunar::from_solar(*self)
+    }
+
+    #[inline]
+    pub fn get_lunar_day(&self) -> Lunar {
+        self.lunar()
+    }
+
+    pub fn get_term(&self) -> JieQi {
+        let lunar = self.lunar();
+        let mut term =
+            lunar.current_jie_qi().or_else(|| lunar.prev_jie_qi()).unwrap_or_else(|| JieQi::from_index(self.year, 0));
+        if self.julian_day() < term.solar().julian_day() {
+            term = term.next(-1);
+        }
+        term
+    }
+
+    pub fn get_term_day(&self) -> Option<SolarTermDay> {
+        self.lunar().solar_term_day()
     }
 
     /// 转回历（公历民用回历）。

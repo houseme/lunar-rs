@@ -37,9 +37,17 @@ impl JulianDay {
         Solar::from_julian_day(self.day)
     }
 
+    pub fn get_solar_time(&self) -> Solar {
+        self.solar_time()
+    }
+
     pub fn solar_day(&self) -> Solar {
         let solar = self.solar_time();
         Solar::from_ymd(solar.year(), solar.month(), solar.day()).unwrap_or(solar)
+    }
+
+    pub fn get_solar_day(&self) -> Solar {
+        self.solar_day()
     }
 
     pub fn next(&self, days: i32) -> Self {
