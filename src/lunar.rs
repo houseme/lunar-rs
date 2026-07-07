@@ -60,6 +60,23 @@ pub struct Lunar {
     solar: Solar,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum JieQiFilter {
+    All,
+    Jie,
+    Qi,
+}
+
+impl JieQiFilter {
+    const fn matches(self, index: usize) -> bool {
+        match self {
+            Self::All => true,
+            Self::Jie => index % 2 == 0,
+            Self::Qi => index % 2 == 1,
+        }
+    }
+}
+
 fn convert_jie_qi(name: &str) -> &'static str {
     match name {
         "DONG_ZHI" => "冬至",
@@ -86,6 +103,26 @@ fn static_all_jieqi(name: &str) -> &'static str {
     }
     // 兜底（不应到达）
     "冬至"
+}
+
+fn same_calendar_day(a: Solar, b: Solar) -> bool {
+    (a.year(), a.month(), a.day()) == (b.year(), b.month(), b.day())
+}
+
+fn day_before(a: Solar, b: Solar) -> bool {
+    (a.year(), a.month(), a.day()) < (b.year(), b.month(), b.day())
+}
+
+fn day_after(a: Solar, b: Solar) -> bool {
+    (a.year(), a.month(), a.day()) > (b.year(), b.month(), b.day())
+}
+
+fn is_before_mode(a: Solar, b: Solar, whole_day: bool) -> bool {
+    if whole_day { day_before(a, b) } else { a.is_before(&b) }
+}
+
+fn is_after_mode(a: Solar, b: Solar, whole_day: bool) -> bool {
+    if whole_day { day_after(a, b) } else { a.is_after(&b) }
 }
 
 impl Lunar {
@@ -272,8 +309,6 @@ impl Lunar {
     }
 
     fn compute_month(&mut self) {
-        let ymd = self.solar.to_ymd();
-        let ymdhms = self.solar.to_ymd_hms();
         let size = JIE_QI_IN_USE.len();
 
         let mut start: Option<Solar> = None;
@@ -282,8 +317,7 @@ impl Lunar {
         while i < size {
             let jie = JIE_QI_IN_USE[i];
             let end = self.jq(jie);
-            let symd = start.map_or_else(|| ymd.clone(), |s| s.to_ymd());
-            if ymd >= symd && ymd < end.to_ymd() {
+            if start.is_some_and(|value| same_calendar_day(value, self.solar)) || day_before(self.solar, end) {
                 break;
             }
             start = Some(end);
@@ -303,17 +337,14 @@ impl Lunar {
         }
         self.month_zhi_index = (add + lunar_util::BASE_MONTH_ZHI_INDEX) % 12;
 
-        start = None;
         index = -3;
         i = 0;
         while i < size {
             let jie = JIE_QI_IN_USE[i];
             let end = self.jq(jie);
-            let stime = start.map_or_else(|| ymdhms.clone(), |s| s.to_ymd_hms());
-            if ymdhms >= stime && ymdhms < end.to_ymd_hms() {
+            if self.solar.is_before(&end) {
                 break;
             }
-            start = Some(end);
             index += 1;
             i += 2;
         }
@@ -773,49 +804,13 @@ impl Lunar {
 
     // ---- 节气 ----
     pub fn jie(&self) -> &'static str {
-        let mut jie = "冬至"; // 空字符串等价：用冬至占位，最终若没找到由长度判断
-        let mut found = false;
-        let mut i = 0;
-        while i < JIE_QI_IN_USE.len() {
-            let key = JIE_QI_IN_USE[i];
-            let d = self.jq(key);
-            if d.year() == self.solar.year() && d.month() == self.solar.month() && d.day() == self.solar.day() {
-                jie = key;
-                found = true;
-                break;
-            }
-            i += 2;
-        }
-        if found { convert_jie_qi(jie) } else { "" }
+        self.current_jie_qi_name(JieQiFilter::Jie).unwrap_or("")
     }
     pub fn qi(&self) -> &'static str {
-        let mut qi = "冬至";
-        let mut found = false;
-        let mut i = 1;
-        while i < JIE_QI_IN_USE.len() {
-            let key = JIE_QI_IN_USE[i];
-            let d = self.jq(key);
-            if d.year() == self.solar.year() && d.month() == self.solar.month() && d.day() == self.solar.day() {
-                qi = key;
-                found = true;
-                break;
-            }
-            i += 2;
-        }
-        if found { convert_jie_qi(qi) } else { "" }
+        self.current_jie_qi_name(JieQiFilter::Qi).unwrap_or("")
     }
     pub fn jie_qi(&self) -> &'static str {
-        let mut name = "冬至";
-        let mut found = false;
-        for key in JIE_QI_IN_USE {
-            let d = self.jq(key);
-            if d.year() == self.solar.year() && d.month() == self.solar.month() && d.day() == self.solar.day() {
-                name = key;
-                found = true;
-                break;
-            }
-        }
-        if found { convert_jie_qi(name) } else { "" }
+        self.current_jie_qi_name(JieQiFilter::All).unwrap_or("")
     }
     pub const fn jie_qi_table(&self) -> &HashMap<String, Solar> {
         &self.jie_qi
@@ -828,39 +823,52 @@ impl Lunar {
         if name.is_empty() { None } else { Some(JieQi::from_solar(name, self.solar)) }
     }
 
-    fn near_jie_qi(&self, forward: bool, conditions: Option<&[&'static str]>, whole_day: bool) -> Option<JieQi> {
-        let filters: HashMap<&'static str, bool> =
-            conditions.map(|c| c.iter().map(|x| (*x, true)).collect()).unwrap_or_default();
-        let filter = !filters.is_empty();
-        let today = if whole_day { self.solar.to_ymd() } else { self.solar.to_ymd_hms() };
-        let mut near: Option<(&'static str, Solar)> = None;
-        for key in JIE_QI_IN_USE {
-            let jq_name = convert_jie_qi(key);
-            if filter && !filters.contains_key(jq_name) {
+    fn current_jie_qi_name(&self, filter: JieQiFilter) -> Option<&'static str> {
+        for (index, key) in JIE_QI_IN_USE.iter().enumerate() {
+            if !filter.matches(index) {
                 continue;
             }
+            if same_calendar_day(self.jq(key), self.solar) {
+                return Some(convert_jie_qi(key));
+            }
+        }
+        None
+    }
+
+    fn near_jie_qi(&self, forward: bool, filter: JieQiFilter, whole_day: bool) -> Option<JieQi> {
+        let mut near: Option<(&'static str, Solar)> = None;
+        for (index, key) in JIE_QI_IN_USE.iter().enumerate() {
+            if !filter.matches(index) {
+                continue;
+            }
+            let jq_name = convert_jie_qi(key);
             let solar = self.jq(key);
-            let day = if whole_day { solar.to_ymd() } else { solar.to_ymd_hms() };
             if forward {
-                if day <= today {
+                if !is_after_mode(solar, self.solar, whole_day) {
                     continue;
                 }
                 near = match near {
                     None => Some((jq_name, solar)),
                     Some((_, n)) => {
-                        let near_day = if whole_day { n.to_ymd() } else { n.to_ymd_hms() };
-                        if day < near_day { Some((jq_name, solar)) } else { Some((jq_name, n)) }
+                        if is_before_mode(solar, n, whole_day) {
+                            Some((jq_name, solar))
+                        } else {
+                            Some((jq_name, n))
+                        }
                     }
                 };
             } else {
-                if day > today {
+                if is_after_mode(solar, self.solar, whole_day) {
                     continue;
                 }
                 near = match near {
                     None => Some((jq_name, solar)),
                     Some((_, n)) => {
-                        let near_day = if whole_day { n.to_ymd() } else { n.to_ymd_hms() };
-                        if day > near_day { Some((jq_name, solar)) } else { Some((jq_name, n)) }
+                        if is_after_mode(solar, n, whole_day) {
+                            Some((jq_name, solar))
+                        } else {
+                            Some((jq_name, n))
+                        }
                     }
                 };
             }
@@ -872,41 +880,37 @@ impl Lunar {
         self.next_jie_by_whole_day(false)
     }
     pub fn next_jie_by_whole_day(&self, whole_day: bool) -> Option<JieQi> {
-        let conds: Vec<&'static str> = (0..JIE_QI_IN_USE.len() / 2).map(|i| JIE_QI_IN_USE[i * 2]).collect();
-        self.near_jie_qi(true, Some(&conds), whole_day)
+        self.near_jie_qi(true, JieQiFilter::Jie, whole_day)
     }
     pub fn prev_jie(&self) -> Option<JieQi> {
         self.prev_jie_by_whole_day(false)
     }
     pub fn prev_jie_by_whole_day(&self, whole_day: bool) -> Option<JieQi> {
-        let conds: Vec<&'static str> = (0..JIE_QI_IN_USE.len() / 2).map(|i| JIE_QI_IN_USE[i * 2]).collect();
-        self.near_jie_qi(false, Some(&conds), whole_day)
+        self.near_jie_qi(false, JieQiFilter::Jie, whole_day)
     }
     pub fn next_qi(&self) -> Option<JieQi> {
         self.next_qi_by_whole_day(false)
     }
     pub fn next_qi_by_whole_day(&self, whole_day: bool) -> Option<JieQi> {
-        let conds: Vec<&'static str> = (0..JIE_QI_IN_USE.len() / 2).map(|i| JIE_QI_IN_USE[i * 2 + 1]).collect();
-        self.near_jie_qi(true, Some(&conds), whole_day)
+        self.near_jie_qi(true, JieQiFilter::Qi, whole_day)
     }
     pub fn prev_qi(&self) -> Option<JieQi> {
         self.prev_qi_by_whole_day(false)
     }
     pub fn prev_qi_by_whole_day(&self, whole_day: bool) -> Option<JieQi> {
-        let conds: Vec<&'static str> = (0..JIE_QI_IN_USE.len() / 2).map(|i| JIE_QI_IN_USE[i * 2 + 1]).collect();
-        self.near_jie_qi(false, Some(&conds), whole_day)
+        self.near_jie_qi(false, JieQiFilter::Qi, whole_day)
     }
     pub fn next_jie_qi(&self) -> Option<JieQi> {
         self.next_jie_qi_by_whole_day(false)
     }
     pub fn next_jie_qi_by_whole_day(&self, whole_day: bool) -> Option<JieQi> {
-        self.near_jie_qi(true, None, whole_day)
+        self.near_jie_qi(true, JieQiFilter::All, whole_day)
     }
     pub fn prev_jie_qi(&self) -> Option<JieQi> {
         self.prev_jie_qi_by_whole_day(false)
     }
     pub fn prev_jie_qi_by_whole_day(&self, whole_day: bool) -> Option<JieQi> {
-        self.near_jie_qi(false, None, whole_day)
+        self.near_jie_qi(false, JieQiFilter::All, whole_day)
     }
 
     // ---- 节日 ----
@@ -964,12 +968,8 @@ impl Lunar {
         if let Some(jieqi) = self.current_jie_qi() {
             events.push(JieQiEvent::new(jieqi, CalendarKind::Lunar).to_event());
         }
-        for holiday in crate::holiday_util::get_holidays(&format!(
-            "{:04}{:02}{:02}",
-            self.solar.year(),
-            self.solar.month(),
-            self.solar.day()
-        )) {
+        for holiday in crate::holiday_util::get_holidays_by_ymd(self.solar.year(), self.solar.month(), self.solar.day())
+        {
             events.push(HolidayEvent::new(holiday, self.solar, CalendarKind::Lunar).to_event());
         }
         events.extend(holiday_period_events_for_day(self.solar));

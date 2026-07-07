@@ -31,8 +31,16 @@ impl FotoYear {
         self.year
     }
 
+    pub const fn get_year(&self) -> i32 {
+        self.year()
+    }
+
     pub const fn lunar_year(&self) -> i32 {
         self.year + DEAD_YEAR - 1
+    }
+
+    pub const fn get_lunar_year(&self) -> i32 {
+        self.lunar_year()
     }
 
     pub fn first_month(&self) -> FotoMonth {
@@ -40,21 +48,41 @@ impl FotoYear {
         FotoMonth::from_lunar_month(month)
     }
 
+    pub fn get_first_month(&self) -> FotoMonth {
+        self.first_month()
+    }
+
     pub fn last_month(&self) -> FotoMonth {
         let month = LunarYear::from_year(self.lunar_year()).months_in_year().last().unwrap();
         FotoMonth::from_lunar_month(month)
+    }
+
+    pub fn get_last_month(&self) -> FotoMonth {
+        self.last_month()
     }
 
     pub fn months(&self) -> Vec<FotoMonth> {
         LunarYear::from_year(self.lunar_year()).months_in_year().map(FotoMonth::from_lunar_month).collect()
     }
 
+    pub fn get_months(&self) -> Vec<FotoMonth> {
+        self.months()
+    }
+
     pub fn first_solar_day(&self) -> Solar {
         self.first_month().first_solar_day()
     }
 
+    pub fn get_first_solar_day(&self) -> Solar {
+        self.first_solar_day()
+    }
+
     pub fn last_solar_day(&self) -> Solar {
         self.last_month().last_solar_day()
+    }
+
+    pub fn get_last_solar_day(&self) -> Solar {
+        self.last_solar_day()
     }
 
     pub fn contains_solar(&self, solar: Solar) -> bool {
@@ -115,8 +143,16 @@ impl FotoMonth {
         self.lunar_year - DEAD_YEAR + 1
     }
 
+    pub const fn get_year(&self) -> i32 {
+        self.year()
+    }
+
     pub const fn month(&self) -> i32 {
         self.month
+    }
+
+    pub const fn get_month(&self) -> i32 {
+        self.month()
     }
 
     pub const fn is_leap(&self) -> bool {
@@ -127,8 +163,16 @@ impl FotoMonth {
         self.day_count
     }
 
+    pub const fn get_day_count(&self) -> i32 {
+        self.day_count()
+    }
+
     pub const fn index(&self) -> i32 {
         self.index
+    }
+
+    pub const fn get_index(&self) -> i32 {
+        self.index()
     }
 
     pub fn name(&self) -> String {
@@ -139,12 +183,24 @@ impl FotoMonth {
         }
     }
 
+    pub fn get_name(&self) -> String {
+        self.name()
+    }
+
     pub fn first_solar_day(&self) -> Solar {
         Solar::from_julian_day(f64::from_bits(self.first_julian_day_bits))
     }
 
+    pub fn get_first_solar_day(&self) -> Solar {
+        self.first_solar_day()
+    }
+
     pub fn last_solar_day(&self) -> Solar {
         self.first_solar_day().next_day(self.day_count() - 1)
+    }
+
+    pub fn get_last_solar_day(&self) -> Solar {
+        self.last_solar_day()
     }
 
     pub fn contains_solar(&self, solar: Solar) -> bool {
@@ -218,28 +274,22 @@ impl FotoFestival {
     }
 
     pub fn to_event(&self, solar: crate::Solar) -> Event {
-        let mut detail = format!("result={}", self.result());
-        if !self.remark().is_empty() {
-            detail.push_str(" remark=");
-            detail.push_str(self.remark());
-        }
-        detail.push_str(&format!(" every_month={}", self.every_month()));
         Event::with_meta(
             EventKind::FotoFestival,
             CalendarKind::Foto,
             EventSource::BuiltInFestival,
-            self.name(),
+            self.name().to_string(),
             solar,
-            Some(detail),
+            Some(crate::event::EventDetail::FotoFestival {
+                result: self.result.clone().into_boxed_str().into(),
+                remark: (!self.remark.is_empty()).then(|| self.remark.clone().into_boxed_str().into()),
+                every_month: self.every_month(),
+            }),
             70,
-            Some(format!("foto:{}:{}", solar.to_ymd(), self.name())),
+            Some(crate::event::EventSourceId::NamedSolar { prefix: "foto", solar }),
             true,
             true,
-            vec![
-                "foto".to_string(),
-                "festival".to_string(),
-                if self.every_month() { "recurring".to_string() } else { "single_day".to_string() },
-            ],
+            ["foto", "festival", if self.every_month() { "recurring" } else { "single_day" }],
         )
     }
 }

@@ -260,11 +260,16 @@ fn tyme_core_day_time_and_term_names_are_available() {
     let indexed_festival = SolarFestival::from_index(2024, 3).unwrap();
     assert_eq!(indexed_festival.next(6).unwrap().get_name(), "国庆节");
     assert!(SolarFestival::from_ymd(1939, 5, 4).is_none());
+    assert!(SolarFestival::from_ymd(1949, 10, 1).is_none());
+    assert_eq!(SolarFestival::from_ymd(1950, 10, 1).unwrap().get_name(), "国庆节");
 
     let lunar_festival = Lunar::from_ymd(2024, 1, 1).unwrap().get_festival().unwrap();
     assert_eq!(lunar_festival.get_name(), "春节");
     assert_eq!(lunar_festival.get_day().solar().to_ymd(), "2024-02-10");
     assert_eq!(lunar_festival.to_event().name(), "春节");
+    let winter_festival = Solar::from_ymd(2021, 12, 21).unwrap().lunar().get_festival().unwrap();
+    assert_eq!(winter_festival.get_name(), "冬至节");
+    assert_eq!(winter_festival.get_solar_term().unwrap().name(), "冬至");
     assert_eq!(LunarFestival::from_index(2021, 12).unwrap().get_name(), "除夕");
     assert!(LunarFestival::from_index(2024, 4).unwrap().get_solar_term().is_some());
 

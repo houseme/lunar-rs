@@ -45,10 +45,24 @@ mod common;
 
 const REF_BIN_ENV: &str = "LUNAR_RS_DIFF_REF_BIN";
 const REF_CASES_ENV: &str = "LUNAR_RS_DIFF_CASES";
+const REF_FLAVOR_ENV: &str = "LUNAR_RS_DIFF_REF_FLAVOR";
 const DEFAULT_CASES_PATH: &str = "tests/fixtures/differential_cases.txt";
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum ReferenceFlavor {
+    Local,
+    Tyme4rs,
+}
 
 fn load_reference_bin() -> Option<String> {
     env::var(REF_BIN_ENV).ok().filter(|value| !value.trim().is_empty())
+}
+
+fn load_reference_flavor() -> ReferenceFlavor {
+    match env::var(REF_FLAVOR_ENV).ok().as_deref() {
+        Some("tyme4rs") => ReferenceFlavor::Tyme4rs,
+        _ => ReferenceFlavor::Local,
+    }
 }
 
 fn load_case_path() -> PathBuf {
@@ -131,10 +145,15 @@ fn assert_protocol_shape(reference: &HashMap<String, String>) {
     assert_eq!(reference.get("calendar").map(String::as_str), Some("solar"), "reference calendar kind mismatch");
 }
 
+fn normalize_lunar_compat(value: &str) -> String {
+    norm(value).replace("冬月", "十一月").replace("腊月", "十二月")
+}
+
 #[test]
 #[ignore = "requires an external reference binary configured via LUNAR_RS_DIFF_REF_BIN"]
 fn diff_reference_sample_matrix() {
     let reference_bin = load_reference_bin().expect("set LUNAR_RS_DIFF_REF_BIN to run differential tests");
+    let reference_flavor = load_reference_flavor();
     let case_path = load_case_path();
     let cases = load_cases(&case_path);
 
@@ -151,16 +170,26 @@ fn diff_reference_sample_matrix() {
             Some(solar.to_ymd_hms().as_str()),
             "solar mismatch for {year}-{month}-{day}"
         );
-        assert_eq!(
-            reference.get("solar_full").map(|value| norm(value)),
-            Some(norm(&solar.to_full_string())),
-            "solar full string mismatch for {year}-{month}-{day}"
-        );
-        assert_eq!(
-            reference.get("lunar").map(String::as_str),
-            Some(lunar.to_string().as_str()),
-            "lunar mismatch for {year}-{month}-{day}"
-        );
+        if reference_flavor == ReferenceFlavor::Local {
+            assert_eq!(
+                reference.get("solar_full").map(|value| norm(value)),
+                Some(norm(&solar.to_full_string())),
+                "solar full string mismatch for {year}-{month}-{day}"
+            );
+        }
+        if reference_flavor == ReferenceFlavor::Tyme4rs {
+            assert_eq!(
+                reference.get("lunar").map(|value| normalize_lunar_compat(value)),
+                Some(normalize_lunar_compat(&lunar.to_string())),
+                "lunar mismatch for {year}-{month}-{day}"
+            );
+        } else {
+            assert_eq!(
+                reference.get("lunar").map(String::as_str),
+                Some(lunar.to_string().as_str()),
+                "lunar mismatch for {year}-{month}-{day}"
+            );
+        }
         assert_eq!(
             reference.get("solar_festival").map(String::as_str),
             Some(solar.get_festival().map_or_else(String::new, |festival| festival.get_name()).as_str()),
@@ -236,11 +265,13 @@ fn diff_reference_sample_matrix() {
             Some(lunar_month.map_or_else(String::new, |month| month.get_index_in_year().to_string()).as_str()),
             "lunar month index in year mismatch for {year}-{month}-{day}"
         );
-        assert_eq!(
-            reference.get("lunar_full").map(|value| norm(value)),
-            Some(norm(&lunar.to_full_string())),
-            "full string mismatch for {year}-{month}-{day}"
-        );
+        if reference_flavor == ReferenceFlavor::Local {
+            assert_eq!(
+                reference.get("lunar_full").map(|value| norm(value)),
+                Some(norm(&lunar.to_full_string())),
+                "full string mismatch for {year}-{month}-{day}"
+            );
+        }
     }
 }
 

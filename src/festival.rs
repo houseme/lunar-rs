@@ -2,7 +2,7 @@
 
 use std::fmt;
 
-use crate::event::{CalendarKind, Event, EventKind, EventSource};
+use crate::event::{CalendarKind, Event, EventDetail, EventKind, EventSource, EventSourceId};
 use crate::{JieQi, Lunar, LunarMonth, Solar};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -23,7 +23,7 @@ const SOLAR_FESTIVALS: &[SolarFestivalRule] = &[
     SolarFestivalRule { name: "建党节", month: 7, day: 1, start_year: 1941 },
     SolarFestivalRule { name: "建军节", month: 8, day: 1, start_year: 1933 },
     SolarFestivalRule { name: "教师节", month: 9, day: 10, start_year: 1985 },
-    SolarFestivalRule { name: "国庆节", month: 10, day: 1, start_year: 1949 },
+    SolarFestivalRule { name: "国庆节", month: 10, day: 1, start_year: 1950 },
 ];
 
 /// 公历现代节日对象。
@@ -95,12 +95,12 @@ impl SolarFestival {
             EventSource::BuiltInFestival,
             self.name(),
             self.day,
-            Some(format!("index={} start_year={}", self.index(), self.get_start_year())),
+            Some(EventDetail::SolarFestivalCompat { index: self.index(), start_year: self.get_start_year() }),
             30,
-            Some(format!("solar-festival:{}:{}", self.day.to_ymd(), self.name())),
+            Some(EventSourceId::NamedSolar { prefix: "solar-festival", solar: self.day }),
             true,
             true,
-            vec!["solar".to_string(), "festival".to_string(), "tyme_compat".to_string()],
+            ["solar", "festival", "tyme_compat"],
         )
     }
 }
@@ -148,8 +148,24 @@ pub struct LunarFestival {
 impl LunarFestival {
     pub fn from_ymd(year: i32, month: i32, day: i32) -> Option<Self> {
         let lunar = Lunar::from_ymd(year, month, day).ok()?;
-        LUNAR_FESTIVALS.iter().enumerate().find_map(|(index, _)| {
-            Self::from_index(year, index).filter(|festival| {
+        let solar_year = lunar.solar().year();
+        LUNAR_FESTIVALS.iter().enumerate().find_map(|(index, rule)| {
+            if let LunarFestivalRule::SolarTerm { term, .. } = rule
+                && lunar.jie_qi() == *term
+            {
+                return Some(Self {
+                    index,
+                    year: lunar.year(),
+                    month: lunar.month(),
+                    day: lunar.day(),
+                    solar: lunar.solar(),
+                });
+            }
+            let base_year = match rule {
+                LunarFestivalRule::SolarTerm { .. } => solar_year,
+                LunarFestivalRule::LunarDay { .. } | LunarFestivalRule::NewYearEve => year,
+            };
+            Self::from_index(base_year, index).filter(|festival| {
                 festival.year == lunar.year() && festival.month == lunar.month() && festival.day == lunar.day()
             })
         })
@@ -221,12 +237,15 @@ impl LunarFestival {
             EventSource::BuiltInFestival,
             self.name(),
             self.solar,
-            Some(format!("index={} lunar={}", self.index(), self.day())),
+            Some(EventDetail::LunarFestivalCompat {
+                index: self.index(),
+                lunar: self.day().to_string().into_boxed_str().into(),
+            }),
             50,
-            Some(format!("lunar-festival:{}:{}", self.solar.to_ymd(), self.name())),
+            Some(EventSourceId::NamedSolar { prefix: "lunar-festival", solar: self.solar }),
             true,
             true,
-            vec!["lunar".to_string(), "festival".to_string(), "tyme_compat".to_string()],
+            ["lunar", "festival", "tyme_compat"],
         )
     }
 }

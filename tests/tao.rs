@@ -11,9 +11,16 @@ fn tao_year_and_month_template_layers_are_available() {
     assert_eq!(tao.get_year(), 4718);
     assert_eq!(tao.get_month(), 11);
     assert_eq!(tao.get_day(), 18);
+    assert_eq!(year.get_year(), 4718);
     assert_eq!(year.lunar_year(), 2021);
+    assert_eq!(year.get_lunar_year(), 2021);
     assert!(year.contains_solar(Solar::from_ymd(2021, 12, 21).unwrap()));
     assert!(!year.months().is_empty());
+    assert_eq!(year.get_first_month().year(), year.first_month().year());
+    assert_eq!(year.get_last_month().year(), year.last_month().year());
+    assert_eq!(year.get_months().len(), year.months().len());
+    assert_eq!(year.get_first_solar_day().to_ymd(), year.first_solar_day().to_ymd());
+    assert_eq!(year.get_last_solar_day().to_ymd(), year.last_solar_day().to_ymd());
     assert_eq!(tao.get_tao_year().year(), 4718);
     assert_eq!(tao.get_tao_month().month(), 11);
     assert_eq!(tao.get_year_in_chinese(), tao.year_in_chinese());
@@ -22,9 +29,16 @@ fn tao_year_and_month_template_layers_are_available() {
     assert_eq!(tao.get_lunar().solar().to_ymd(), "2021-12-21");
 
     assert_eq!(month.year(), 4718);
+    assert_eq!(month.get_year(), 4718);
     assert_eq!(month.month(), 11);
+    assert_eq!(month.get_month(), 11);
     assert!(!month.is_leap());
     assert_eq!(month.day_count(), 30);
+    assert_eq!(month.get_day_count(), 30);
+    assert_eq!(month.get_index(), month.index());
+    assert_eq!(month.get_name(), month.name());
+    assert_eq!(month.get_first_solar_day().to_ymd(), month.first_solar_day().to_ymd());
+    assert_eq!(month.get_last_solar_day().to_ymd(), month.last_solar_day().to_ymd());
     assert!(month.contains_solar(Solar::from_ymd(2021, 12, 21).unwrap()));
 }
 

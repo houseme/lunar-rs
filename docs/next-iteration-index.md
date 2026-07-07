@@ -257,5 +257,7 @@
 | `P3` | `Task 101` | README/API 迁移示例同步 | `已完成` | [docs/tasks/101-phase-next-readme-migration-examples.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/101-phase-next-readme-migration-examples.md) |
 | `P2` | `Task 102` | 差分协议与样例矩阵扩容 | `已完成` | [docs/tasks/102-phase-next-differential-matrix-expansion.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/102-phase-next-differential-matrix-expansion.md) |
 | `P3` | `Task 103` | 日期键查找与时辰索引优化 | `已完成` | [docs/tasks/103-phase-next-date-key-lookup-optimization.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/103-phase-next-date-key-lookup-optimization.md) |
+| `P3` | `Task 104` | Foto/Tao Year/Month companion getter 兼容 | `已完成` | [docs/tasks/104-phase-next-foto-tao-year-month-getter-compatibility.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/104-phase-next-foto-tao-year-month-getter-compatibility.md) |
+| `P2` | `Task 105` | tyme4rs 外部 reference bridge 落地 | `已完成` | [docs/tasks/105-phase-next-tyme4rs-reference-bridge.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/105-phase-next-tyme4rs-reference-bridge.md) |
 
-后续建议继续按新对标文档和本索引中的 `Task 59` - `Task 103` 推进，不再把已经完成的 Phase 4 多历法工作重复列为待办。
+后续建议继续按新对标文档和本索引中的 `Task 59` - `Task 105` 推进，不再把已经完成的 Phase 4 多历法工作重复列为待办。

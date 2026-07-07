@@ -889,7 +889,7 @@ impl Solar {
         for name in self.other_festivals() {
             events.push(SolarFestivalEvent::new(*self, name, true).to_event());
         }
-        for holiday in holiday_util::get_holidays(&format!("{:04}{:02}{:02}", self.year, self.month, self.day)) {
+        for holiday in holiday_util::get_holidays_by_ymd(self.year, self.month, self.day) {
             events.push(HolidayEvent::new(holiday, *self, CalendarKind::Solar).to_event());
         }
         if let Some(jieqi) = self.lunar().current_jie_qi() {

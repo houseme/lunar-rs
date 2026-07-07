@@ -1,5 +1,6 @@
 //! 法定节假日工具（自 2001-12-29 起）。对应 lunar-go `HolidayUtil/HolidayUtil.go`。
 
+use std::borrow::Cow;
 use std::sync::{LazyLock, RwLock};
 
 use crate::LunarError;
@@ -100,27 +101,21 @@ pub fn load_holiday_data(raw_data: impl Into<String>) -> Result<(), LunarError> 
     set_holiday_data(raw_data)
 }
 
-fn build_holiday_forward(s: &str) -> Holiday {
+fn build_holiday_forward(s: &str, names: &[String]) -> Holiday {
     let day = &s[0..8];
-    let name = {
-        let names = NAMES_IN_USE.read().unwrap();
-        names[(s.as_bytes()[8] - b'0') as usize].clone()
-    };
+    let name = &names[(s.as_bytes()[8] - b'0') as usize];
     let work = s.as_bytes()[9] == b'0';
     let target = &s[10..SIZE];
-    Holiday::new(day, &name, work, target)
+    Holiday::new(day, name, work, target)
 }
 
-fn build_holiday_backward(s: &str) -> Holiday {
+fn build_holiday_backward(s: &str, names: &[String]) -> Holiday {
     let length = s.len();
     let day = &s[length - 18..length - 10];
-    let name = {
-        let names = NAMES_IN_USE.read().unwrap();
-        names[(s.as_bytes()[length - 10] - b'0') as usize].clone()
-    };
+    let name = &names[(s.as_bytes()[length - 10] - b'0') as usize];
     let work = s.as_bytes()[length - 9] == b'0';
     let target = &s[length - 8..];
-    Holiday::new(day, &name, work, target)
+    Holiday::new(day, name, work, target)
 }
 
 fn find_forward(key: &str, data: &str) -> Option<usize> {
@@ -152,15 +147,21 @@ fn find_backward(key: &str, data: &str) -> Option<usize> {
 
 /// 按阳历日期（YYYY-MM-DD 或 YYYYMMDD）查找首个节假日。
 pub fn get_holiday(ymd: &str) -> Option<Holiday> {
-    let key = ymd.replace('-', "");
-    let data = DATA_IN_USE.read().unwrap().clone();
-    let pos = find_forward(&key, &data)?;
-    Some(build_holiday_forward(&data[pos..pos + SIZE]))
+    let key = compact_key(ymd);
+    let data = DATA_IN_USE.read().unwrap();
+    let pos = find_forward(key.as_ref(), data.as_str())?;
+    let names = NAMES_IN_USE.read().unwrap();
+    Some(build_holiday_forward(&data[pos..pos + SIZE], &names))
 }
 
 /// 按年月日查找首个节假日。
 pub fn get_holiday_by_ymd(year: i32, month: i32, day: i32) -> Option<Holiday> {
     get_holiday(&format!("{year:04}{month:02}{day:02}"))
+}
+
+/// 按年月日查找全部节假日。
+pub fn get_holidays_by_ymd(year: i32, month: i32, day: i32) -> Vec<Holiday> {
+    collect_forward(&format!("{year:04}{month:02}{day:02}"))
 }
 
 /// 按年月查找全部节假日。
@@ -175,18 +176,20 @@ pub fn get_holidays_by_year(year: i32) -> Vec<Holiday> {
 
 /// 按日期查找全部节假日。
 pub fn get_holidays(ymd: &str) -> Vec<Holiday> {
-    collect_forward(&ymd.replace('-', ""))
+    collect_forward(ymd)
 }
 
 fn collect_forward(key: &str) -> Vec<Holiday> {
-    let data = DATA_IN_USE.read().unwrap().clone();
+    let key = compact_key(key);
+    let data = DATA_IN_USE.read().unwrap();
+    let names = NAMES_IN_USE.read().unwrap();
     let mut out = Vec::new();
-    if let Some(mut pos) = find_forward(key, &data) {
+    if let Some(mut pos) = find_forward(key.as_ref(), data.as_str()) {
         loop {
-            if pos + SIZE > data.len() || !data[pos..pos + SIZE].starts_with(key) {
+            if pos + SIZE > data.len() || !data[pos..pos + SIZE].starts_with(key.as_ref()) {
                 break;
             }
-            out.push(build_holiday_forward(&data[pos..pos + SIZE]));
+            out.push(build_holiday_forward(&data[pos..pos + SIZE], &names));
             pos += SIZE;
         }
     }
@@ -196,15 +199,16 @@ fn collect_forward(key: &str) -> Vec<Holiday> {
 /// 按目标节日日期反查全部节假日（调休映射）。
 pub fn get_holidays_by_target_ymd(year: i32, month: i32, day: i32) -> Vec<Holiday> {
     let key = format!("{year:04}{month:02}{day:02}");
-    let data = DATA_IN_USE.read().unwrap().clone();
+    let data = DATA_IN_USE.read().unwrap();
+    let names = NAMES_IN_USE.read().unwrap();
     let mut out = Vec::new();
-    if let Some(mut pos) = find_backward(&key, &data) {
+    if let Some(mut pos) = find_backward(&key, data.as_str()) {
         loop {
             let seg = &data[pos..pos + SIZE];
             if !seg.ends_with(&key) {
                 break;
             }
-            out.push(build_holiday_backward(seg));
+            out.push(build_holiday_backward(seg, &names));
             if pos < SIZE {
                 break;
             }
@@ -213,4 +217,8 @@ pub fn get_holidays_by_target_ymd(year: i32, month: i32, day: i32) -> Vec<Holida
         out.reverse();
     }
     out
+}
+
+fn compact_key(ymd: &str) -> Cow<'_, str> {
+    if ymd.contains('-') { Cow::Owned(ymd.replace('-', "")) } else { Cow::Borrowed(ymd) }
 }

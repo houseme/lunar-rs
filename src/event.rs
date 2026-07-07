@@ -5,6 +5,9 @@
 
 use std::collections::{BTreeMap, HashMap};
 use std::fmt;
+use std::fmt::Write;
+use std::hash::{Hash, Hasher};
+use std::sync::OnceLock;
 use std::sync::{Arc, LazyLock, RwLock};
 
 use crate::culture::{CycleItem, EarthBranch, HeavenStem};
@@ -149,20 +152,260 @@ pub enum EventRangeKind {
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub enum TextValue {
+    Static(&'static str),
+    Owned(Box<str>),
+}
+
+impl TextValue {
+    fn as_str(&self) -> &str {
+        match self {
+            Self::Static(value) => value,
+            Self::Owned(value) => value,
+        }
+    }
+}
+
+impl From<&'static str> for TextValue {
+    fn from(value: &'static str) -> Self {
+        Self::Static(value)
+    }
+}
+
+impl From<String> for TextValue {
+    fn from(value: String) -> Self {
+        Self::Owned(value.into_boxed_str())
+    }
+}
+
+impl From<Box<str>> for TextValue {
+    fn from(value: Box<str>) -> Self {
+        Self::Owned(value)
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub enum EventDetail {
+    Text(TextValue),
+    Holiday { work: bool, target: Solar },
+    HolidayPeriod { target: TextValue, start: Solar, end: Solar },
+    JieQi { at: Solar },
+    FotoFestival { result: TextValue, remark: Option<TextValue>, every_month: bool },
+    Remark { remark: TextValue },
+    SolarFestivalCompat { index: usize, start_year: i32 },
+    LunarFestivalCompat { index: usize, lunar: TextValue },
+    Rule { kind_label: &'static str, offset_days: i32 },
+}
+
+impl EventDetail {
+    fn render(&self) -> Box<str> {
+        let mut value = String::new();
+        match self {
+            Self::Text(text) => return text.as_str().to_string().into_boxed_str(),
+            Self::Holiday { work, target } => {
+                let _ = write!(value, "work={work} target={}", target.to_ymd());
+            }
+            Self::HolidayPeriod { target, start, end } => {
+                let _ = write!(value, "target={} range={}->{}", target.as_str(), start.to_ymd(), end.to_ymd());
+            }
+            Self::JieQi { at } => {
+                let _ = write!(value, "at={}", at.to_ymd_hms());
+            }
+            Self::FotoFestival { result, remark, every_month } => {
+                let _ = write!(value, "result={}", result.as_str());
+                if let Some(remark) = remark
+                    && !remark.as_str().is_empty()
+                {
+                    let _ = write!(value, " remark={}", remark.as_str());
+                }
+                let _ = write!(value, " every_month={every_month}");
+            }
+            Self::Remark { remark } => {
+                let _ = write!(value, "remark={}", remark.as_str());
+            }
+            Self::SolarFestivalCompat { index, start_year } => {
+                let _ = write!(value, "index={index} start_year={start_year}");
+            }
+            Self::LunarFestivalCompat { index, lunar } => {
+                let _ = write!(value, "index={index} lunar={}", lunar.as_str());
+            }
+            Self::Rule { kind_label, offset_days } => {
+                let _ = write!(value, "rule={kind_label} offset_days={offset_days}");
+            }
+        }
+        value.into_boxed_str()
+    }
+}
+
+impl From<&'static str> for EventDetail {
+    fn from(value: &'static str) -> Self {
+        Self::Text(TextValue::from(value))
+    }
+}
+
+impl From<String> for EventDetail {
+    fn from(value: String) -> Self {
+        Self::Text(TextValue::from(value))
+    }
+}
+
+impl From<Box<str>> for EventDetail {
+    fn from(value: Box<str>) -> Self {
+        Self::Text(TextValue::from(value))
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub enum EventSourceId {
+    Text(TextValue),
+    NamedSolar { prefix: &'static str, solar: Solar },
+    Holiday { day: Solar },
+    HolidayPeriod { start: Solar, end: Solar },
+    JieQi { at: Solar },
+    EventManager { kind_label: &'static str, solar: Solar },
+}
+
+impl EventSourceId {
+    fn render(&self, name: &str) -> Box<str> {
+        let mut value = String::new();
+        match self {
+            Self::Text(text) => return text.as_str().to_string().into_boxed_str(),
+            Self::NamedSolar { prefix, solar } => {
+                let _ = write!(value, "{prefix}:{}:{name}", solar.to_ymd());
+            }
+            Self::Holiday { day } => {
+                let _ = write!(value, "holiday:{}:{name}", day.to_ymd());
+            }
+            Self::HolidayPeriod { start, end } => {
+                let _ = write!(value, "holiday-period:{}:{}:{name}", start.to_ymd(), end.to_ymd());
+            }
+            Self::JieQi { at } => {
+                let _ = write!(value, "jieqi:{name}:{}", at.to_ymd_hms());
+            }
+            Self::EventManager { kind_label, solar } => {
+                let _ = write!(value, "event-manager:{kind_label}:{}:{name}", solar.to_ymd());
+            }
+        }
+        value.into_boxed_str()
+    }
+}
+
+impl From<&'static str> for EventSourceId {
+    fn from(value: &'static str) -> Self {
+        Self::Text(TextValue::from(value))
+    }
+}
+
+impl From<String> for EventSourceId {
+    fn from(value: String) -> Self {
+        Self::Text(TextValue::from(value))
+    }
+}
+
+impl From<Box<str>> for EventSourceId {
+    fn from(value: Box<str>) -> Self {
+        Self::Text(TextValue::from(value))
+    }
+}
+
+const MAX_EVENT_TAGS: usize = 5;
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub struct EventTags {
+    len: u8,
+    items: [&'static str; MAX_EVENT_TAGS],
+}
+
+impl EventTags {
+    fn iter(&self) -> impl Iterator<Item = &'static str> + '_ {
+        self.items[..usize::from(self.len)].iter().copied()
+    }
+
+    fn contains(&self, tag: &str) -> bool {
+        self.iter().any(|value| value == tag)
+    }
+}
+
+impl<const N: usize> From<[&'static str; N]> for EventTags {
+    fn from(value: [&'static str; N]) -> Self {
+        debug_assert!(N <= MAX_EVENT_TAGS);
+        let mut items = [""; MAX_EVENT_TAGS];
+        let mut index = 0;
+        while index < N {
+            items[index] = value[index];
+            index += 1;
+        }
+        Self { len: N as u8, items }
+    }
+}
+
+#[derive(Default, Debug)]
+struct TextCache(OnceLock<Box<str>>);
+
+impl Clone for TextCache {
+    fn clone(&self) -> Self {
+        Self::default()
+    }
+}
+
+impl PartialEq for TextCache {
+    fn eq(&self, _other: &Self) -> bool {
+        true
+    }
+}
+
+impl Eq for TextCache {}
+
+impl Hash for TextCache {
+    fn hash<H: Hasher>(&self, _state: &mut H) {}
+}
+
+#[derive(Default, Debug)]
+struct TagsCache(OnceLock<Box<[String]>>);
+
+impl Clone for TagsCache {
+    fn clone(&self) -> Self {
+        Self::default()
+    }
+}
+
+impl PartialEq for TagsCache {
+    fn eq(&self, _other: &Self) -> bool {
+        true
+    }
+}
+
+impl Eq for TagsCache {}
+
+impl Hash for TagsCache {
+    fn hash<H: Hasher>(&self, _state: &mut H) {}
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Event {
     kind: EventKind,
     calendar_kind: CalendarKind,
     source: EventSource,
-    name: String,
+    name: TextValue,
     solar: Solar,
     end_solar: Option<Solar>,
     range_kind: EventRangeKind,
-    detail: Option<String>,
+    detail: Option<EventDetail>,
     priority: u8,
-    source_id: Option<String>,
+    source_id: Option<EventSourceId>,
     is_observed: bool,
     is_primary: bool,
-    tags: Vec<String>,
+    tags: EventTags,
+    #[cfg_attr(feature = "serde", serde(skip, default))]
+    detail_cache: TextCache,
+    #[cfg_attr(feature = "serde", serde(skip, default))]
+    source_id_cache: TextCache,
+    #[cfg_attr(feature = "serde", serde(skip, default))]
+    tags_cache: TagsCache,
 }
 
 #[derive(Clone, Debug)]
@@ -204,12 +447,12 @@ impl SolarFestivalEvent {
             source,
             self.name,
             self.solar,
-            None,
+            None::<EventDetail>,
             priority,
-            Some(format!("{source_prefix}:{}:{}", self.solar.to_ymd(), self.name)),
+            Some(EventSourceId::NamedSolar { prefix: source_prefix, solar: self.solar }),
             true,
             primary,
-            vec!["solar".to_string(), tag.to_string(), source_tag.to_string()],
+            ["solar", tag, source_tag],
         )
     }
 }
@@ -241,12 +484,12 @@ impl LunarFestivalEvent {
             source,
             self.name,
             self.solar,
-            None,
+            None::<EventDetail>,
             priority,
-            Some(format!("{source_prefix}:{}:{}", self.solar.to_ymd(), self.name)),
+            Some(EventSourceId::NamedSolar { prefix: source_prefix, solar: self.solar }),
             true,
             primary,
-            vec!["lunar".to_string(), tag.to_string(), source_tag.to_string()],
+            ["lunar", tag, source_tag],
         )
     }
 }
@@ -308,18 +551,16 @@ impl HolidayPeriodEvent {
             EventSource::HolidayData,
             self.name.clone(),
             anchor,
-            Some(format!("target={} range={}->{}", self.target, self.start.to_ymd(), self.end.to_ymd())),
+            Some(EventDetail::HolidayPeriod {
+                target: self.target.clone().into_boxed_str().into(),
+                start: self.start,
+                end: self.end,
+            }),
             15,
-            Some(format!("holiday-period:{}:{}:{}", self.start.to_ymd(), self.end.to_ymd(), self.name)),
+            Some(EventSourceId::HolidayPeriod { start: self.start, end: self.end }),
             true,
             true,
-            vec![
-                "holiday".to_string(),
-                "holiday_period".to_string(),
-                "observance".to_string(),
-                "day_off".to_string(),
-                "solar".to_string(),
-            ],
+            ["holiday", "holiday_period", "observance", "day_off", "solar"],
         )
         .with_range(EventRangeKind::MultiDay, Some(self.end))
     }
@@ -366,7 +607,7 @@ impl Event {
         kind: EventKind,
         calendar_kind: CalendarKind,
         source: EventSource,
-        name: impl Into<String>,
+        name: impl Into<TextValue>,
         solar: Solar,
     ) -> Self {
         Self {
@@ -383,16 +624,19 @@ impl Event {
             end_solar: None,
             range_kind: default_range_kind_for_kind(&kind),
             detail: None,
+            detail_cache: TextCache::default(),
+            source_id_cache: TextCache::default(),
+            tags_cache: TagsCache::default(),
         }
     }
 
-    pub fn with_detail(
+    pub fn with_detail<D: Into<EventDetail>>(
         kind: EventKind,
         calendar_kind: CalendarKind,
         source: EventSource,
-        name: impl Into<String>,
+        name: impl Into<TextValue>,
         solar: Solar,
-        detail: impl Into<String>,
+        detail: D,
     ) -> Self {
         Self {
             priority: default_priority_for_kind(&kind),
@@ -408,22 +652,30 @@ impl Event {
             end_solar: None,
             range_kind: default_range_kind_for_kind(&kind),
             detail: Some(detail.into()),
+            detail_cache: TextCache::default(),
+            source_id_cache: TextCache::default(),
+            tags_cache: TagsCache::default(),
         }
     }
 
-    pub fn with_meta(
+    pub fn with_meta<D, S, T>(
         kind: EventKind,
         calendar_kind: CalendarKind,
         source: EventSource,
-        name: impl Into<String>,
+        name: impl Into<TextValue>,
         solar: Solar,
-        detail: Option<String>,
+        detail: Option<D>,
         priority: u8,
-        source_id: Option<String>,
+        source_id: Option<S>,
         is_observed: bool,
         is_primary: bool,
-        tags: Vec<String>,
-    ) -> Self {
+        tags: T,
+    ) -> Self
+    where
+        D: Into<EventDetail>,
+        S: Into<EventSourceId>,
+        T: Into<EventTags>,
+    {
         Self {
             kind,
             calendar_kind,
@@ -432,12 +684,15 @@ impl Event {
             solar,
             end_solar: None,
             range_kind: default_range_kind_for_kind(&kind),
-            detail,
+            detail: detail.map(Into::into),
             priority,
-            source_id,
+            source_id: source_id.map(Into::into),
             is_observed,
             is_primary,
-            tags,
+            tags: tags.into(),
+            detail_cache: TextCache::default(),
+            source_id_cache: TextCache::default(),
+            tags_cache: TagsCache::default(),
         }
     }
 
@@ -460,7 +715,7 @@ impl Event {
     }
 
     pub fn name(&self) -> &str {
-        &self.name
+        self.name.as_str()
     }
 
     pub const fn solar(&self) -> Solar {
@@ -489,7 +744,11 @@ impl Event {
     }
 
     pub fn detail(&self) -> Option<&str> {
-        self.detail.as_deref()
+        let detail = self.detail.as_ref()?;
+        Some(match detail {
+            EventDetail::Text(text) => text.as_str(),
+            _ => self.detail_cache.0.get_or_init(|| detail.render()).as_ref(),
+        })
     }
 
     pub const fn priority(&self) -> u8 {
@@ -497,7 +756,11 @@ impl Event {
     }
 
     pub fn source_id(&self) -> Option<&str> {
-        self.source_id.as_deref()
+        let source_id = self.source_id.as_ref()?;
+        Some(match source_id {
+            EventSourceId::Text(text) => text.as_str(),
+            _ => self.source_id_cache.0.get_or_init(|| source_id.render(self.name())).as_ref(),
+        })
     }
 
     pub const fn is_observed(&self) -> bool {
@@ -509,11 +772,14 @@ impl Event {
     }
 
     pub fn tags(&self) -> &[String] {
-        &self.tags
+        self.tags_cache
+            .0
+            .get_or_init(|| self.tags.iter().map(|tag| tag.to_string()).collect::<Vec<_>>().into_boxed_slice())
+            .as_ref()
     }
 
     pub fn has_tag(&self, tag: &str) -> bool {
-        self.tags.iter().any(|value| value == tag)
+        self.tags.contains(tag)
     }
 
     pub fn spans_multiple_days(&self) -> bool {
@@ -538,14 +804,14 @@ impl Event {
     }
 
     pub fn display_text(&self) -> String {
-        match &self.detail {
-            Some(detail) if !detail.is_empty() => format!("{} ({detail})", self.name),
-            _ => self.name.clone(),
+        match self.detail() {
+            Some(detail) if !detail.is_empty() => format!("{} ({detail})", self.name()),
+            _ => self.name().to_string(),
         }
     }
 
     pub fn has_detail(&self) -> bool {
-        self.detail.as_deref().is_some_and(|detail| !detail.is_empty())
+        self.detail().is_some_and(|detail| !detail.is_empty())
     }
 
     pub const fn category_label(&self) -> &'static str {
@@ -622,29 +888,44 @@ pub const fn default_primary_for_kind(kind: &EventKind) -> bool {
     )
 }
 
-fn default_tags(kind: &EventKind, calendar_kind: &CalendarKind, source: &EventSource) -> Vec<String> {
-    let mut tags = vec![
-        calendar_kind_label(calendar_kind).to_string(),
-        event_kind_label(kind).to_string(),
-        source_label(source).to_string(),
-    ];
-
+fn default_tags(kind: &EventKind, calendar_kind: &CalendarKind, source: &EventSource) -> EventTags {
     match kind {
-        EventKind::Holiday => tags.push("observance".to_string()),
-        EventKind::HolidayPeriod => {
-            tags.push("observance".to_string());
-            tags.push("holiday_period".to_string());
-        }
-        EventKind::JieQi => tags.push("seasonal".to_string()),
+        EventKind::Holiday => EventTags::from([
+            calendar_kind_label(calendar_kind),
+            event_kind_label(kind),
+            source_label(source),
+            "observance",
+        ]),
+        EventKind::HolidayPeriod => EventTags::from([
+            calendar_kind_label(calendar_kind),
+            event_kind_label(kind),
+            source_label(source),
+            "observance",
+            "holiday_period",
+        ]),
+        EventKind::JieQi => EventTags::from([
+            calendar_kind_label(calendar_kind),
+            event_kind_label(kind),
+            source_label(source),
+            "seasonal",
+        ]),
         EventKind::SolarFestival | EventKind::LunarFestival | EventKind::FotoFestival | EventKind::TaoFestival => {
-            tags.push("festival".to_string());
+            EventTags::from([
+                calendar_kind_label(calendar_kind),
+                event_kind_label(kind),
+                source_label(source),
+                "festival",
+            ])
         }
         EventKind::SolarOtherFestival | EventKind::LunarOtherFestival | EventKind::FotoOtherFestival => {
-            tags.push("other_festival".to_string());
+            EventTags::from([
+                calendar_kind_label(calendar_kind),
+                event_kind_label(kind),
+                source_label(source),
+                "other_festival",
+            ])
         }
     }
-
-    tags
 }
 
 const fn calendar_kind_label(calendar_kind: &CalendarKind) -> &'static str {
@@ -709,9 +990,9 @@ pub fn sort_events(events: &mut [Event]) {
             .then_with(|| event_range_rank(&a.range_kind).cmp(&event_range_rank(&b.range_kind)))
             .then_with(|| a.priority.cmp(&b.priority))
             .then_with(|| a.calendar_label().cmp(b.calendar_label()))
-            .then_with(|| a.name.as_str().cmp(b.name.as_str()))
-            .then_with(|| a.detail.as_deref().unwrap_or("").cmp(b.detail.as_deref().unwrap_or("")))
-            .then_with(|| a.source_id.as_deref().unwrap_or("").cmp(b.source_id.as_deref().unwrap_or("")))
+            .then_with(|| a.name().cmp(b.name()))
+            .then_with(|| a.detail().unwrap_or("").cmp(b.detail().unwrap_or("")))
+            .then_with(|| a.source_id().unwrap_or("").cmp(b.source_id().unwrap_or("")))
     });
 }
 
@@ -738,7 +1019,7 @@ struct EventIndex {
     by_range_kind: HashMap<EventRangeKind, Vec<usize>>,
     by_is_primary: HashMap<bool, Vec<usize>>,
     by_is_observed: HashMap<bool, Vec<usize>>,
-    by_tag: HashMap<String, Vec<usize>>,
+    by_tag: HashMap<&'static str, Vec<usize>>,
 }
 
 impl EventIndex {
@@ -765,8 +1046,8 @@ impl EventIndex {
             index.by_range_kind.entry(event.range_kind()).or_default().push(position);
             index.by_is_primary.entry(event.is_primary()).or_default().push(position);
             index.by_is_observed.entry(event.is_observed()).or_default().push(position);
-            for tag in event.tags() {
-                index.by_tag.entry(tag.clone()).or_default().push(position);
+            for tag in event.tags.iter() {
+                index.by_tag.entry(tag).or_default().push(position);
             }
         }
 
@@ -850,12 +1131,11 @@ pub(crate) fn holiday_period_events_for_day(solar: Solar) -> Vec<Event> {
         holidays.sort_by(|a, b| a.day().cmp(b.day()));
         let mut index = 0;
         while index < holidays.len() {
-            let start_day = holidays[index].day().to_string();
-            let start = solar_from_ymd(&start_day);
+            let start = holidays[index].get_day();
             let mut end = start;
             let mut cursor = index + 1;
             while cursor < holidays.len() {
-                let next = solar_from_ymd(holidays[cursor].day());
+                let next = holidays[cursor].get_day();
                 if next.subtract(&end) != 1 {
                     break;
                 }
@@ -871,13 +1151,6 @@ pub(crate) fn holiday_period_events_for_day(solar: Solar) -> Vec<Event> {
         }
     }
     events
-}
-
-fn solar_from_ymd(ymd: &str) -> Solar {
-    let year: i32 = ymd[0..4].parse().unwrap_or(0);
-    let month: i32 = ymd[5..7].parse().unwrap_or(1);
-    let day: i32 = ymd[8..10].parse().unwrap_or(1);
-    Solar::from_ymd(year, month, day).unwrap()
 }
 
 fn day_event_index(solar: Solar) -> Arc<EventIndex> {
@@ -1266,18 +1539,12 @@ fn rule_event(name: String, solar: Solar, rule: &EventRule) -> Event {
         EventSource::BuiltInOtherFestival,
         name.clone(),
         solar,
-        Some(format!("rule={} offset_days={}", rule.kind_label(), rule.offset_days())),
+        Some(EventDetail::Rule { kind_label: rule.kind_label(), offset_days: rule.offset_days() }),
         35,
-        Some(format!("event-manager:{}:{}:{}", rule.kind_label(), solar.to_ymd(), name)),
+        Some(EventSourceId::EventManager { kind_label: rule.kind_label(), solar }),
         true,
         true,
-        vec![
-            "event_manager".to_string(),
-            "rule".to_string(),
-            "solar".to_string(),
-            "other_festival".to_string(),
-            "built_in_other_festival".to_string(),
-        ],
+        ["event_manager", "rule", "solar", "other_festival", "built_in_other_festival"],
     )
 }
 

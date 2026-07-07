@@ -11,10 +11,17 @@ fn foto_year_and_month_template_layers_are_available() {
     assert_eq!(foto.get_year(), 2568);
     assert_eq!(foto.get_month(), 4);
     assert_eq!(foto.get_day(), 8);
+    assert_eq!(year.get_year(), 2568);
     assert_eq!(year.lunar_year(), 2024);
+    assert_eq!(year.get_lunar_year(), 2024);
     assert!(year.contains_solar(Solar::from_ymd(2024, 5, 15).unwrap()));
     assert_eq!(year.first_month().year(), 2568);
+    assert_eq!(year.get_first_month().year(), 2568);
+    assert_eq!(year.get_last_month().year(), 2568);
     assert!(!year.months().is_empty());
+    assert_eq!(year.get_months().len(), year.months().len());
+    assert_eq!(year.get_first_solar_day().to_ymd(), year.first_solar_day().to_ymd());
+    assert_eq!(year.get_last_solar_day().to_ymd(), year.last_solar_day().to_ymd());
     assert_eq!(foto.get_foto_year().year(), 2568);
     assert_eq!(foto.get_foto_month().month(), 4);
     assert_eq!(foto.get_year_in_chinese(), foto.year_in_chinese());
@@ -23,9 +30,16 @@ fn foto_year_and_month_template_layers_are_available() {
     assert_eq!(foto.get_lunar().solar().to_ymd(), "2024-05-15");
 
     assert_eq!(month.year(), 2568);
+    assert_eq!(month.get_year(), 2568);
     assert_eq!(month.month(), 4);
+    assert_eq!(month.get_month(), 4);
     assert!(!month.is_leap());
     assert_eq!(month.day_count(), 29);
+    assert_eq!(month.get_day_count(), 29);
+    assert_eq!(month.get_index(), month.index());
+    assert_eq!(month.get_name(), month.name());
+    assert_eq!(month.get_first_solar_day().to_ymd(), month.first_solar_day().to_ymd());
+    assert_eq!(month.get_last_solar_day().to_ymd(), month.last_solar_day().to_ymd());
     assert!(month.contains_solar(Solar::from_ymd(2024, 5, 15).unwrap()));
 }
 

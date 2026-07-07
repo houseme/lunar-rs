@@ -3,6 +3,7 @@
 use std::fmt;
 
 use crate::JulianDay;
+use crate::event::{EventDetail, EventSourceId};
 use crate::lunar_year::JIE_QI;
 use crate::shou_xing;
 use crate::solar::Solar;
@@ -125,23 +126,22 @@ impl JieQi {
             EventKind::JieQi,
             calendar_kind,
             EventSource::JieQi,
-            self.name(),
+            self.name().to_string(),
             self.solar,
-            Some(format!("at={}", self.solar.to_ymd_hms())),
+            Some(EventDetail::JieQi { at: self.solar }),
             10,
-            Some(format!("jieqi:{}:{}", self.name(), self.solar.to_ymd_hms())),
+            Some(EventSourceId::JieQi { at: self.solar }),
             true,
             true,
-            vec![
-                "jieqi".to_string(),
-                "seasonal".to_string(),
+            [
+                "jieqi",
+                "seasonal",
                 match calendar_kind {
                     CalendarKind::Solar => "solar",
                     CalendarKind::Lunar => "lunar",
                     CalendarKind::Foto => "foto",
                     CalendarKind::Tao => "tao",
-                }
-                .to_string(),
+                },
             ],
         )
     }

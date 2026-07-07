@@ -30,8 +30,16 @@ impl TaoYear {
         self.year
     }
 
+    pub const fn get_year(&self) -> i32 {
+        self.year()
+    }
+
     pub const fn lunar_year(&self) -> i32 {
         self.year + BIRTH_YEAR
+    }
+
+    pub const fn get_lunar_year(&self) -> i32 {
+        self.lunar_year()
     }
 
     pub fn first_month(&self) -> TaoMonth {
@@ -39,21 +47,41 @@ impl TaoYear {
         TaoMonth::from_lunar_month(month)
     }
 
+    pub fn get_first_month(&self) -> TaoMonth {
+        self.first_month()
+    }
+
     pub fn last_month(&self) -> TaoMonth {
         let month = LunarYear::from_year(self.lunar_year()).months_in_year().last().unwrap();
         TaoMonth::from_lunar_month(month)
+    }
+
+    pub fn get_last_month(&self) -> TaoMonth {
+        self.last_month()
     }
 
     pub fn months(&self) -> Vec<TaoMonth> {
         LunarYear::from_year(self.lunar_year()).months_in_year().map(TaoMonth::from_lunar_month).collect()
     }
 
+    pub fn get_months(&self) -> Vec<TaoMonth> {
+        self.months()
+    }
+
     pub fn first_solar_day(&self) -> Solar {
         self.first_month().first_solar_day()
     }
 
+    pub fn get_first_solar_day(&self) -> Solar {
+        self.first_solar_day()
+    }
+
     pub fn last_solar_day(&self) -> Solar {
         self.last_month().last_solar_day()
+    }
+
+    pub fn get_last_solar_day(&self) -> Solar {
+        self.last_solar_day()
     }
 
     pub fn contains_solar(&self, solar: Solar) -> bool {
@@ -114,8 +142,16 @@ impl TaoMonth {
         self.lunar_year - BIRTH_YEAR
     }
 
+    pub const fn get_year(&self) -> i32 {
+        self.year()
+    }
+
     pub const fn month(&self) -> i32 {
         self.month
+    }
+
+    pub const fn get_month(&self) -> i32 {
+        self.month()
     }
 
     pub const fn is_leap(&self) -> bool {
@@ -126,8 +162,16 @@ impl TaoMonth {
         self.day_count
     }
 
+    pub const fn get_day_count(&self) -> i32 {
+        self.day_count()
+    }
+
     pub const fn index(&self) -> i32 {
         self.index
+    }
+
+    pub const fn get_index(&self) -> i32 {
+        self.index()
     }
 
     pub fn name(&self) -> String {
@@ -138,12 +182,24 @@ impl TaoMonth {
         }
     }
 
+    pub fn get_name(&self) -> String {
+        self.name()
+    }
+
     pub fn first_solar_day(&self) -> Solar {
         Solar::from_julian_day(f64::from_bits(self.first_julian_day_bits))
     }
 
+    pub fn get_first_solar_day(&self) -> Solar {
+        self.first_solar_day()
+    }
+
     pub fn last_solar_day(&self) -> Solar {
         self.first_solar_day().next_day(self.day_count() - 1)
+    }
+
+    pub fn get_last_solar_day(&self) -> Solar {
+        self.last_solar_day()
     }
 
     pub fn contains_solar(&self, solar: Solar) -> bool {
@@ -210,28 +266,28 @@ impl TaoFestival {
                 EventKind::TaoFestival,
                 CalendarKind::Tao,
                 EventSource::BuiltInFestival,
-                self.name(),
+                self.name().to_string(),
                 solar,
-                None,
+                None::<crate::event::EventDetail>,
                 90,
-                Some(format!("tao:{}:{}", solar.to_ymd(), self.name())),
+                Some(crate::event::EventSourceId::NamedSolar { prefix: "tao", solar }),
                 true,
                 true,
-                vec!["tao".to_string(), "festival".to_string(), "single_day".to_string()],
+                ["tao", "festival", "single_day"],
             )
         } else {
             Event::with_meta(
                 EventKind::TaoFestival,
                 CalendarKind::Tao,
                 EventSource::BuiltInFestival,
-                self.name(),
+                self.name().to_string(),
                 solar,
-                Some(format!("remark={}", self.remark())),
+                Some(crate::event::EventDetail::Remark { remark: self.remark.clone().into_boxed_str().into() }),
                 90,
-                Some(format!("tao:{}:{}", solar.to_ymd(), self.name())),
+                Some(crate::event::EventSourceId::NamedSolar { prefix: "tao", solar }),
                 true,
                 true,
-                vec!["tao".to_string(), "festival".to_string(), "remarked".to_string()],
+                ["tao", "festival", "remarked"],
             )
         }
     }
