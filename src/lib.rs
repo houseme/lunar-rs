@@ -129,10 +129,11 @@ pub use coptic::{Coptic, CopticMonth, CopticYear};
 pub use culture::{
     ChongSha, Constellation, CultureDay, CycleItem, Direction, DogDay, Duty, EarthBranch, Element, FetusDay,
     FetusEarthBranch, FetusHeavenStem, FetusMonth, God, GodLuck, HeavenStem, HideHeavenStem, HideHeavenStemDay,
-    HideHeavenStemType, LiuYao, Lu, MinorRen, NamedCulture, Nayin, Nine, NineDay, PengZu, Phase, PhaseDay, Phenology,
-    PhenologyDay, PlumRainDay, PlumRainKind, Season, Shou, SixtyCycle, SixtyCycleDay, SixtyCycleHour, SixtyCycleMonth,
-    SixtyCycleYear, SolarTermDay, Taboo, TabooKind, TaiPosition, TaiSuiPosition, ThreePillars, TianShen, TianShenType,
-    Xiu, XiuAnimal, Xun, XunKong, YearFortune, YearFortuneKind, YuanCycle, YunCycle, Zodiac,
+    HideHeavenStemType, LiuYao, Lu, MinorRen, NamedCulture, Nayin, Nine, NineDay, PengZu, PengZuEarthBranch,
+    PengZuHeavenStem, Phase, PhaseDay, Phenology, PhenologyDay, PlumRainDay, PlumRainKind, Season, Shou, SixtyCycle,
+    SixtyCycleDay, SixtyCycleHour, SixtyCycleMonth, SixtyCycleYear, SolarTermDay, Taboo, TabooKind, TaiPosition,
+    TaiSuiPosition, ThreePillars, TianShen, TianShenType, Xiu, XiuAnimal, Xun, XunKong, YearFortune, YearFortuneKind,
+    YuanCycle, YunCycle, Zodiac,
 };
 pub use dangi::{Dangi, DangiMonth, DangiYear};
 pub use eight_char::{

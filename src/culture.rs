@@ -634,6 +634,72 @@ impl fmt::Display for Taboo {
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct PengZuHeavenStem {
+    index: usize,
+}
+
+impl PengZuHeavenStem {
+    pub const fn from_index(index: usize) -> Self {
+        Self { index }
+    }
+
+    pub fn from_name(name: &str) -> Option<Self> {
+        lunar_util::tables::PENGZU_GAN
+            .iter()
+            .position(|value| *value == name)
+            .and_then(|index| if index == 0 { None } else { Some(Self::from_index(index - 1)) })
+    }
+
+    pub const fn index(&self) -> usize {
+        self.index
+    }
+
+    pub fn name(&self) -> &'static str {
+        lunar_util::tables::PENGZU_GAN[self.index + 1]
+    }
+}
+
+impl fmt::Display for PengZuHeavenStem {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.name())
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct PengZuEarthBranch {
+    index: usize,
+}
+
+impl PengZuEarthBranch {
+    pub const fn from_index(index: usize) -> Self {
+        Self { index }
+    }
+
+    pub fn from_name(name: &str) -> Option<Self> {
+        lunar_util::tables::PENGZU_ZHI
+            .iter()
+            .position(|value| *value == name)
+            .and_then(|index| if index == 0 { None } else { Some(Self::from_index(index - 1)) })
+    }
+
+    pub const fn index(&self) -> usize {
+        self.index
+    }
+
+    pub fn name(&self) -> &'static str {
+        lunar_util::tables::PENGZU_ZHI[self.index + 1]
+    }
+}
+
+impl fmt::Display for PengZuEarthBranch {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.name())
+    }
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct PengZu {
     heaven_stem: &'static str,
     earth_branch: &'static str,
@@ -650,6 +716,14 @@ impl PengZu {
 
     pub const fn earth_branch(&self) -> &'static str {
         self.earth_branch
+    }
+
+    pub fn heaven_stem_item(&self) -> PengZuHeavenStem {
+        PengZuHeavenStem::from_name(self.heaven_stem).unwrap_or_else(|| PengZuHeavenStem::from_index(0))
+    }
+
+    pub fn earth_branch_item(&self) -> PengZuEarthBranch {
+        PengZuEarthBranch::from_name(self.earth_branch).unwrap_or_else(|| PengZuEarthBranch::from_index(0))
     }
 
     pub fn items(&self) -> [&'static str; 2] {
@@ -1631,6 +1705,8 @@ impl_named_culture!(
     SixtyCycle,
     God,
     Taboo,
+    PengZuHeavenStem,
+    PengZuEarthBranch,
     TianShen,
     XiuAnimal,
     Shou,
@@ -1726,6 +1802,34 @@ impl CycleItem for SixtyCycle {
 
     fn size() -> usize {
         60
+    }
+}
+
+impl CycleItem for PengZuHeavenStem {
+    fn from_cycle_index(index: usize) -> Self {
+        Self::from_index(index % Self::size())
+    }
+
+    fn index(&self) -> usize {
+        self.index()
+    }
+
+    fn size() -> usize {
+        lunar_util::tables::PENGZU_GAN.len() - 1
+    }
+}
+
+impl CycleItem for PengZuEarthBranch {
+    fn from_cycle_index(index: usize) -> Self {
+        Self::from_index(index % Self::size())
+    }
+
+    fn index(&self) -> usize {
+        self.index()
+    }
+
+    fn size() -> usize {
+        lunar_util::tables::PENGZU_ZHI.len() - 1
     }
 }
 

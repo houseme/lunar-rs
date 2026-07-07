@@ -172,6 +172,10 @@ fn lunar_typed_api_exposes_cycle_zodiac_and_direction_objects() {
     let peng_zu = lunar.peng_zu();
     assert_eq!(peng_zu.heaven_stem(), lunar.peng_zu_gan());
     assert_eq!(peng_zu.earth_branch(), lunar.peng_zu_zhi());
+    assert_eq!(peng_zu.heaven_stem_item().name(), lunar.peng_zu_gan());
+    assert_eq!(peng_zu.earth_branch_item().name(), lunar.peng_zu_zhi());
+    assert_eq!(peng_zu.heaven_stem_item().steps_to(peng_zu.heaven_stem_item().next(1).index()), 1);
+    assert_eq!(peng_zu.earth_branch_item().steps_to(peng_zu.earth_branch_item().next(1).index()), 1);
     assert_eq!(peng_zu.to_string(), format!("{} {}", lunar.peng_zu_gan(), lunar.peng_zu_zhi()));
 }
 
