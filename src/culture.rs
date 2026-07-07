@@ -25,6 +25,8 @@ const BEAST_NAMES: [&str; 4] = ["青龙", "玄武", "白虎", "朱雀"];
 const ZONE_NAMES: [&str; 4] = ["东", "北", "西", "南"];
 const TERRAIN_NAMES: [&str; 12] = ["长生", "沐浴", "冠带", "临官", "帝旺", "衰", "病", "死", "墓", "绝", "胎", "养"];
 const LAND_NAMES: [&str; 9] = ["玄天", "朱天", "苍天", "阳天", "钧天", "幽天", "颢天", "变天", "炎天"];
+const YUAN_CYCLE_NAMES: [&str; 3] = ["上元", "中元", "下元"];
+const YUN_CYCLE_NAMES: [&str; 9] = ["一运", "二运", "三运", "四运", "五运", "六运", "七运", "八运", "九运"];
 const NAYIN_NAMES: [&str; 30] = [
     "海中金",
     "炉中火",
@@ -1742,46 +1744,74 @@ impl fmt::Display for LiuYao {
 }
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct YuanCycle {
-    name: String,
+    index: usize,
 }
 
 impl YuanCycle {
-    pub fn new(name: impl Into<String>) -> Self {
-        Self { name: name.into() }
+    pub fn new(name: impl AsRef<str>) -> Self {
+        Self::from_name(name.as_ref()).unwrap_or_else(|| Self::from_index(0))
     }
 
-    pub fn name(&self) -> &str {
-        &self.name
+    pub const fn from_index(index: usize) -> Self {
+        Self { index }
+    }
+
+    pub fn from_name(name: &str) -> Option<Self> {
+        YUAN_CYCLE_NAMES.iter().position(|value| *value == name).map(Self::from_index)
+    }
+
+    pub const fn index(&self) -> usize {
+        self.index
+    }
+
+    pub fn name(&self) -> &'static str {
+        YUAN_CYCLE_NAMES[self.index % YUAN_CYCLE_NAMES.len()]
     }
 }
 
 impl fmt::Display for YuanCycle {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(&self.name)
+        f.write_str(self.name())
     }
 }
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct YunCycle {
-    name: String,
+    index: usize,
 }
 
 impl YunCycle {
-    pub fn new(name: impl Into<String>) -> Self {
-        Self { name: name.into() }
+    pub fn new(name: impl AsRef<str>) -> Self {
+        Self::from_name(name.as_ref()).unwrap_or_else(|| Self::from_index(0))
     }
 
-    pub fn name(&self) -> &str {
-        &self.name
+    pub const fn from_index(index: usize) -> Self {
+        Self { index }
+    }
+
+    pub fn from_name(name: &str) -> Option<Self> {
+        YUN_CYCLE_NAMES.iter().position(|value| *value == name).map(Self::from_index)
+    }
+
+    pub const fn index(&self) -> usize {
+        self.index
+    }
+
+    pub fn name(&self) -> &'static str {
+        YUN_CYCLE_NAMES[self.index % YUN_CYCLE_NAMES.len()]
+    }
+
+    pub const fn yuan_cycle(&self) -> YuanCycle {
+        YuanCycle::from_index((self.index % YUN_CYCLE_NAMES.len()) / 3)
     }
 }
 
 impl fmt::Display for YunCycle {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(&self.name)
+        f.write_str(self.name())
     }
 }
 
@@ -2184,6 +2214,34 @@ impl CycleItem for Land {
 
     fn size() -> usize {
         LAND_NAMES.len()
+    }
+}
+
+impl CycleItem for YuanCycle {
+    fn from_cycle_index(index: usize) -> Self {
+        Self::from_index(index % Self::size())
+    }
+
+    fn index(&self) -> usize {
+        self.index()
+    }
+
+    fn size() -> usize {
+        YUAN_CYCLE_NAMES.len()
+    }
+}
+
+impl CycleItem for YunCycle {
+    fn from_cycle_index(index: usize) -> Self {
+        Self::from_index(index % Self::size())
+    }
+
+    fn index(&self) -> usize {
+        self.index()
+    }
+
+    fn size() -> usize {
+        YUN_CYCLE_NAMES.len()
     }
 }
 

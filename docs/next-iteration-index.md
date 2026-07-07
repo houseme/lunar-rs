@@ -231,5 +231,6 @@
 | `P3` | `Task 75` | Nayin 纳音循环对象补强 | `已完成` | [docs/tasks/75-phase-next-nayin-cycle-api.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/75-phase-next-nayin-cycle-api.md) |
 | `P3` | `Task 76` | Land 九野与 Direction 九宫循环对象 | `已完成` | [docs/tasks/76-phase-next-land-direction-cycle-api.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/76-phase-next-land-direction-cycle-api.md) |
 | `P3` | `Task 77` | Xun 旬循环对象补强 | `已完成` | [docs/tasks/77-phase-next-xun-cycle-api.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/77-phase-next-xun-cycle-api.md) |
+| `P3` | `Task 78` | YuanCycle / YunCycle 三元九运循环对象 | `已完成` | [docs/tasks/78-phase-next-yuan-yun-cycle-api.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/78-phase-next-yuan-yun-cycle-api.md) |
 
-后续建议继续按新对标文档和本索引中的 `Task 59` - `Task 77` 推进，不再把已经完成的 Phase 4 多历法工作重复列为待办。
+后续建议继续按新对标文档和本索引中的 `Task 59` - `Task 78` 推进，不再把已经完成的 Phase 4 多历法工作重复列为待办。

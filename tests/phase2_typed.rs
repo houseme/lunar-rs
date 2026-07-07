@@ -1,7 +1,7 @@
 use lunar_rs::{
     Constellation, CultureDay, CycleItem, Direction, Duty, EarthBranch, Element, GodLuck, HeavenStem,
     HideHeavenStemType, Land, Lunar, LunarMonth, LunarYear, MinorRen, NamedCulture, Nayin, NineStar, Phase,
-    PlumRainKind, SixtyCycle, Solar, TabooKind, Xun, Zodiac,
+    PlumRainKind, SixtyCycle, Solar, TabooKind, Xun, YuanCycle, YunCycle, Zodiac,
 };
 
 #[test]
@@ -405,6 +405,11 @@ fn typed_year_month_and_time_layers_reuse_domain_objects() {
     assert_eq!(year.sixty_cycle().name(), year.gan_zhi());
     assert_eq!(year.yuan_cycle().name(), year.yuan());
     assert_eq!(year.yun_cycle().name(), year.yun());
+    assert_eq!(YuanCycle::from_name(year.yuan_cycle().name()).unwrap(), year.yuan_cycle());
+    assert_eq!(YunCycle::from_name(year.yun_cycle().name()).unwrap(), year.yun_cycle());
+    assert_eq!(year.yun_cycle().yuan_cycle(), year.yuan_cycle());
+    assert_eq!(YuanCycle::from_name("下元").unwrap().next(1).name(), "上元");
+    assert_eq!(YunCycle::from_name("九运").unwrap().next(1).name(), "一运");
     assert_eq!(year.nayin_info().name(), year.nayin());
     assert_eq!(year.nayin_info().element().name(), "土");
     assert_eq!(year.xun_info().name(), year.xun());
