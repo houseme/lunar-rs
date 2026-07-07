@@ -89,6 +89,7 @@ mod hijri;
 mod hispanic_era;
 mod holiday;
 mod japanese;
+mod jd;
 mod jieqi;
 mod juche;
 mod julian;
@@ -169,6 +170,7 @@ pub use holocene::{Holocene, HoloceneMonth, HoloceneYear};
 #[cfg(feature = "i18n")]
 pub use i18n::Language;
 pub use japanese::{Japanese, JapaneseEra, JapaneseMonth, JapaneseYear};
+pub use jd::JulianDay;
 pub use jieqi::JieQi;
 pub use juche::{Juche, JucheMonth, JucheYear};
 pub use julian::{Julian, JulianMonth, JulianYear};
@@ -204,6 +206,13 @@ pub use yun::{
     DefaultChildLimitProvider, Fortune, LunarSect1ChildLimitProvider, LunarSect2ChildLimitProvider,
 };
 pub use yun::{DaYun, LiuNian, LiuYue, XiaoYun, Yun};
+
+pub type LegalHoliday = Holiday;
+pub type LunarDay = Lunar;
+pub type LunarHour<'a> = LunarTime<'a>;
+pub type SolarDay = Solar;
+pub type SolarTerm = JieQi;
+pub type SolarTime = Solar;
 
 /// 性别：`1` 男，`0` 女（与参考实现 lunar-go 一致）。
 pub type Gender = u8;

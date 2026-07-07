@@ -1,9 +1,9 @@
 use lunar_rs::{
     Animal, Constellation, CultureDay, CycleItem, DayUnit, Dipper, Direction, Duty, EarthBranch, Element, God, GodLuck,
-    HeavenStem, HideHeavenStemType, Land, Luck, Lunar, LunarMonth, LunarWeek, LunarYear, MinorRen, MonthUnit,
-    MoonPhase, NamedCulture, Nayin, NineStar, Phase, PlumRainKind, SecondUnit, SevenStar, SixStar, Sixty, SixtyCycle,
-    Solar, Sound, Taboo, TabooKind, Ten, TenStar, TwelveStar, Twenty, WeekUnit, Xun, YearUnit, YuanCycle, YunCycle,
-    Zodiac,
+    HeavenStem, HideHeavenStemType, Holiday, JulianDay, Land, LegalHoliday, Luck, Lunar, LunarDay, LunarMonth,
+    LunarWeek, LunarYear, MinorRen, MonthUnit, MoonPhase, NamedCulture, Nayin, NineStar, Phase, PlumRainKind,
+    SecondUnit, SevenStar, SixStar, Sixty, SixtyCycle, Solar, SolarDay, SolarTerm, SolarTime, Sound, Taboo, TabooKind,
+    Ten, TenStar, TwelveStar, Twenty, WeekUnit, Xun, YearUnit, YuanCycle, YunCycle, Zodiac,
 };
 
 #[test]
@@ -146,6 +146,26 @@ fn tyme_compatibility_type_names_map_to_existing_objects() {
     assert_eq!(star.dipper().name(), "隐元");
     assert_eq!(star.dipper().next(1).name(), "天枢");
     assert_eq!(star.dipper().name(), star.name_in_bei_dou());
+}
+
+#[test]
+fn tyme_core_day_time_and_term_names_are_available() {
+    let solar_day: SolarDay = SolarDay::from_ymd(2024, 2, 10).unwrap();
+    let solar_time: SolarTime = SolarTime::from_ymd_hms(2024, 2, 10, 8, 30, 0).unwrap();
+    let lunar_day: LunarDay = LunarDay::from_ymd(2024, 1, 1).unwrap();
+    fn accept_legal_holiday(_: Option<LegalHoliday>) {}
+    accept_legal_holiday(None::<Holiday>);
+
+    assert_eq!(solar_day.to_ymd(), "2024-02-10");
+    assert_eq!(solar_time.to_ymd_hms(), "2024-02-10 08:30:00");
+    assert_eq!(lunar_day.solar().to_ymd(), "2024-02-10");
+
+    let jd = JulianDay::from_ymd_hms(2024, 2, 10, 0, 0, 0).unwrap();
+    assert_eq!(jd.solar_day().to_ymd(), "2024-02-10");
+    assert_eq!(jd.next(1).solar_day().to_ymd(), "2024-02-11");
+
+    let term: SolarTerm = Solar::from_ymd(2024, 2, 4).unwrap().lunar().current_jie_qi().unwrap();
+    assert_eq!(term.name(), "立春");
 }
 
 #[test]
