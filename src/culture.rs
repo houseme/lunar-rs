@@ -21,6 +21,7 @@ const XIU_ANIMAL_NAMES: [&str; 28] = [
     "猴", "猿", "犴", "羊", "獐", "马", "鹿", "蛇", "蚓",
 ];
 const BEAST_NAMES: [&str; 4] = ["青龙", "玄武", "白虎", "朱雀"];
+const TERRAIN_NAMES: [&str; 12] = ["长生", "沐浴", "冠带", "临官", "帝旺", "衰", "病", "死", "墓", "绝", "胎", "养"];
 
 pub trait NamedCulture {
     fn name(&self) -> &str;
@@ -869,6 +870,36 @@ impl fmt::Display for Shou {
 }
 
 pub type Beast = Shou;
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct Terrain {
+    index: usize,
+}
+
+impl Terrain {
+    pub const fn from_index(index: usize) -> Self {
+        Self { index }
+    }
+
+    pub fn from_name(name: &str) -> Option<Self> {
+        TERRAIN_NAMES.iter().position(|value| *value == name).map(Self::from_index)
+    }
+
+    pub const fn index(&self) -> usize {
+        self.index
+    }
+
+    pub fn name(&self) -> &'static str {
+        TERRAIN_NAMES[self.index % TERRAIN_NAMES.len()]
+    }
+}
+
+impl fmt::Display for Terrain {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.name())
+    }
+}
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -1753,6 +1784,7 @@ impl_named_culture!(
     TianShen,
     XiuAnimal,
     Shou,
+    Terrain,
     Xiu,
     XunKong,
     Xun,
@@ -1901,6 +1933,20 @@ impl CycleItem for Shou {
 
     fn size() -> usize {
         BEAST_NAMES.len()
+    }
+}
+
+impl CycleItem for Terrain {
+    fn from_cycle_index(index: usize) -> Self {
+        Self::from_index(index % Self::size())
+    }
+
+    fn index(&self) -> usize {
+        self.index()
+    }
+
+    fn size() -> usize {
+        TERRAIN_NAMES.len()
     }
 }
 

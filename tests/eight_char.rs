@@ -1,7 +1,7 @@
 //! EightChar / Yun focused tests migrated from the reference implementations.
 
 use lunar_rs::{
-    ChildLimitProvider, China95ChildLimitProvider, DefaultChildLimitProvider, DefaultEightCharProvider,
+    ChildLimitProvider, China95ChildLimitProvider, CycleItem, DefaultChildLimitProvider, DefaultEightCharProvider,
     EightCharProvider, Lunar, LunarSect1ChildLimitProvider, LunarSect1EightCharProvider, LunarSect2ChildLimitProvider,
     LunarSect2EightCharProvider, NamedCulture, SixtyCycleDay, SixtyCycleHour, SixtyCycleMonth, SixtyCycleYear,
 };
@@ -34,6 +34,11 @@ fn eight_char_exposes_typed_sixty_cycle_pillars() {
     assert_eq!(month.heaven_stem().name(), ec.month_gan());
     assert_eq!(day.earth_branch().name(), ec.day_zhi());
     assert_eq!(hour.nayin().name(), ec.time_na_yin());
+    assert_eq!(ec.year_terrain().name(), ec.year_di_shi());
+    assert_eq!(ec.month_terrain().name(), ec.month_di_shi());
+    assert_eq!(ec.day_terrain().name(), ec.day_di_shi());
+    assert_eq!(ec.time_terrain().name(), ec.time_di_shi());
+    assert_eq!(ec.day_terrain().next(1).steps_back_to(ec.day_terrain().index()), -1);
 
     let three = ec.three_pillars();
     assert_eq!(three.to_string(), format!("{} {} {}", ec.year(), ec.month(), ec.day()));

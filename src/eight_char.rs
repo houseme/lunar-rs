@@ -1,7 +1,9 @@
 //! 八字（四柱）。对应 lunar-go `calendar/EightChar.go`。
 
 use crate::Gender;
-use crate::culture::{SixtyCycle, SixtyCycleDay, SixtyCycleHour, SixtyCycleMonth, SixtyCycleYear, ThreePillars};
+use crate::culture::{
+    SixtyCycle, SixtyCycleDay, SixtyCycleHour, SixtyCycleMonth, SixtyCycleYear, Terrain, ThreePillars,
+};
 use crate::lunar::Lunar;
 use crate::lunar_util;
 use crate::yun::{ChildLimit, ChildLimitProvider, DefaultChildLimitProvider, Yun};
@@ -126,6 +128,10 @@ impl<'a> EightChar<'a> {
         CHANG_SHENG[index as usize]
     }
 
+    fn terrain(&self, zhi_index: i64) -> Terrain {
+        Terrain::from_name(self.di_shi(zhi_index)).unwrap_or_else(|| Terrain::from_index(0))
+    }
+
     // ---- 年柱 ----
     pub fn year(&self) -> String {
         self.lunar.year_in_gan_zhi_exact()
@@ -156,6 +162,9 @@ impl<'a> EightChar<'a> {
     }
     pub fn year_di_shi(&self) -> &'static str {
         self.di_shi(self.lunar.year_zhi_index_exact())
+    }
+    pub fn year_terrain(&self) -> Terrain {
+        self.terrain(self.lunar.year_zhi_index_exact())
     }
 
     // ---- 月柱 ----
@@ -189,6 +198,9 @@ impl<'a> EightChar<'a> {
     pub fn month_di_shi(&self) -> &'static str {
         self.di_shi(self.lunar.month_zhi_index_exact())
     }
+    pub fn month_terrain(&self) -> Terrain {
+        self.terrain(self.lunar.month_zhi_index_exact())
+    }
 
     // ---- 日柱 ----
     pub fn day(&self) -> String {
@@ -221,6 +233,9 @@ impl<'a> EightChar<'a> {
     pub fn day_di_shi(&self) -> &'static str {
         self.di_shi(self.lunar.day_zhi_index_exact())
     }
+    pub fn day_terrain(&self) -> Terrain {
+        self.terrain(self.lunar.day_zhi_index_exact())
+    }
 
     // ---- 时柱 ----
     pub fn time(&self) -> String {
@@ -252,6 +267,9 @@ impl<'a> EightChar<'a> {
     }
     pub fn time_di_shi(&self) -> &'static str {
         self.di_shi(self.lunar.time_zhi_index())
+    }
+    pub fn time_terrain(&self) -> Terrain {
+        self.terrain(self.lunar.time_zhi_index())
     }
 
     pub fn three_pillars(&self) -> ThreePillars {

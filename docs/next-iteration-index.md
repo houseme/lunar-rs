@@ -225,5 +225,6 @@
 | `P2` | `Task 69` | DecadeFortune / Fortune 运势对象 | `已完成` | [docs/tasks/69-phase-next-decade-fortune-objects.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/69-phase-next-decade-fortune-objects.md) |
 | `P2` | `Task 70` | PengZu 天干 / 地支 typed companion | `已完成` | [docs/tasks/70-phase-next-pengzu-typed-companions.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/70-phase-next-pengzu-typed-companions.md) |
 | `P3` | `Task 71` | XiuAnimal / Beast 循环对象补强 | `已完成` | [docs/tasks/71-phase-next-animal-beast-cycle-objects.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/71-phase-next-animal-beast-cycle-objects.md) |
+| `P2` | `Task 72` | Terrain 十二长生 typed API | `已完成` | [docs/tasks/72-phase-next-terrain-typed-api.md](/Users/zhi/Documents/code/rust/houseme/lunar-rs/docs/tasks/72-phase-next-terrain-typed-api.md) |
 
-后续建议继续按新对标文档和本索引中的 `Task 59` - `Task 71` 推进，不再把已经完成的 Phase 4 多历法工作重复列为待办。
+后续建议继续按新对标文档和本索引中的 `Task 59` - `Task 72` 推进，不再把已经完成的 Phase 4 多历法工作重复列为待办。

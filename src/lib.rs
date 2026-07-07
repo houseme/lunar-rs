@@ -132,8 +132,8 @@ pub use culture::{
     HideHeavenStemType, LiuYao, Lu, MinorRen, NamedCulture, Nayin, Nine, NineDay, PengZu, PengZuEarthBranch,
     PengZuHeavenStem, Phase, PhaseDay, Phenology, PhenologyDay, PlumRainDay, PlumRainKind, Season, Shou, SixtyCycle,
     SixtyCycleDay, SixtyCycleHour, SixtyCycleMonth, SixtyCycleYear, SolarTermDay, Taboo, TabooKind, TaiPosition,
-    TaiSuiPosition, ThreePillars, TianShen, TianShenType, Xiu, XiuAnimal, Xun, XunKong, YearFortune, YearFortuneKind,
-    YuanCycle, YunCycle, Zodiac,
+    TaiSuiPosition, Terrain, ThreePillars, TianShen, TianShenType, Xiu, XiuAnimal, Xun, XunKong, YearFortune,
+    YearFortuneKind, YuanCycle, YunCycle, Zodiac,
 };
 pub use dangi::{Dangi, DangiMonth, DangiYear};
 pub use eight_char::{
